@@ -1,0 +1,24 @@
+.nav { position:fixed;top:0;left:0;right:0;z-index:100;padding:14px 0;transition:background .3s,box-shadow .3s,padding .3s; }
+.scrolled { background:rgba(255,255,255,.96);backdrop-filter:blur(12px);box-shadow:0 1px 0 #E2E8F0;padding:10px 0; }
+.inner { display:flex;align-items:center;justify-content:space-between;gap:24px; }
+.logo { display:flex;align-items:center;gap:10px;text-decoration:none; }
+.logoMark { width:36px;height:36px;border-radius:10px;background:#1B3A5C;color:#C9A84C;display:flex;align-items:center;justify-content:center;font-family:var(--font-serif);font-size:18px;flex-shrink:0; }
+.logoText  { font-size:18px;font-weight:700;color:#1B3A5C;letter-spacing:-.3px; }
+.links { display:flex;align-items:center;gap:28px; }
+.links a { color:#64748B;text-decoration:none;font-size:15px;font-weight:500;transition:color .2s; }
+.links a:hover { color:#1B3A5C; }
+.ctas { display:flex;align-items:center;gap:10px; }
+.iosPill { display:flex;align-items:center;gap:6px;background:#FEF3C7;color:#92400E;font-size:12px;font-weight:700;padding:6px 12px;border-radius:999px; }
+.iosIcon { font-size:13px; }
+.ctaPrimary { background:#1B3A5C;color:white;text-decoration:none;font-size:14px;font-weight:700;padding:10px 20px;border-radius:10px;transition:background .2s,transform .2s;white-space:nowrap; }
+.ctaPrimary:hover { background:#122843;transform:translateY(-1px); }
+.burger { display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:4px; }
+.line { display:block;width:22px;height:2px;background:#1B3A5C;border-radius:2px;transition:all .3s; }
+.lineOpen1 { display:block;width:22px;height:2px;background:#1B3A5C;border-radius:2px;transform:rotate(45deg) translate(5px,5px); }
+.lineOpen2 { display:block;width:22px;height:2px;background:#1B3A5C;border-radius:2px;opacity:0; }
+.lineOpen3 { display:block;width:22px;height:2px;background:#1B3A5C;border-radius:2px;transform:rotate(-45deg) translate(5px,-5px); }
+.mobileMenu { display:flex;flex-direction:column;gap:4px;padding:16px 20px 20px;background:white;border-top:1px solid #E2E8F0; }
+.mobileMenu a { color:#1B3A5C;text-decoration:none;font-size:16px;font-weight:500;padding:12px 0;border-bottom:1px solid #F7F9FC; }
+.mobileCtaPrimary   { margin-top:12px;background:#1B3A5C!important;color:white!important;text-align:center;padding:14px!important;border-radius:10px;border-bottom:none!important;font-weight:700!important; }
+.mobileCtaSecondary { background:#FEF3C7!important;color:#92400E!important;text-align:center;padding:12px!important;border-radius:10px;border-bottom:none!important;font-weight:700!important;margin-top:6px; }
+@media (max-width:900px) { .links,.ctas{display:none;} .burger{display:flex;} }

@@ -1,0 +1,32 @@
+.section { padding:100px 0;background:#FAFAF7; }
+.header { text-align:center;margin-bottom:64px; }
+.eyebrow { display:inline-block;font-size:13px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#C9A84C;margin-bottom:14px; }
+.title { font-family:var(--font-serif);font-size:clamp(30px,4vw,48px);font-weight:400;line-height:1.15;color:#0F172A;margin-bottom:14px;letter-spacing:-.5px; }
+.accent { font-style:italic;color:#1B3A5C; }
+.sub { font-size:17px;color:#64748B;max-width:520px;margin:0 auto;line-height:1.65; }
+
+.grid { display:flex;flex-direction:column;gap:20px; }
+.card { background:white;border:1px solid #E2E8F0;border-radius:20px;padding:0;display:grid;grid-template-columns:1fr 280px;overflow:hidden;transition:box-shadow .2s; }
+.card:hover { box-shadow:0 16px 48px rgba(27,58,92,.08); }
+.cardAlt { grid-template-columns:280px 1fr; }
+.cardAlt .cardLeft { order:2; }
+.cardAlt .statBox  { order:1; }
+
+.cardLeft { padding:36px;display:flex;flex-direction:column;gap:0; }
+.iconWrap { width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;margin-bottom:20px; }
+.icon { font-size:26px; }
+.cardTitle { font-size:22px;font-weight:700;color:#0F172A;margin-bottom:10px; }
+.cardDesc  { font-size:15px;color:#64748B;line-height:1.7;margin-bottom:20px; }
+.bullets   { list-style:none;display:flex;flex-direction:column;gap:9px; }
+.bullet    { display:flex;align-items:flex-start;gap:10px;font-size:14px;color:#475569;line-height:1.5; }
+.check     { color:#27AE60;font-weight:700;font-size:13px;flex-shrink:0;margin-top:2px; }
+
+.statBox { display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center;gap:12px; }
+.statValue { font-family:var(--font-serif);font-size:clamp(32px,4vw,52px);font-weight:400;color:#1B3A5C;line-height:1; }
+.statLabel { font-size:14px;color:#475569;line-height:1.5;max-width:180px; }
+
+@media (max-width:900px) {
+  .card,.cardAlt { grid-template-columns:1fr;border-radius:16px; }
+  .cardAlt .cardLeft,.cardAlt .statBox { order:unset; }
+  .statBox { border-top:1px solid rgba(0,0,0,.06);padding:24px; }
+}

@@ -1,0 +1,25 @@
+.footer { background:#0F172A;padding:64px 0 0; }
+.inner { display:flex;justify-content:space-between;gap:48px;padding-bottom:48px;border-bottom:1px solid rgba(255,255,255,.07);flex-wrap:wrap; }
+.brand { max-width:280px;display:flex;flex-direction:column;gap:8px; }
+.logo { display:flex;align-items:center;gap:10px;margin-bottom:4px; }
+.logoMark { width:36px;height:36px;border-radius:10px;background:#1B3A5C;color:#C9A84C;display:flex;align-items:center;justify-content:center;font-family:var(--font-serif);font-size:18px; }
+.logoText  { font-size:17px;font-weight:700;color:white; }
+.tagline { font-size:14px;font-weight:600;color:rgba(255,255,255,.6); }
+.pitch   { font-size:13px;color:rgba(255,255,255,.35);line-height:1.6; }
+.email   { font-size:13px;color:#C9A84C; }
+.downloadBtns { display:flex;flex-direction:column;gap:8px;margin-top:4px; }
+.apkBtn { display:inline-block;background:#1B3A5C;color:white;text-decoration:none;font-size:13px;font-weight:700;padding:9px 16px;border-radius:8px;border:1px solid rgba(201,168,76,.3);transition:background .2s;text-align:center; }
+.apkBtn:hover { background:#122843; }
+.iosBtn { display:inline-block;background:rgba(255,255,255,.05);color:rgba(255,255,255,.35);font-size:13px;font-weight:700;padding:9px 16px;border-radius:8px;border:1px dashed rgba(255,255,255,.1);text-align:center;cursor:not-allowed; }
+
+.links { display:flex;gap:48px;flex-wrap:wrap; }
+.col { display:flex;flex-direction:column;gap:10px; }
+.col h4 { font-size:12px;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px; }
+.col a { font-size:14px;color:rgba(255,255,255,.55);text-decoration:none;transition:color .2s; }
+.col a:hover { color:white; }
+.upcoming { font-size:13px;color:rgba(255,255,255,.3);font-style:italic; }
+
+.bottom { display:flex;justify-content:space-between;padding:20px 0;flex-wrap:wrap;gap:8px; }
+.bottom p { font-size:12px;color:rgba(255,255,255,.25); }
+
+@media (max-width:640px) { .links{gap:28px;} .bottom{flex-direction:column;} }
