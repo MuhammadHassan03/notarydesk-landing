@@ -15,12 +15,13 @@ export default function Nav() {
   return (
     <header className={`${styles.nav} ${scrolled ? styles.scrolled : ''}`}>
       <div className={`container ${styles.inner}`}>
+
         <a href="#" className={styles.logo}>
           <div className={styles.logoMark}>N</div>
           <span className={styles.logoText}>NotaryDesk</span>
         </a>
 
-        {/* Desktop Navigation */}
+        {/* Desktop nav */}
         <nav className={styles.links}>
           <a href="#features">Features</a>
           <a href="#roadmap">Roadmap</a>
@@ -30,41 +31,52 @@ export default function Nav() {
 
         <div className={styles.ctas}>
           <div className={styles.platformPill}>
-            <span className={styles.dot} /> Available for Android
+            <span className={styles.dot} /> Android Available
           </div>
+          {/* APK direct download */}
+          <a
+            href="/downloads/notarydesk-latest.apk"
+            download
+            className={styles.ctaApk}
+          >
+            ↓ Download APK
+          </a>
           <a href="#notify" className={styles.ctaPrimary}>
-            Get Started
+            Get Early Access
           </a>
         </div>
 
-        {/* Mobile Toggle */}
-        <button 
-          className={styles.burger} 
-          onClick={() => setOpen(o => !o)} 
-          aria-label="Menu"
-        >
+        {/* Mobile burger */}
+        <button className={styles.burger} onClick={() => setOpen(o => !o)} aria-label="Menu">
           <span className={open ? styles.lineOpen1 : styles.line} />
           <span className={open ? styles.lineOpen2 : styles.line} />
           <span className={open ? styles.lineOpen3 : styles.line} />
         </button>
       </div>
 
-      {/* Mobile Menu Overlay */}
+      {/* Mobile menu */}
       {open && (
         <div className={styles.mobileMenu}>
           <div className={styles.mobileLinks}>
-            <a href="#features" onClick={() => setOpen(false)}>Features</a>
-            <a href="#roadmap"  onClick={() => setOpen(false)}>Roadmap</a>
-            <a href="#pricing"  onClick={() => setOpen(false)}>Pricing</a>
-            <a href="#faq"      onClick={() => setOpen(false)}>FAQ</a>
+            <a href="#features"  onClick={() => setOpen(false)}>Features</a>
+            <a href="#roadmap"   onClick={() => setOpen(false)}>Roadmap</a>
+            <a href="#pricing"   onClick={() => setOpen(false)}>Pricing</a>
+            <a href="#faq"       onClick={() => setOpen(false)}>FAQ</a>
           </div>
           <div className={styles.mobileActions}>
+            <a
+              href="/downloads/notarydesk-latest.apk"
+              download
+              onClick={() => setOpen(false)}
+              className={styles.mobileCtaApk}
+            >
+              ↓ Download APK (Android)
+            </a>
             <a href="#notify" onClick={() => setOpen(false)} className={styles.mobileCtaPrimary}>
-              Join Early Access
+              Join Early Access — iOS Waitlist
             </a>
             <p className={styles.mobileStatus}>
-              Android: In Final Testing <br />
-              iOS: Coming Soon
+              APK: Ready to install · iOS: Coming Soon
             </p>
           </div>
         </div>

@@ -1,24 +1,68 @@
+/* Nav.module.css */
+
 .nav { position:fixed;top:0;left:0;right:0;z-index:100;padding:14px 0;transition:background .3s,box-shadow .3s,padding .3s; }
 .scrolled { background:rgba(255,255,255,.96);backdrop-filter:blur(12px);box-shadow:0 1px 0 #E2E8F0;padding:10px 0; }
-.inner { display:flex;align-items:center;justify-content:space-between;gap:24px; }
+.inner { display:flex;align-items:center;justify-content:space-between;gap:16px; }
+
+/* Logo */
 .logo { display:flex;align-items:center;gap:10px;text-decoration:none; }
 .logoMark { width:36px;height:36px;border-radius:10px;background:#1B3A5C;color:#C9A84C;display:flex;align-items:center;justify-content:center;font-family:var(--font-serif);font-size:18px;flex-shrink:0; }
 .logoText  { font-size:18px;font-weight:700;color:#1B3A5C;letter-spacing:-.3px; }
+
+/* Desktop links */
 .links { display:flex;align-items:center;gap:28px; }
 .links a { color:#64748B;text-decoration:none;font-size:15px;font-weight:500;transition:color .2s; }
 .links a:hover { color:#1B3A5C; }
-.ctas { display:flex;align-items:center;gap:10px; }
-.iosPill { display:flex;align-items:center;gap:6px;background:#FEF3C7;color:#92400E;font-size:12px;font-weight:700;padding:6px 12px;border-radius:999px; }
-.iosIcon { font-size:13px; }
-.ctaPrimary { background:#1B3A5C;color:white;text-decoration:none;font-size:14px;font-weight:700;padding:10px 20px;border-radius:10px;transition:background .2s,transform .2s;white-space:nowrap; }
+
+/* CTAs */
+.ctas { display:flex;align-items:center;gap:8px; }
+
+/* Android available pill */
+.platformPill { display:flex;align-items:center;gap:6px;background:#DCFCE7;color:#15803D;font-size:11px;font-weight:700;padding:5px 11px;border-radius:999px; }
+.dot { width:6px;height:6px;border-radius:50%;background:#15803D; }
+
+/* APK download button */
+.ctaApk {
+  background:#F0FFF4;color:#15803D;
+  border:1.5px solid #86EFAC;
+  text-decoration:none;font-size:13px;font-weight:700;
+  padding:8px 16px;border-radius:8px;
+  transition:background .2s,transform .2s;
+  white-space:nowrap;
+}
+.ctaApk:hover { background:#DCFCE7;transform:translateY(-1px); }
+
+/* Primary CTA */
+.ctaPrimary { background:#1B3A5C;color:white;text-decoration:none;font-size:14px;font-weight:700;padding:9px 18px;border-radius:10px;transition:background .2s,transform .2s;white-space:nowrap; }
 .ctaPrimary:hover { background:#122843;transform:translateY(-1px); }
+
+/* Mobile burger */
 .burger { display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:4px; }
-.line { display:block;width:22px;height:2px;background:#1B3A5C;border-radius:2px;transition:all .3s; }
+.line      { display:block;width:22px;height:2px;background:#1B3A5C;border-radius:2px;transition:all .3s; }
 .lineOpen1 { display:block;width:22px;height:2px;background:#1B3A5C;border-radius:2px;transform:rotate(45deg) translate(5px,5px); }
 .lineOpen2 { display:block;width:22px;height:2px;background:#1B3A5C;border-radius:2px;opacity:0; }
 .lineOpen3 { display:block;width:22px;height:2px;background:#1B3A5C;border-radius:2px;transform:rotate(-45deg) translate(5px,-5px); }
-.mobileMenu { display:flex;flex-direction:column;gap:4px;padding:16px 20px 20px;background:white;border-top:1px solid #E2E8F0; }
-.mobileMenu a { color:#1B3A5C;text-decoration:none;font-size:16px;font-weight:500;padding:12px 0;border-bottom:1px solid #F7F9FC; }
-.mobileCtaPrimary   { margin-top:12px;background:#1B3A5C!important;color:white!important;text-align:center;padding:14px!important;border-radius:10px;border-bottom:none!important;font-weight:700!important; }
-.mobileCtaSecondary { background:#FEF3C7!important;color:#92400E!important;text-align:center;padding:12px!important;border-radius:10px;border-bottom:none!important;font-weight:700!important;margin-top:6px; }
-@media (max-width:900px) { .links,.ctas{display:none;} .burger{display:flex;} }
+
+/* Mobile menu */
+.mobileMenu { display:flex;flex-direction:column;gap:4px;padding:12px 20px 20px;background:white;border-top:1px solid #E2E8F0; }
+.mobileLinks { display:flex;flex-direction:column; }
+.mobileLinks a { color:#1B3A5C;text-decoration:none;font-size:16px;font-weight:500;padding:12px 0;border-bottom:1px solid #F7F9FC; }
+.mobileActions { display:flex;flex-direction:column;gap:8px;margin-top:12px; }
+
+.mobileCtaApk {
+  background:#F0FFF4;color:#15803D;
+  border:1.5px solid #86EFAC;
+  text-align:center;padding:13px;border-radius:10px;
+  font-size:15px;font-weight:700;text-decoration:none;
+}
+.mobileCtaPrimary {
+  background:#1B3A5C;color:white;
+  text-align:center;padding:14px;border-radius:10px;
+  font-size:15px;font-weight:700;text-decoration:none;
+}
+.mobileStatus { font-size:12px;color:#94A3B8;text-align:center;margin-top:4px; }
+
+@media (max-width:960px) {
+  .links,.ctas { display:none; }
+  .burger { display:flex; }
+}

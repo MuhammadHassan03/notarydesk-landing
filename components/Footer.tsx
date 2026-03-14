@@ -5,6 +5,8 @@ export default function Footer() {
   return (
     <footer className={styles.footer}>
       <div className={`container ${styles.inner}`}>
+
+        {/* Brand */}
         <div className={styles.brand}>
           <div className={styles.logo}>
             <div className={styles.logoMark}>N</div>
@@ -13,14 +15,25 @@ export default function Footer() {
           <p className={styles.tagline}>Your Mobile Notary Business, Organized.</p>
           <p className={styles.pitch}>
             The only modern, mobile-first platform built exclusively for professional mobile notaries.
+            Available for Android now — iOS coming soon.
           </p>
+
+          {/* APK download in footer */}
+          <a href="/downloads/notarydesk-latest.apk" download className={styles.apkBtn}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <path d="M12 2v13M8 11l4 4 4-4"/><path d="M20 17v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2"/>
+            </svg>
+            Download Android APK
+          </a>
+
           <div className={styles.contactInfo}>
-            <a href="mailto:support@notarydesk.app" className={styles.email}>
-              support@notarydesk.app
+            <a href="mailto:engineermirzahassan@gmail.com" className={styles.email}>
+              engineermirzahassan@gmail.com
             </a>
           </div>
         </div>
 
+        {/* Links columns */}
         <div className={styles.links}>
           <div className={styles.col}>
             <h4>Product</h4>
@@ -33,28 +46,35 @@ export default function Footer() {
             <h4>Key Features</h4>
             <a href="#features">Digital Journal</a>
             <a href="#features">Mileage Tracking</a>
-            <a href="#features">PDF Invoicing</a>
-            <a href="#features">Scheduling</a>
+            <a href="#features">Invoicing</a>
+            <a href="#features">Appointments</a>
           </div>
           <div className={styles.col}>
-            <h4>Future</h4>
+            <h4>Coming Soon</h4>
             <span className={styles.upcoming}>ID Scanning</span>
             <span className={styles.upcoming}>Digital Payments</span>
             <span className={styles.upcoming}>Offline Access</span>
-            <span className={styles.upcoming}>Team Management</span>
+            <span className={styles.upcoming}>Team Mode</span>
           </div>
+          {/* Legal — links to real pages */}
           <div className={styles.col}>
-            <h4>Compliance</h4>
+            <h4>Legal</h4>
             <a href="/privacy">Privacy Policy</a>
             <a href="/terms">Terms of Service</a>
-            <a href="/security">Security Standards</a>
+            <a href="mailto:engineermirzahassan@gmail.com">Contact Support</a>
           </div>
         </div>
       </div>
 
       <div className={`container ${styles.bottom}`}>
         <p>© {new Date().getFullYear()} NotaryDesk. All rights reserved.</p>
-        <p className={styles.platformNote}>Available for Android · Coming soon to the iOS App Store</p>
+        <div className={styles.bottomLinks}>
+          <a href="/privacy">Privacy</a>
+          <span>·</span>
+          <a href="/terms">Terms</a>
+          <span>·</span>
+          <span className={styles.platformNote}>Android available · iOS coming soon</span>
+        </div>
       </div>
     </footer>
   )

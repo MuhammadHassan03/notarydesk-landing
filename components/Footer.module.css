@@ -1,25 +1,74 @@
-.footer { background:#0F172A;padding:64px 0 0; }
-.inner { display:flex;justify-content:space-between;gap:48px;padding-bottom:48px;border-bottom:1px solid rgba(255,255,255,.07);flex-wrap:wrap; }
-.brand { max-width:280px;display:flex;flex-direction:column;gap:8px; }
-.logo { display:flex;align-items:center;gap:10px;margin-bottom:4px; }
-.logoMark { width:36px;height:36px;border-radius:10px;background:#1B3A5C;color:#C9A84C;display:flex;align-items:center;justify-content:center;font-family:var(--font-serif);font-size:18px; }
-.logoText  { font-size:17px;font-weight:700;color:white; }
-.tagline { font-size:14px;font-weight:600;color:rgba(255,255,255,.6); }
-.pitch   { font-size:13px;color:rgba(255,255,255,.35);line-height:1.6; }
-.email   { font-size:13px;color:#C9A84C; }
-.downloadBtns { display:flex;flex-direction:column;gap:8px;margin-top:4px; }
-.apkBtn { display:inline-block;background:#1B3A5C;color:white;text-decoration:none;font-size:13px;font-weight:700;padding:9px 16px;border-radius:8px;border:1px solid rgba(201,168,76,.3);transition:background .2s;text-align:center; }
-.apkBtn:hover { background:#122843; }
-.iosBtn { display:inline-block;background:rgba(255,255,255,.05);color:rgba(255,255,255,.35);font-size:13px;font-weight:700;padding:9px 16px;border-radius:8px;border:1px dashed rgba(255,255,255,.1);text-align:center;cursor:not-allowed; }
+/* Footer.module.css */
 
-.links { display:flex;gap:48px;flex-wrap:wrap; }
+.footer {
+  background: #1B3A5C;
+  padding-top: 64px;
+  color: rgba(255,255,255,0.6);
+}
+
+.inner {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+  gap: 40px;
+  padding-bottom: 48px;
+}
+
+/* Brand column */
+.brand { display:flex;flex-direction:column;gap:0; }
+.logo { display:flex;align-items:center;gap:10px;margin-bottom:10px; }
+.logoMark { width:36px;height:36px;border-radius:10px;background:rgba(201,168,76,0.2);border:1px solid rgba(201,168,76,0.3);color:#C9A84C;display:flex;align-items:center;justify-content:center;font-family:var(--font-serif);font-size:18px; }
+.logoText  { font-size:18px;font-weight:700;color:#FFFFFF;letter-spacing:-.3px; }
+.tagline { font-size:14px;font-weight:600;color:rgba(255,255,255,0.8);margin-bottom:6px; }
+.pitch { font-size:13px;line-height:1.65;color:rgba(255,255,255,0.45);max-width:240px;margin-bottom:16px; }
+
+/* APK download button in footer */
+.apkBtn {
+  display:inline-flex;align-items:center;gap:7px;
+  background:rgba(201,168,76,0.15);
+  border:1px solid rgba(201,168,76,0.3);
+  color:#C9A84C;text-decoration:none;
+  font-size:13px;font-weight:700;
+  padding:8px 14px;border-radius:8px;
+  transition:background .2s;
+  align-self:flex-start;
+  margin-bottom:14px;
+}
+.apkBtn:hover { background:rgba(201,168,76,0.25); }
+
+.contactInfo { margin-top:2px; }
+.email { color:rgba(255,255,255,0.45);font-size:13px;text-decoration:none;transition:color .2s; }
+.email:hover { color:#C9A84C; }
+
+/* Link columns */
+.links { display:contents; }
 .col { display:flex;flex-direction:column;gap:10px; }
-.col h4 { font-size:12px;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px; }
-.col a { font-size:14px;color:rgba(255,255,255,.55);text-decoration:none;transition:color .2s; }
-.col a:hover { color:white; }
-.upcoming { font-size:13px;color:rgba(255,255,255,.3);font-style:italic; }
+.col h4 { font-size:12px;font-weight:700;color:rgba(255,255,255,0.4);letter-spacing:1px;text-transform:uppercase;margin-bottom:2px; }
+.col a { color:rgba(255,255,255,0.6);text-decoration:none;font-size:14px;transition:color .2s; }
+.col a:hover { color:#FFFFFF; }
+.upcoming { font-size:13px;color:rgba(255,255,255,0.3);font-style:italic; }
 
-.bottom { display:flex;justify-content:space-between;padding:20px 0;flex-wrap:wrap;gap:8px; }
-.bottom p { font-size:12px;color:rgba(255,255,255,.25); }
+/* Bottom bar */
+.bottom {
+  display:flex;justify-content:space-between;align-items:center;
+  border-top:1px solid rgba(255,255,255,0.08);
+  padding:18px 0 24px;
+  gap:12px;
+  flex-wrap:wrap;
+}
+.bottom p { font-size:12px; }
+.bottomLinks { display:flex;align-items:center;gap:10px;font-size:12px; }
+.bottomLinks a { color:rgba(255,255,255,0.5);text-decoration:none;transition:color .2s; }
+.bottomLinks a:hover { color:#C9A84C; }
+.bottomLinks span { color:rgba(255,255,255,0.2); }
+.platformNote { color:rgba(255,255,255,0.35);font-size:12px; }
 
-@media (max-width:640px) { .links{gap:28px;} .bottom{flex-direction:column;} }
+@media (max-width:1024px) {
+  .inner { grid-template-columns:1fr 1fr;row-gap:32px; }
+  .links { display:contents; }
+  .brand { grid-column:1/-1; }
+}
+@media (max-width:600px) {
+  .inner { grid-template-columns:1fr 1fr; }
+  .bottom { flex-direction:column;text-align:center; }
+  .bottomLinks { justify-content:center; }
+}
