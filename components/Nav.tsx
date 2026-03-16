@@ -35,7 +35,7 @@ export default function Nav() {
           </div>
           {/* APK direct download */}
           <a
-            href="/downloads/notarydesk-latest.apk"
+            href="https://drive.google.com/file/d/1HdR7q6-ppbDK01ddmsKPWi4ALaTimnfu/view?usp=sharing"
             download
             className={styles.ctaApk}
           >
@@ -65,7 +65,7 @@ export default function Nav() {
           </div>
           <div className={styles.mobileActions}>
             <a
-              href="/downloads/notarydesk-latest.apk"
+              href="https://drive.google.com/file/d/1HdR7q6-ppbDK01ddmsKPWi4ALaTimnfu/view?usp=sharing"
               download
               onClick={() => setOpen(false)}
               className={styles.mobileCtaApk}

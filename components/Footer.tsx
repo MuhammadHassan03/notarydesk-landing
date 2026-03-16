@@ -19,7 +19,7 @@ export default function Footer() {
           </p>
 
           {/* APK download in footer */}
-          <a href="/downloads/notarydesk-latest.apk" download className={styles.apkBtn}>
+          <a href="https://drive.google.com/file/d/1HdR7q6-ppbDK01ddmsKPWi4ALaTimnfu/view?usp=sharing" download className={styles.apkBtn}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
               <path d="M12 2v13M8 11l4 4 4-4"/><path d="M20 17v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2"/>
             </svg>

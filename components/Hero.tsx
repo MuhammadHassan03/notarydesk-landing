@@ -33,7 +33,7 @@ export default function Hero() {
 
             {/* APK direct download — live now */}
             <a
-              href="https://drive.google.com/file/d/1Y2EaC7SVn0fQi1DiYMxVRoWMRwMqWgGL/view?usp=sharing"
+              href="https://drive.google.com/file/d/1HdR7q6-ppbDK01ddmsKPWi4ALaTimnfu/view?usp=sharing"
               download
               className={styles.btnApk}
             >
