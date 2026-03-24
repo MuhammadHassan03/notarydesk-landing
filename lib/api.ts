@@ -1,7 +1,7 @@
 import { secureStorage } from '@/lib/security'
 
-// const API_URL = process.env.NEXT_PUBLIC_API_URL || ''
-const API_URL = 'http://localhost:8000/api/v1'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || ''
+// const API_URL = 'http://localhost:8000/api/v1'
 
 if (!API_URL && typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
   console.warn('[api] NEXT_PUBLIC_API_URL is not set — API calls will fail')

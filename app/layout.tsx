@@ -8,13 +8,12 @@ export const metadata: Metadata = {
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+
+  const fontUrl = "https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=account_balance_wallet,chevron_left,chevron_right,dark_mode,dashboard,diamond,explore,light_mode,logout,menu_book,receipt_long,route,settings,star,work"
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=account_balance_wallet,chevron_left,chevron_right,dashboard,dark_mode,diamond,explore,light_mode,logout,menu_book,receipt_long,route,settings,star,work"
-        />
+        <link rel="stylesheet" href={fontUrl} />
       </head>
       <body>
         <ThemeProvider>{children}</ThemeProvider>

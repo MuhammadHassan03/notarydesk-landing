@@ -24,7 +24,7 @@ const JOB_COLUMNS: Column<SigningJob>[] = [
 
 export default function DashboardPage() {
   const router = useRouter()
-  const { profile } = useAuth()
+  // const { profile } = useAuth()
   const { stats, loading: statsLoading } = useDashboardStats()
   const { jobs, loading: jobsLoading } = useJobs()
 
@@ -50,7 +50,8 @@ export default function DashboardPage() {
   return (
     <div>
       <PageHeader
-        title={`${greeting()}, ${firstName(profile?.full_name)}`}
+        // title={`${greeting()}, ${firstName(profile?.full_name)}`}
+        title={`Welcome`}
         subtitle="Here's your notary business at a glance"
         action={<Button variant="gold" href="/dashboard/jobs/new">+ New Signing Job</Button>}
       />
