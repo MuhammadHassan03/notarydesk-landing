@@ -1,13 +1,21 @@
-// Server-only — never import in Client Components
+/**
+ * lib/supabase-browser.ts — Supabase Client for Web Dashboard
+ * ==============================================================
+ * Uses the same Supabase project as the mobile app.
+ * Environment variables must be set in your Next.js .env.local:
+ *
+ *   NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+ *   NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGci...
+ */
+
 import { createClient } from '@supabase/supabase-js'
 
-const url = process.env.SUPABASE_URL
-const key = process.env.SUPABASE_SERVICE_KEY
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
-if (!url || !key) {
-  throw new Error('Missing SUPABASE_URL or SUPABASE_SERVICE_KEY env vars')
-}
-
-export const adminSupabase = createClient(url, key, {
-  auth: { autoRefreshToken: false, persistSession: false },
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+  },
 })

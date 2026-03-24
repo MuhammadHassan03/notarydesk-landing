@@ -1,6 +1,6 @@
 // app/privacy/page.tsx
 import styles from '@/components/legal.module.css'
-import Nav from '@/components/Nav'
+import Nav from '@/components/landing/Nav'
 import Footer from '@/components/Footer'
 
 export const metadata = {

@@ -1,0 +1,123 @@
+/* styles/components.module.css — All reusable component styles */
+
+/* ── Badge ────────────────────────────────────────────────────────────── */
+.badge { display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;white-space:nowrap }
+.badgeDot { width:6px;height:6px;border-radius:3px }
+
+/* ── Button ──────────────────────────────────────────────────────────── */
+.btn { display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 20px;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;text-decoration:none;font-family:var(--font-sans) }
+.btn:disabled { opacity:.5;cursor:not-allowed }
+.btnPrimary { background:var(--navy);color:#fff }
+.btnPrimary:hover:not(:disabled) { background:var(--navy-dark) }
+.btnGold { background:var(--gold);color:var(--navy) }
+.btnGold:hover:not(:disabled) { background:var(--gold-lt) }
+.btnDanger { background:#DC2626;color:#fff }
+.btnDanger:hover:not(:disabled) { background:#B91C1C }
+.btnOutline { background:transparent;color:var(--navy);border:1px solid var(--border) }
+.btnOutline:hover:not(:disabled) { border-color:var(--navy);background:rgba(27,58,92,.04) }
+.btnGhost { background:transparent;color:var(--muted);border:none;padding:8px 12px }
+.btnGhost:hover { color:var(--text) }
+.btnFull { width:100% }
+.btnSm { padding:7px 14px;font-size:13px;border-radius:8px }
+.btnLg { padding:14px 28px;font-size:16px }
+
+/* ── PageHeader ──────────────────────────────────────────────────────── */
+.pageHeader { display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;gap:16px }
+.pageTitle { font-size:24px;font-weight:800;color:var(--text);letter-spacing:-.5px }
+.pageSubtitle { font-size:14px;color:var(--muted);margin-top:2px }
+
+/* ── StatCard ────────────────────────────────────────────────────────── */
+.statCard { background:var(--white);border:1px solid var(--border);border-radius:14px;padding:20px }
+.statLabel { font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px }
+.statValue { font-size:28px;font-weight:800;color:var(--text);letter-spacing:-.5px }
+.statsGrid { display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px }
+@media(max-width:900px){.statsGrid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:500px){.statsGrid{grid-template-columns:1fr}}
+
+/* ── TaxCard ─────────────────────────────────────────────────────────── */
+.taxCard { background:linear-gradient(135deg,#ECFDF5,#D1FAE5);border:1px solid #A7F3D0;border-radius:16px;padding:24px;margin-bottom:28px }
+.taxBig { font-size:36px;font-weight:800;color:#065F46;letter-spacing:-1px }
+.taxLabel { font-size:13px;color:#047857;font-weight:500 }
+.taxChips { display:flex;gap:12px;margin-top:14px;flex-wrap:wrap }
+.taxChip { background:rgba(5,150,105,.08);padding:6px 12px;border-radius:20px;font-size:12px;color:#065F46;font-weight:500 }
+
+/* ── EmptyState ──────────────────────────────────────────────────────── */
+.empty { text-align:center;padding:60px 40px }
+.emptyIcon { width:64px;height:64px;border-radius:20px;background:var(--surface);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:28px }
+.emptyTitle { font-size:18px;font-weight:700;color:var(--text);margin-bottom:6px }
+.emptyDesc { font-size:14px;color:var(--muted);margin-bottom:20px }
+
+/* ── DataTable ───────────────────────────────────────────────────────── */
+.table { width:100%;border-collapse:separate;border-spacing:0;background:var(--white);border:1px solid var(--border);border-radius:14px;overflow:hidden }
+.table th { text-align:left;padding:12px 16px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;background:var(--surface);border-bottom:1px solid var(--border) }
+.table td { padding:14px 16px;font-size:14px;border-bottom:1px solid var(--border);vertical-align:middle }
+.table tr:last-child td { border-bottom:none }
+.tableRow { cursor:pointer;transition:background .1s }
+.tableRow:hover td { background:rgba(27,58,92,.02) }
+
+/* ── FilterPills ─────────────────────────────────────────────────────── */
+.pills { display:flex;flex-wrap:wrap;gap:8px }
+.pill { padding:8px 16px;border-radius:20px;border:1px solid var(--border);background:transparent;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;transition:all .15s;font-family:var(--font-sans) }
+.pill:hover { border-color:var(--navy);color:var(--navy) }
+.pillActive { background:var(--navy);border-color:var(--navy);color:#fff }
+.pillActive:hover { background:var(--navy-dark);color:#fff }
+
+/* ── FormCard ────────────────────────────────────────────────────────── */
+.formCard { background:var(--white);border:1px solid var(--border);border-radius:16px;padding:28px;margin-bottom:20px }
+.formSection { font-size:11px;font-weight:700;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:16px }
+.formGroup { margin-bottom:18px }
+.formLabel { font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px;display:block }
+.formInput { width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:10px;font-size:14px;font-family:var(--font-sans);color:var(--text);outline:none;transition:border-color .15s;background:var(--white) }
+.formInput:focus { border-color:var(--navy) }
+.formSelect { composes:formInput;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='%2364748B' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px }
+.formTextarea { composes:formInput;resize:vertical;min-height:80px }
+.formRow { display:grid;grid-template-columns:1fr 1fr;gap:14px }
+@media(max-width:600px){.formRow{grid-template-columns:1fr}}
+.formError { color:#DC2626;font-size:12px;margin-top:4px }
+
+/* ── Counter ─────────────────────────────────────────────────────────── */
+.counter { display:flex;align-items:center;border:1px solid var(--border);border-radius:10px;overflow:hidden;width:fit-content }
+.counterBtn { width:44px;height:44px;background:var(--surface);border:none;font-size:20px;color:var(--navy);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s }
+.counterBtn:hover { background:var(--border) }
+.counterValue { min-width:56px;text-align:center;font-size:20px;font-weight:700;color:var(--text);padding:0 8px }
+
+/* ── PipelineTracker ─────────────────────────────────────────────────── */
+.pipeline { display:flex;align-items:flex-start;justify-content:space-between;padding:0 4px }
+.pipeStep { display:flex;flex-direction:column;align-items:center;flex:1;position:relative }
+.pipeLine { position:absolute;top:11px;right:50%;left:-50%;height:2px;border-radius:1px;z-index:0 }
+.pipeDot { width:22px;height:22px;border-radius:11px;display:flex;align-items:center;justify-content:center;z-index:1;font-size:10px }
+.pipeLabel { font-size:10px;text-align:center;margin-top:6px;line-height:1.2 }
+
+/* ── Modal ────────────────────────────────────────────────────────────── */
+.overlay { position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px;animation:fadeIn .15s }
+.modal { background:var(--white);border-radius:20px;padding:32px;max-width:480px;width:100%;max-height:90vh;overflow-y:auto }
+.modalTitle { font-size:20px;font-weight:800;margin-bottom:6px }
+.modalDesc { font-size:14px;color:var(--muted);margin-bottom:24px }
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+/* ── Toast ────────────────────────────────────────────────────────────── */
+.toast { position:fixed;top:20px;right:20px;padding:14px 20px;border-radius:12px;font-size:14px;font-weight:600;z-index:200;animation:slideIn .25s;display:flex;align-items:center;gap:8px;max-width:400px }
+.toastSuccess { background:#065F46;color:#fff }
+.toastError { background:#991B1B;color:#fff }
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* ── Card (generic) ──────────────────────────────────────────────────── */
+.card { background:var(--white);border:1px solid var(--border);border-radius:16px;padding:20px }
+.cardTitle { font-size:11px;font-weight:700;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px }
+
+/* ── DetailRow ───────────────────────────────────────────────────────── */
+.detailRow { display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border) }
+.detailRow:last-child { border-bottom:none }
+.detailLabel { font-size:13px;color:var(--muted);flex:1 }
+.detailValue { font-size:13px;font-weight:600;color:var(--text) }
+
+/* ── Settings ────────────────────────────────────────────────────────── */
+.settingsRow { display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--border) }
+.settingsRow:last-child { border-bottom:none }
+.settingsLabel { font-size:14px;font-weight:600;color:var(--text) }
+.settingsDesc { font-size:12px;color:var(--muted);margin-top:2px }
+.settingsValue { font-size:14px;color:var(--muted);text-align:right }
+
+/* ── Avatar ──────────────────────────────────────────────────────────── */
+.avatar { width:80px;height:80px;border-radius:20px;background:var(--gold);color:var(--navy);font-weight:800;font-size:28px;display:flex;align-items:center;justify-content:center }
+.avatarSm { width:40px;height:40px;border-radius:12px;font-size:14px }

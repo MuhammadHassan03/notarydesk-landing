@@ -1,44 +1,22 @@
 import type { Metadata } from 'next'
-import { DM_Serif_Display, DM_Sans } from 'next/font/google'
+import { ThemeProvider } from '@/context/themecontext'
 import './globals.css'
 
-const serif = DM_Serif_Display({
-  subsets: ['latin'],
-  weight: ['400'],
-  variable: '--font-serif',
-  display: 'swap',
-})
-
-const sans = DM_Sans({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  variable: '--font-sans',
-  display: 'swap',
-})
-
 export const metadata: Metadata = {
-  title: 'NotaryDesk — Your Mobile Notary Business, Organized.',
-  description:
-    'The all-in-one app for mobile notaries. Log signings, track mileage for IRS deductions, send invoices, and manage appointments — all from your phone.',
-  keywords: 'notary app, mobile notary, mileage tracker, notary journal, notary invoice',
-  openGraph: {
-    title: 'NotaryDesk — Run Your Notary Business From Your Phone',
-    description: 'Journal. Mileage. Invoices. Appointments. Everything a mobile notary needs.',
-    url: 'https://notarydesk.app',
-    siteName: 'NotaryDesk',
-    type: 'website',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'NotaryDesk — Your Mobile Notary Business, Organized.',
-    description: 'Journal. Mileage. Invoices. Appointments. Everything a mobile notary needs.',
-  },
+  title: 'NotaryDesk — Your Mobile Notary Business, Organized',
+  description: 'Signing jobs, journal, mileage, invoicing, and tax savings for mobile notaries.',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${serif.variable} ${sans.variable}`}>
-      <body>{children}</body>
+    <html lang="en" suppressHydrationWarning>
+      <body>
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=account_balance_wallet,chevron_left,chevron_right,dashboard,dark_mode,diamond,explore,light_mode,logout,menu_book,receipt_long,route,settings,star,work"
+        />
+        <ThemeProvider>{children}</ThemeProvider>
+      </body>
     </html>
   )
 }

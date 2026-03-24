@@ -1,0 +1,62 @@
+'use client'
+
+import { useState } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { auth } from '@/lib/api'
+import { Button } from '@/components/ui'
+
+export default function RegisterPage() {
+  const router = useRouter()
+  const [fullName, setFullName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [state, setState] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  async function handleRegister(e: React.FormEvent) {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
+    try {
+      await auth.register(email, password, fullName, state || undefined)
+      router.replace('/dashboard')
+    } catch (err: any) { setError(err.message || 'Registration failed') }
+    setLoading(false)
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-cream p-5">
+      <div className="w-full max-w-[420px] bg-white rounded-2xl border border-slate-200 p-10">
+        <div className="flex items-center gap-2.5 justify-center mb-8">
+          <span className="w-9 h-9 rounded-[10px] bg-gold text-navy font-extrabold text-lg flex items-center justify-center">N</span>
+          <span className="font-bold text-xl text-navy">NotaryDesk</span>
+        </div>
+        <h1 className="text-[22px] font-extrabold text-center mb-1.5">Create your account</h1>
+        <p className="text-sm text-slate-500 text-center mb-7">Start managing your notary business for free</p>
+
+        {error && <div className="bg-red-50 text-red-600 px-3.5 py-2.5 rounded-lg text-[13px] mb-3.5">{error}</div>}
+
+        <form onSubmit={handleRegister}>
+          <label className="block text-[13px] font-semibold text-slate-900 mb-1.5">Full name</label>
+          <input placeholder="Jane Smith" value={fullName} onChange={e => setFullName(e.target.value)} required autoFocus
+            className="w-full px-3.5 py-2.5 border border-slate-200 rounded-[10px] text-sm outline-none focus:border-navy mb-3.5 bg-white" />
+          <label className="block text-[13px] font-semibold text-slate-900 mb-1.5">Email</label>
+          <input type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} required
+            className="w-full px-3.5 py-2.5 border border-slate-200 rounded-[10px] text-sm outline-none focus:border-navy mb-3.5 bg-white" />
+          <label className="block text-[13px] font-semibold text-slate-900 mb-1.5">Password</label>
+          <input type="password" placeholder="Min. 8 characters" value={password} onChange={e => setPassword(e.target.value)} required minLength={8}
+            className="w-full px-3.5 py-2.5 border border-slate-200 rounded-[10px] text-sm outline-none focus:border-navy mb-3.5 bg-white" />
+          <label className="block text-[13px] font-semibold text-slate-900 mb-1.5">State (optional)</label>
+          <input placeholder="e.g. California, Texas" value={state} onChange={e => setState(e.target.value)}
+            className="w-full px-3.5 py-2.5 border border-slate-200 rounded-[10px] text-sm outline-none focus:border-navy mb-3.5 bg-white" />
+          <Button type="submit" fullWidth loading={loading} className="mt-2 h-12 text-[15px]">Create free account</Button>
+        </form>
+        <p className="text-center mt-5 text-[13px] text-slate-500">
+          Already have an account? <Link href="/dashboard/login" className="text-navy font-semibold no-underline hover:underline">Sign in</Link>
+        </p>
+      </div>
+    </div>
+  )
+}

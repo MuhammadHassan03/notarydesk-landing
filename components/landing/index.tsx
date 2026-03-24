@@ -1,0 +1,7 @@
+export { default as Nav } from './Nav'
+export { default as Hero } from './Hero'
+export { SocialProof, ProblemSection, Features, HowItWorks } from './Sections'
+export { CompetitorSection, Roadmap } from './MoreSections'
+export { default as Pricing } from './Pricing'
+export { Testimonials, FinalCTA, Footer } from './Bottom'
+export { default as WaitlistStrip } from './WaitlistStrip'
