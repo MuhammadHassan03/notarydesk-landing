@@ -53,7 +53,7 @@ export default function Nav() {
       <div className="max-w-[1200px] mx-auto px-6 h-[68px] flex items-center justify-between">
 
         {/* Logo */}
-        <a href="#" className="flex items-center gap-2.5 no-underline group">
+        <a href="/" className="flex items-center gap-2.5 no-underline group">
           <div className="w-9 h-9 rounded-xl flex items-center justify-center font-extrabold text-lg transition-transform group-hover:scale-105"
             style={{ background: 'var(--accent)', color: 'var(--primary)' }}>N</div>
           <span className="font-bold text-[17px] -tracking-wide hidden sm:inline" style={{ color: 'var(--primary)' }}>NotaryDesk</span>
