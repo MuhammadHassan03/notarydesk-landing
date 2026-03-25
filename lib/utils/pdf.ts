@@ -1,4 +1,5 @@
 import type { Profile } from '@/lib/types'
+import {api} from '@/lib/api/client'
 
 interface InvoiceData {
   id: string
@@ -146,5 +147,24 @@ export function downloadInvoiceHTML(html: string, filename: string) {
   a.href = url
   a.download = filename
   a.click()
+  URL.revokeObjectURL(url)
+}
+
+/**
+ * Download a PDF from the API.
+ * Uses fetch with auth headers (from localStorage) and triggers a file download.
+ */
+export async function downloadPdf(endpoint: string, filename: string) {
+  
+  const data = await api.get(endpoint, { responseType: 'blob' })
+
+  const blob = new Blob([data as BlobPart], { type: 'application/pdf' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
   URL.revokeObjectURL(url)
 }

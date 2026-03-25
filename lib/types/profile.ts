@@ -11,5 +11,6 @@ export interface Profile {
   years_experience: string | null
   avatar_url: string | null
   logo_url: string | null
+  username: string | null
   plan: 'free' | 'pro' | 'business'
 }

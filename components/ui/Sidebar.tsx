@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/context/auth'
@@ -17,8 +18,10 @@ function getInitials(name: string | null): string {
 
 export default function Sidebar() {
   const pathname = usePathname()
+  const router = useRouter()
   const { isAuthenticated, displayName, plan, signOut } = useAuth()
   const [collapsed, setCollapsed] = useState(false)
+  const isFree = !plan || plan === 'free'
 
   if (!isAuthenticated) return null
 
@@ -86,6 +89,21 @@ export default function Sidebar() {
           )
         })}
       </nav>
+
+      {/* ── Upgrade upsell (free users only) ────────────────── */}
+      {isFree && !collapsed && (
+        <div className="mx-3 mb-3 p-3.5 rounded-xl cursor-pointer hover:opacity-90 transition-opacity"
+          style={{ background: 'linear-gradient(135deg, var(--accent) 0%, #e6b84a 100%)' }}
+          onClick={() => router.push('/dashboard/upgrade')}>
+          <div className="flex items-center gap-1.5 mb-1">
+            <Icon name="rocket_launch" size={14} style={{ color: '#1B3A5C' }} />
+            <span className="text-[11px] font-bold" style={{ color: '#1B3A5C' }}>Upgrade to Pro</span>
+          </div>
+          <p className="text-[10px] leading-relaxed" style={{ color: '#1B3A5C', opacity: 0.75 }}>
+            Unlimited jobs · PDF exports · Analytics
+          </p>
+        </div>
+      )}
 
       {/* ── Footer ──────────────────────────────────────────── */}
       <div className="p-3" style={{ borderTop: '1px solid var(--sidebar-border)' }}>

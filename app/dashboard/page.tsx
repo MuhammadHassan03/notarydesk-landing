@@ -1,15 +1,16 @@
 'use client'
 
-import { useMemo } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useMemo, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/context/auth'
 import { useDashboardStats } from '@/hooks/use-dashboard'
 import { useJobs } from '@/hooks/use-jobs'
 import { currency, greeting, firstName } from '@/lib/utils'
+import { downloadPdf } from '@/lib/utils/pdf'
 import { JOB_STATUS_CONFIG, PAYMENT_STATUS_CONFIG, JOB_PIPELINE } from '@/lib/constants'
 import type { SigningJob } from '@/lib/types'
 
-import { Button, DataTable, StatusBadge } from '@/components/ui'
+import { Button, DataTable, StatusBadge, Toast } from '@/components/ui'
 import { PageHeader, StatsGrid, StatCard, TaxCard, EmptyState } from '@/components/layout'
 import type { Column } from '@/components/ui/DataTable'
 import { Icon } from '@/components/ui/icons'
@@ -26,24 +27,50 @@ const JOB_COLUMNS: Column<SigningJob>[] = [
 
 export default function DashboardPage() {
   const router = useRouter()
-  const { displayName } = useAuth()
+  const searchParams = useSearchParams()
+  const { displayName, refreshProfile } = useAuth()
   const { stats, loading: statsLoading } = useDashboardStats()
   const { jobs, loading: jobsLoading } = useJobs()
+  const [exporting, setExporting] = useState(false)
+  const [toast, setToast] = useState<{ msg: string; type: 'success' | 'info' } | null>(null)
+
+  // Show success message after Lemon Squeezy redirect
+  useEffect(() => {
+    if (searchParams.get('upgraded') === '1') {
+      refreshProfile()
+      setToast({ msg: '🎉 Welcome to Pro! Your plan has been upgraded.', type: 'success' })
+      router.replace('/dashboard')
+    }
+  }, [searchParams, refreshProfile, router])
+
+  const handleExportTax = async () => {
+    setExporting(true)
+    try {
+      const year = new Date().getFullYear()
+      await downloadPdf(`/dashboard/tax-summary-pdf?year=${year}`, `notarydesk-tax-summary-${year}.pdf`)
+    } catch { /* ignore */ }
+    setExporting(false)
+  }
 
   const recentJobs = useMemo(() => jobs.slice(0, 8), [jobs])
 
   const taxSavings = useMemo(() => {
     if (!stats) return 0
-    return ((stats.ytd_mileage_deduction || 0) + (stats.ytd_expenses || 0) + 100) * 0.3
+    return (
+      (stats.ytd_mileage_deduction || 0) +
+      (stats.ytd_expenses || 0) +
+      (stats.ytd_notarial_acts_deduction || 0) +
+      100
+    ) * 0.3
   }, [stats])
 
   const taxChips = useMemo(() => {
     if (!stats) return []
     return [
-      { label: 'mileage', value: currency(stats.ytd_mileage_deduction) },
+      { label: 'mileage deduction', value: currency(stats.ytd_mileage_deduction) },
+      { label: 'notarial acts deduction', value: currency(stats.ytd_notarial_acts_deduction || 0) },
       { label: 'expenses', value: currency(stats.ytd_expenses) },
-      { label: 'notarial acts', value: String(stats.ytd_notarial_acts || 0) },
-      { label: 'miles', value: String(Math.round(stats.ytd_miles || 0)) },
+      { label: 'miles driven', value: String(Math.round(stats.ytd_miles || 0)) },
     ]
   }, [stats])
 
@@ -157,6 +184,13 @@ export default function DashboardPage() {
       </div>
 
       {/* ── Tax Savings Card ─────────────────────────────────────── */}
+      <div className="flex items-center justify-between mb-2">
+        <div />
+        <Button variant="outline" size="sm" onClick={handleExportTax} disabled={exporting}>
+          <Icon name="picture_as_pdf" size={16} style={{ color: 'inherit' }} />
+          {exporting ? 'Exporting…' : 'Export Tax Report'}
+        </Button>
+      </div>
       <TaxCard savings={currency(taxSavings)} chips={taxChips} />
 
       {/* ── Recent Jobs ──────────────────────────────────────────── */}
@@ -181,6 +215,8 @@ export default function DashboardPage() {
           onRowClick={j => router.push(`/dashboard/jobs/${j.id}`)}
         />
       )}
+
+      {toast && <Toast message={toast.msg} type={toast.type} visible={!!toast} onHide={() => setToast(null)} />}
     </div>
   )
 }

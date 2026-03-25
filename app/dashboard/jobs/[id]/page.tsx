@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo, useCallback } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { useJob, useUpdateJob } from '@/hooks/use-jobs'
 import { currency, formatDate, formatTime } from '@/lib/utils'
 import { JOB_STATUS_CONFIG, JOB_PIPELINE, PAYMENT_STATUS_CONFIG, PAYMENT_METHODS } from '@/lib/constants'
@@ -10,16 +10,65 @@ import { Button, Modal, ConfirmModal, StatusBadge, Toast } from '@/components/ui
 import { PageHeader, Card, PipelineTracker } from '@/components/layout'
 import { DetailRow } from '@/components/layout'
 
+function downloadIcs(job: NonNullable<ReturnType<typeof useJob>['job']>) {
+  const pad = (n: number) => String(n).padStart(2, '0')
+
+  // Parse date + time into a Date object
+  const [y, mo, d] = (job.scheduled_date || '').split('-').map(Number)
+  const [h = 10, m = 0] = (job.scheduled_time || '10:00').split(':').map(Number)
+  if (!y) return
+
+  const start = new Date(y, mo - 1, d, h, m)
+  const end   = new Date(y, mo - 1, d, h + 1, m)
+
+  const fmt = (dt: Date) =>
+    `${dt.getFullYear()}${pad(dt.getMonth() + 1)}${pad(dt.getDate())}` +
+    `T${pad(dt.getHours())}${pad(dt.getMinutes())}00`
+
+  const escape = (s: string) => (s || '').replace(/,/g, '\\,').replace(/;/g, '\\;').replace(/\n/g, '\\n')
+
+  const summary = `Notary Signing – ${job.signer_name}${job.document_type ? ` (${job.document_type})` : ''}`
+  const uid = `notarydesk-job-${job.id}@notarydesk.com`
+
+  const ics = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//NotaryDesk//NotaryDesk//EN',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+    'BEGIN:VEVENT',
+    `UID:${uid}`,
+    `DTSTART:${fmt(start)}`,
+    `DTEND:${fmt(end)}`,
+    `SUMMARY:${escape(summary)}`,
+    job.signer_address ? `LOCATION:${escape(job.signer_address)}` : '',
+    `DESCRIPTION:Job #${job.job_number || '—'} · Fee: $${(job.fee + (job.travel_fee || 0)).toFixed(2)}\\nPowered by NotaryDesk`,
+    'END:VEVENT',
+    'END:VCALENDAR',
+  ].filter(Boolean).join('\r\n')
+
+  const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' })
+  const url  = URL.createObjectURL(blob)
+  const a    = document.createElement('a')
+  a.href = url
+  a.download = `notarydesk-job-${job.job_number || job.id.slice(0, 8)}.ics`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
 export default function JobDetailPage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { job, loading, refresh } = useJob(id)
   const { advanceStatus, markPaid, cancelJob, deleteJob } = useUpdateJob()
-
-  const [showPayment, setShowPayment] = useState(false)
-  const [showCancel, setShowCancel]   = useState(false)
-  const [showDelete, setShowDelete]   = useState(false)
+  const [showPayment, setShowPayment]           = useState(false)
+  const [showCancel, setShowCancel]             = useState(false)
+  const [showDelete, setShowDelete]             = useState(false)
+  const [mileageDismissed, setMileageDismissed] = useState(false)
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null)
+
+  const showMileagePrompt = !mileageDismissed && searchParams.get('new') === '1'
 
   const nextStatus = useMemo(() => {
     if (!job) return null
@@ -110,6 +159,28 @@ export default function JobDetailPage() {
         )}
       </Card>
 
+      {/* Auto-mileage prompt */}
+      {showMileagePrompt && job.signer_address && (
+        <div className="flex items-center justify-between gap-3 rounded-xl px-4 py-3 mb-4"
+          style={{ background: 'var(--primary-light)', border: '1px solid var(--primary)' }}>
+          <div className="flex items-center gap-2 min-w-0">
+            <Icon name="route" size={16} style={{ color: 'var(--primary)', flexShrink: 0 }} />
+            <span className="text-[13px] font-medium" style={{ color: 'var(--text)' }}>
+              Log mileage for this signing?
+            </span>
+          </div>
+          <div className="flex gap-2 shrink-0">
+            <Button variant="primary" size="sm"
+              href={`/dashboard/mileage/new?to=${encodeURIComponent(job.signer_address)}&label=${encodeURIComponent(`Signing: ${job.signer_name}`)}&date=${job.scheduled_date || ''}`}>
+              Log trip
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => setMileageDismissed(true)}>
+              Dismiss
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Details */}
       <Card title="Job details">
         <DetailRow label="Signer" value={job.signer_name} />
@@ -153,6 +224,12 @@ export default function JobDetailPage() {
             <Button variant="gold" onClick={() => setShowPayment(true)}>
               <Icon name="payments" size={16} style={{ color: 'inherit' }} />
               Mark as paid
+            </Button>
+          )}
+          {job.scheduled_date && (
+            <Button variant="outline" size="sm" onClick={() => downloadIcs(job)}>
+              <Icon name="event" size={16} style={{ color: 'inherit' }} />
+              Add to Calendar
             </Button>
           )}
         </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useAuth, useProfile } from '@/context/auth'
 import { useUpdateProfile } from '@/hooks/use-profile'
 import { api, auth } from '@/lib/api'
@@ -77,9 +77,17 @@ export default function SettingsPage() {
   const [commission, setCommission] = useState(''); const [state, setState] = useState('')
   const [yearsExp, setYearsExp] = useState(''); const [dirty, setDirty] = useState(false)
 
+  // Booking username
+  const [username, setUsername] = useState(''); const [usernameSaving, setUsernameSaving] = useState(false)
+  const [usernameError, setUsernameError] = useState('')
+
   // Business fields
   const [bizName, setBizName] = useState(''); const [bizAddr, setBizAddr] = useState('')
   const [defaultFee, setDefaultFee] = useState(''); const [bizDirty, setBizDirty] = useState(false)
+
+  // Logo upload
+  const [logoUploading, setLogoUploading] = useState(false)
+  const logoInputRef = useRef<HTMLInputElement>(null)
 
   // Password
   const [newPw, setNewPw] = useState(''); const [confirmPw, setConfirmPw] = useState('')
@@ -98,6 +106,7 @@ export default function SettingsPage() {
     setYearsExp(profile.years_experience || '')
     setBizName(profile.business_name || ''); setBizAddr(profile.business_address || '')
     setDefaultFee(profile.default_fee ? String(profile.default_fee) : '')
+    setUsername(profile.username || '')
   }, [profile])
 
   const mark = <T,>(fn: (v: T) => void, biz = false) => (v: T) => { fn(v); biz ? setBizDirty(true) : setDirty(true) }
@@ -109,12 +118,42 @@ export default function SettingsPage() {
     } catch (e: any) { setToast({ msg: e.message, type: 'error' }) }
   }, [fullName, phone, commission, state, yearsExp, updateProfile, refreshProfile])
 
+  const saveUsername = useCallback(async () => {
+    const slug = username.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')
+    if (slug.length < 3) { setUsernameError('Must be at least 3 characters.'); return }
+    setUsernameError(''); setUsernameSaving(true)
+    try {
+      await api.post('/booking/claim-username', { username: slug })
+      setUsername(slug); await refreshProfile()
+      setToast({ msg: 'Booking link saved!', type: 'success' })
+    } catch (e: any) { setUsernameError(e.message || 'Failed.') }
+    setUsernameSaving(false)
+  }, [username, refreshProfile])
+
   const saveBiz = useCallback(async () => {
     try {
       await updateProfile({ business_name: bizName.trim() || null, business_address: bizAddr.trim() || null, default_fee: defaultFee ? parseFloat(defaultFee) : null } as any)
       setBizDirty(false); await refreshProfile(); setToast({ msg: 'Business settings saved!', type: 'success' })
     } catch (e: any) { setToast({ msg: e.message, type: 'error' }) }
   }, [bizName, bizAddr, defaultFee, updateProfile, refreshProfile])
+
+  const handleLogoUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (file.size > 2 * 1024 * 1024) { setToast({ msg: 'Image must be under 2 MB.', type: 'error' }); return }
+    setLogoUploading(true)
+    try {
+      const form = new FormData()
+      form.append('file', file)
+      await api.post('/auth/upload-logo', form)
+      await refreshProfile()
+      setToast({ msg: 'Logo uploaded!', type: 'success' })
+    } catch (err: any) {
+      setToast({ msg: err.message || 'Upload failed.', type: 'error' })
+    }
+    setLogoUploading(false)
+    e.target.value = ''
+  }, [refreshProfile])
 
   const changePw = useCallback(async () => {
     if (newPw.length < 8) { setToast({ msg: 'Min 8 characters.', type: 'error' }); return }
@@ -210,6 +249,39 @@ export default function SettingsPage() {
               <Button variant="gold" onClick={saveProfile} loading={saving}><Icon name="check" size={16} style={{ color: 'inherit' }} /> Save profile</Button>
               <Button variant="outline" onClick={() => setDirty(false)}>Cancel</Button>
             </div>}
+
+            <FormSection title="Your booking link" icon="link">
+              <div className="text-[12px] mb-3 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                Share this link so clients can request a signing — no phone tag needed.
+              </div>
+              <FormField label="Your username" icon="alternate_email" error={usernameError}
+                hint="Lowercase letters, numbers, hyphens only">
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <IconInput icon="alternate_email" value={username}
+                      onChange={e => { setUsername(e.target.value.toLowerCase()); setUsernameError('') }}
+                      placeholder="sarah-johnson-notary" />
+                  </div>
+                  <Button variant="primary" size="sm" loading={usernameSaving}
+                    disabled={!username.trim() || username === (profile?.username || '')}
+                    onClick={saveUsername}>
+                    Save
+                  </Button>
+                </div>
+              </FormField>
+              {profile?.username && (
+                <div className="flex items-center justify-between gap-3 mt-2 px-4 py-3 rounded-xl"
+                  style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                  <span className="text-[13px] font-medium truncate" style={{ color: 'var(--text)' }}>
+                    notarydesk.com/book/{profile.username}
+                  </span>
+                  <Button variant="outline" size="sm"
+                    onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/book/${profile.username}`); setToast({ msg: 'Link copied!', type: 'success' }) }}>
+                    <Icon name="content_copy" size={14} style={{ color: 'inherit' }} /> Copy
+                  </Button>
+                </div>
+              )}
+            </FormSection>
           </>)}
 
           {/* BUSINESS */}
@@ -228,6 +300,36 @@ export default function SettingsPage() {
               </FormField>
               <SettingsRow icon="route" iconBg="var(--accent-pale)" iconColor="var(--accent)" label="IRS mileage rate" description="Used for all deduction calculations" value="$0.70/mi" />
             </FormSection>
+            <FormSection title="Invoice logo" icon="image">
+              <div className="flex items-center gap-4 py-2">
+                {profile?.logo_url ? (
+                  <img src={profile.logo_url} alt="Business logo"
+                    className="w-20 h-20 rounded-xl object-contain"
+                    style={{ border: '1px solid var(--border)', background: 'var(--surface)', padding: 4 }} />
+                ) : (
+                  <div className="w-20 h-20 rounded-xl flex items-center justify-center shrink-0"
+                    style={{ border: '2px dashed var(--border)', background: 'var(--surface)' }}>
+                    <Icon name="image" size={28} style={{ color: 'var(--text-tertiary)' }} />
+                  </div>
+                )}
+                <div className="flex-1">
+                  <div className="text-[13px] font-semibold mb-1" style={{ color: 'var(--text)' }}>
+                    {profile?.logo_url ? 'Change logo' : 'Upload logo'}
+                  </div>
+                  <div className="text-[12px] mb-3" style={{ color: 'var(--text-tertiary)' }}>
+                    Appears on invoices. PNG, JPG, or WebP — max 2 MB.
+                  </div>
+                  <input ref={logoInputRef} type="file" accept="image/png,image/jpeg,image/webp"
+                    className="hidden" onChange={handleLogoUpload} disabled={logoUploading} />
+                  <Button variant="outline" size="sm" loading={logoUploading}
+                    onClick={() => logoInputRef.current?.click()}>
+                    <Icon name="upload" size={15} style={{ color: 'inherit' }} />
+                    {logoUploading ? 'Uploading…' : profile?.logo_url ? 'Replace' : 'Upload'}
+                  </Button>
+                </div>
+              </div>
+            </FormSection>
+
             <FormSection title="Compliance" icon="gavel">
               <SettingsRow icon="gavel" iconBg={state ? 'var(--success-bg)' : 'var(--warning-bg)'} iconColor={state ? 'var(--success)' : 'var(--warning)'}
                 label={`${state || 'State'} compliance`} description={state ? 'Journal requirements for your state' : 'Set your state in Profile'} value={state ? state.slice(0, 2).toUpperCase() : '—'} />
@@ -243,6 +345,13 @@ export default function SettingsPage() {
             <FormSection title="Account details" icon="person">
               <SettingsRow icon="mail" label="Email" value={profile?.email || '—'} />
               <SettingsRow icon="star" iconBg="var(--accent-pale)" iconColor="var(--accent)" label="Current plan" description="Manage your subscription" value={planLabel} />
+              {(plan === 'free' || !plan) && (
+                <div className="pt-3 pb-1">
+                  <Button variant="gold" fullWidth href="/dashboard/upgrade">
+                    <Icon name="rocket_launch" size={16} style={{ color: 'inherit' }} /> Upgrade to Pro — $9.99/mo
+                  </Button>
+                </div>
+              )}
             </FormSection>
             <FormSection title="Change password" icon="lock">
               <FormField label="New password" icon="lock">

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useJournalEntries } from '@/hooks/use-journal'
 import { getDocStyle } from '@/lib/constants'
 import { currency, formatDate } from '@/lib/utils'
+import { downloadPdf } from '@/lib/utils/pdf'
 import { Icon } from '@/components/ui/icons'
 import { Button, Toast } from '@/components/ui'
 import { PageHeader } from '@/components/layout'
@@ -13,6 +14,15 @@ export default function JournalListPage() {
   const router = useRouter()
   const { entries, loading } = useJournalEntries()
   const [search, setSearch] = useState('')
+  const [exporting, setExporting] = useState(false)
+
+  const handleExport = async () => {
+    setExporting(true)
+    try {
+      await downloadPdf('/journal/export-pdf', 'notarydesk-journal.pdf')
+    } catch { /* toast/ignore */ }
+    setExporting(false)
+  }
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim()
@@ -33,9 +43,15 @@ export default function JournalListPage() {
     <div>
       <PageHeader title="Notary Journal" subtitle="Legally compliant digital journal entries"
         action={
-          <Button variant="gold" href="/dashboard/journal/new">
-            <Icon name="add" size={16} style={{ color: 'inherit' }} /> New entry
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={handleExport} disabled={exporting}>
+              <Icon name="picture_as_pdf" size={16} style={{ color: 'inherit' }} />
+              {exporting ? 'Exporting…' : 'Export PDF'}
+            </Button>
+            <Button variant="gold" href="/dashboard/journal/new">
+              <Icon name="add" size={16} style={{ color: 'inherit' }} /> New entry
+            </Button>
+          </div>
         } />
 
       {/* ── Stats strip ──────────────────────────────────────── */}

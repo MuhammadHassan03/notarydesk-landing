@@ -1,7 +1,8 @@
 import axios, { AxiosError, type AxiosRequestConfig } from 'axios'
 import { getStoredTokens, storeTokens, clearTokens } from './tokens'
 
-export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'
+// export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'
+export const API_URL = 'http://localhost:8000/api/v1'
 
 // ── Axios instance ───────────────────────────────────────────────────────
 
@@ -89,30 +90,30 @@ function extractError(err: unknown): never {
 // ── Public API ────────────────────────────────────────────────────────────
 
 export const api = {
-  async get<T = any>(path: string): Promise<T> {
+  async get<T = any>(path: string, config?: AxiosRequestConfig): Promise<T> {
     try {
-      const { data } = await http.get(path)
+      const { data } = await http.get(path, config)
       return unwrap<T>(data)
     } catch (e) { return extractError(e) }
   },
 
-  async post<T = any>(path: string, body?: any): Promise<T> {
+  async post<T = any>(path: string, body?: any, config?: AxiosRequestConfig): Promise<T> {
     try {
-      const { data } = await http.post(path, body)
+      const { data } = await http.post(path, body, config)
       return unwrap<T>(data)
     } catch (e) { return extractError(e) }
   },
 
-  async patch<T = any>(path: string, body?: any): Promise<T> {
+  async patch<T = any>(path: string, body?: any, config?: AxiosRequestConfig): Promise<T> {
     try {
-      const { data } = await http.patch(path, body)
+      const { data } = await http.patch(path, body, config)
       return unwrap<T>(data)
     } catch (e) { return extractError(e) }
   },
 
-  async delete<T = any>(path: string): Promise<T> {
+  async delete<T = any>(path: string, config?: AxiosRequestConfig): Promise<T> {
     try {
-      const { data } = await http.delete(path)
+      const { data } = await http.delete(path, config)
       return unwrap<T>(data)
     } catch (e) { return extractError(e) }
   },

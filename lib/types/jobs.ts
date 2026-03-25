@@ -44,6 +44,7 @@ export interface CreateJobInput {
   signer_address?: string
   scheduled_date?: string
   scheduled_time?: string
+  reminder_minutes?: number
   document_type?: string
   notarial_acts_count?: number
   fee: number

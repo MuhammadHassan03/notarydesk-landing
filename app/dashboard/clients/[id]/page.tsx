@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { useClient, useUpdateClient, useDeleteClient } from '@/hooks/use-clients'
 import { formatDate } from '@/lib/utils'
@@ -30,6 +30,10 @@ export default function ClientDetailPage() {
   const [phone, setPhone]     = useState('')
   const [company, setCompany] = useState('')
   const [notes, setNotes]     = useState('')
+
+  useEffect(() => {
+    console.log('client', client)
+  }, [client])
 
   const startEditing = useCallback(() => {
     if (!client) return
@@ -186,6 +190,66 @@ export default function ClientDetailPage() {
         {client.last_job_date && <DetailRow icon="work" label="Last job" value={formatDate(client.last_job_date)} />}
         <DetailRow icon="schedule" label="Client since" value={formatDate(client.created_at?.split('T')[0])} />
         {client.notes && <DetailRow icon="edit_note" label="Notes" value={client.notes} />}
+      </div>
+
+      {/* ── W-9 / 1099 tracking ─────────────────────────────── */}
+      <div className="rounded-2xl p-5 mb-5" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
+        <div className="flex items-center gap-2 mb-4">
+          <Icon name="description" size={17} style={{ color: 'var(--primary)' }} />
+          <span className="text-[14px] font-bold" style={{ color: 'var(--text)' }}>Tax Documents</span>
+          <span className="text-[11px] px-1.5 py-0.5 rounded font-medium ml-auto"
+            style={{ background: 'var(--primary-light)', color: 'var(--primary)' }}>
+            1099-NEC required if paid &gt; $600/yr
+          </span>
+        </div>
+
+        <div className="flex flex-col gap-3">
+          {/* W-9 toggle */}
+          <div className="flex items-center justify-between p-3 rounded-xl"
+            style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+            <div>
+              <div className="text-[13px] font-semibold" style={{ color: 'var(--text)' }}>W-9 Sent</div>
+              <div className="text-[11px] mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
+                Send before this client owes you a 1099-NEC
+              </div>
+            </div>
+            <button
+              onClick={async () => {
+                const next = !client.w9_sent
+                setClient({ ...client, w9_sent: next })
+                try { await update(id, { w9_sent: next }) }
+                catch { setClient({ ...client, w9_sent: client.w9_sent }) }
+              }}
+              className="relative w-12 h-6 rounded-full transition-colors border-none cursor-pointer shrink-0"
+              style={{ background: client.w9_sent ? 'var(--success)' : 'var(--border)' }}>
+              <span className="absolute top-1 w-4 h-4 rounded-full bg-white transition-all"
+                style={{ left: client.w9_sent ? '26px' : '4px', boxShadow: '0 1px 3px rgba(0,0,0,.2)' }} />
+            </button>
+          </div>
+
+          {/* 1099 toggle */}
+          <div className="flex items-center justify-between p-3 rounded-xl"
+            style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+            <div>
+              <div className="text-[13px] font-semibold" style={{ color: 'var(--text)' }}>Expect 1099-NEC</div>
+              <div className="text-[11px] mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
+                Mark if this client has paid you over $600 this year
+              </div>
+            </div>
+            <button
+              onClick={async () => {
+                const next = !client.expects_1099
+                setClient({ ...client, expects_1099: next })
+                try { await update(id, { expects_1099: next }) }
+                catch { setClient({ ...client, expects_1099: client.expects_1099 }) }
+              }}
+              className="relative w-12 h-6 rounded-full transition-colors border-none cursor-pointer shrink-0"
+              style={{ background: client.expects_1099 ? 'var(--accent)' : 'var(--border)' }}>
+              <span className="absolute top-1 w-4 h-4 rounded-full bg-white transition-all"
+                style={{ left: client.expects_1099 ? '26px' : '4px', boxShadow: '0 1px 3px rgba(0,0,0,.2)' }} />
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* ── Quick actions ────────────────────────────────────── */}

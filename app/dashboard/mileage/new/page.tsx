@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo, useCallback, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useCreateMileageTrip, useMileageSummary } from '@/hooks/use-mileage'
 import { currency, todayISO } from '@/lib/utils'
 import { Icon } from '@/components/ui/icons'
@@ -15,24 +15,30 @@ const IRS_RATE_FALLBACK = 0.70
 
 export default function NewMileageTripPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { create, loading } = useCreateMileageTrip()
   const { summary } = useMileageSummary()
   const irsRate = summary?.irs_rate || IRS_RATE_FALLBACK
+
+  // Pre-fill from query params (e.g. coming from a new signing job)
+  const prefillTo    = searchParams.get('to') || ''
+  const prefillLabel = searchParams.get('label') || ''
+  const prefillDate  = searchParams.get('date') || ''
 
   // Route
   const [startAddr, setStartAddr] = useState('')
   const [startLat, setStartLat]   = useState<number | null>(null)
   const [startLng, setStartLng]   = useState<number | null>(null)
-  const [endAddr, setEndAddr]     = useState('')
+  const [endAddr, setEndAddr]     = useState(prefillTo)
   const [endLat, setEndLat]       = useState<number | null>(null)
   const [endLng, setEndLng]       = useState<number | null>(null)
 
   // Details
   const [miles, setMiles]             = useState('')
-  const [tripDate, setTripDate]       = useState(todayISO())
+  const [tripDate, setTripDate]       = useState(prefillDate || todayISO())
   const [durationMin, setDurationMin] = useState('')
-  const [label, setLabel]             = useState('')
-  const [manualMiles, setManualMiles] = useState(false)
+  const [label, setLabel]             = useState(prefillLabel)
+  const [manualMiles, setManualMiles] = useState(!!prefillTo)
   const [errors, setErrors]           = useState<Record<string, string>>({})
   const [toast, setToast]             = useState<{ msg: string; type: 'success' | 'error' } | null>(null)
 

@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useMileageTrips, useMileageSummary } from '@/hooks/use-mileage'
 import { currency, formatDate, monthLabel } from '@/lib/utils'
+import { downloadPdf } from '@/lib/utils/pdf'
 import { Icon } from '@/components/ui/icons'
 import { Button } from '@/components/ui'
 import { PageHeader } from '@/components/layout'
@@ -13,6 +14,15 @@ export default function MileageListPage() {
   const { trips, loading } = useMileageTrips()
   const { summary } = useMileageSummary()
   const [search, setSearch] = useState('')
+  const [exporting, setExporting] = useState(false)
+
+  const handleExport = async () => {
+    setExporting(true)
+    try {
+      await downloadPdf('/mileage/export-pdf', 'notarydesk-mileage.pdf')
+    } catch { /* toast/ignore */ }
+    setExporting(false)
+  }
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim()
@@ -39,9 +49,15 @@ export default function MileageListPage() {
     <div>
       <PageHeader title="Mileage Tracker" subtitle="Log trips and maximize your IRS deductions"
         action={
-          <Button variant="gold" href="/dashboard/mileage/new">
-            <Icon name="add" size={16} style={{ color: 'inherit' }} /> Log trip
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={handleExport} disabled={exporting}>
+              <Icon name="picture_as_pdf" size={16} style={{ color: 'inherit' }} />
+              {exporting ? 'Exporting…' : 'Export PDF'}
+            </Button>
+            <Button variant="gold" href="/dashboard/mileage/new">
+              <Icon name="add" size={16} style={{ color: 'inherit' }} /> Log trip
+            </Button>
+          </div>
         } />
 
       {/* ── Summary Hero ─────────────────────────────────────── */}

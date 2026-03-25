@@ -53,9 +53,10 @@ export default function NewJobPage() {
   const [acts, setActs]               = useState(1)
   const [fee, setFee]                 = useState('')
   const [travelFee, setTravelFee]     = useState('')
-  const [hasSchedule, setHasSchedule] = useState(false)
-  const [schedDate, setSchedDate]     = useState('')
-  const [schedTime, setSchedTime]     = useState('')
+  const [hasSchedule, setHasSchedule]     = useState(false)
+  const [schedDate, setSchedDate]         = useState('')
+  const [schedTime, setSchedTime]         = useState('')
+  const [reminderMinutes, setReminderMinutes] = useState(60)
   const [notes, setNotes]             = useState('')
   const [errors, setErrors]           = useState<Record<string, string>>({})
   const [toast, setToast]             = useState<{ msg: string; type: 'success' | 'error' } | null>(null)
@@ -75,7 +76,7 @@ export default function NewJobPage() {
     setErrors({})
 
     try {
-      await create({
+      const newJob = await create({
         job_type: jobType as any,
         signer_name: signerName.trim() || clientName.trim(),
         signer_address: signerAddr.trim() || undefined,
@@ -88,11 +89,15 @@ export default function NewJobPage() {
         travel_fee: parsedTravel || undefined,
         scheduled_date: hasSchedule && schedDate ? schedDate : undefined,
         scheduled_time: hasSchedule && schedTime ? schedTime : undefined,
+        reminder_minutes: hasSchedule && schedDate ? reminderMinutes : undefined,
         notes: notes.trim() || undefined,
         source: 'web',
       })
       setToast({ msg: 'Signing job created!', type: 'success' })
-      setTimeout(() => router.push('/dashboard/jobs'), 600)
+      const dest = signerAddr.trim()
+        ? `/dashboard/jobs/${newJob.id}?new=1`
+        : `/dashboard/jobs/${newJob.id}`
+      setTimeout(() => router.push(dest), 600)
     } catch (e: any) {
       setToast({ msg: e.message || 'Failed to create job', type: 'error' })
     }
@@ -194,6 +199,20 @@ export default function NewJobPage() {
                 <IconInput icon="schedule" type="time" value={schedTime} onChange={e => setSchedTime(e.target.value)} />
               </FormField>
             </div>
+          )}
+          {hasSchedule && (
+            <FormField label="Send client reminder" icon="notifications">
+              <select value={reminderMinutes} onChange={e => setReminderMinutes(Number(e.target.value))}
+                className="w-full px-4 py-3 rounded-xl text-[14px] outline-none"
+                style={{ border: '1.5px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}>
+                <option value={15}>15 minutes before</option>
+                <option value={30}>30 minutes before</option>
+                <option value={60}>1 hour before</option>
+                <option value={120}>2 hours before</option>
+                <option value={1440}>1 day before</option>
+                <option value={0}>No reminder</option>
+              </select>
+            </FormField>
           )}
           {hasSchedule && schedDate && (
             <div className="flex items-center gap-1.5 mt-1 text-[12px] font-medium" style={{ color: 'var(--success)' }}>

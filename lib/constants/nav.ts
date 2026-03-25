@@ -7,6 +7,7 @@ export const NAV_ITEMS = [
   { href: '/dashboard/invoices', icon: 'receipt_long',           label: 'Invoices' },
   { href: '/dashboard/mileage',  icon: 'route',                  label: 'Mileage' },
   { href: '/dashboard/expenses', icon: 'account_balance_wallet', label: 'Expenses' },
-  { href: '/dashboard/messages', icon: 'chat',                   label: 'Messages' },
-  { href: '/dashboard/settings', icon: 'settings',               label: 'Settings' },
+  { href: '/dashboard/messages',   icon: 'chat',                   label: 'Messages' },
+  { href: '/dashboard/analytics', icon: 'bar_chart',              label: 'Analytics' },
+  { href: '/dashboard/settings',  icon: 'settings',               label: 'Settings' },
 ]

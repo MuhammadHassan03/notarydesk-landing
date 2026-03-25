@@ -8,6 +8,8 @@ export interface Client {
   total_jobs: number
   last_job_date: string | null
   notes: string | null
+  w9_sent: boolean | null
+  expects_1099: boolean | null
   created_at: string
 }
 
@@ -27,4 +29,6 @@ export interface UpdateClientInput {
   company?: string
   address?: string
   notes?: string
+  w9_sent?: boolean
+  expects_1099?: boolean
 }
