@@ -4,7 +4,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..800;1,9..40,300..800&family=DM+Serif+Display&display=swap');
+/* Fonts loaded via <link> tags in layout.tsx */
 
 /* ══════════════════════════════════════════════════════════════════════════
    LIGHT MODE — matches mobile theme.ts light palette exactly
@@ -135,7 +135,7 @@
 html { scroll-behavior: smooth; }
 
 body {
-  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+  font-family: 'Manrope', system-ui, -apple-system, sans-serif;
   color: var(--text);
   background: var(--bg-page);
   -webkit-font-smoothing: antialiased;
@@ -175,7 +175,7 @@ body {
 @layer components {
   .input-base {
     @apply w-full px-3.5 py-2.5 rounded-xl text-sm outline-none transition-colors duration-150;
-    font-family: 'DM Sans', system-ui, sans-serif;
+    font-family: 'Manrope', system-ui, sans-serif;
     color: var(--text);
     background: var(--card);
     border: 1px solid var(--border);
@@ -212,4 +212,23 @@ body {
   .shadow-theme-sm { box-shadow: var(--shadow-sm); }
   .shadow-theme-md { box-shadow: var(--shadow-md); }
   .shadow-theme-lg { box-shadow: var(--shadow-lg); }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   MATERIAL SYMBOLS — fallback rule to ensure font + ligatures load
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.material-symbols-rounded {
+  font-family: 'Material Symbols Rounded';
+  font-weight: normal;
+  font-style: normal;
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }

@@ -3,15 +3,15 @@
 import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCreateInvoice, useInvoiceActions } from '@/hooks/use-invoices'
-import { INVOICE_PAYMENT_METHODS } from '@/lib/invoice-constants'
-import { todayISO } from '@/lib/formatters'
+import { INVOICE_PAYMENT_METHODS } from '@/lib/constants'
+import { todayISO } from '@/lib/utils'
 import { Icon } from '@/components/ui/icons'
 import { Button, Toast } from '@/components/ui'
-import { PageHeader } from '@/components/shared'
-import { FormSection } from '@/components/shared/FormSection'
-import { FormField } from '@/components/shared/FormField'
-import { IconInput } from '@/components/shared/IconInput'
-import { IconSelect } from '@/components/shared/IconSelect'
+import { PageHeader } from '@/components/layout'
+import { FormSection } from '@/components/forms/FormSection'
+import { FormField } from '@/components/forms/FormField'
+import { IconInput } from '@/components/forms/IconInput'
+import { IconSelect } from '@/components/forms/IconSelect'
 
 export default function NewInvoicePage() {
   const router = useRouter()

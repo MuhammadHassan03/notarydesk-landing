@@ -3,14 +3,14 @@
 import { useState, useMemo, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCreateMileageTrip, useMileageSummary } from '@/hooks/use-mileage'
-import { currency, todayISO } from '@/lib/formatters'
+import { currency, todayISO } from '@/lib/utils'
 import { Icon } from '@/components/ui/icons'
 import { Button, Toast } from '@/components/ui'
-import { PageHeader } from '@/components/shared'
-import PlaceAutocomplete, { haversineDistance, type PlaceResult } from '@/components/shared/PlaceAutocomplete'
-import { FormSection } from '@/components/shared/FormSection'
-import { FormField } from '@/components/shared/FormField'
-import { IconInput } from '@/components/shared/IconInput'
+import { PageHeader } from '@/components/layout'
+import PlaceAutocomplete, { haversineDistance, type PlaceResult } from '@/components/forms/PlaceAutocomplete'
+import { FormSection } from '@/components/forms/FormSection'
+import { FormField } from '@/components/forms/FormField'
+import { IconInput } from '@/components/forms/IconInput'
 const IRS_RATE_FALLBACK = 0.70
 
 export default function NewMileageTripPage() {

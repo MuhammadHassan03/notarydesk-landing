@@ -3,11 +3,11 @@
 import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useExpenses, useExpenseSummary, useDeleteExpense } from '@/hooks/use-expenses'
-import { EXPENSE_CATEGORIES, getCategoryByKey } from '@/lib/expense-categories'
-import { currency, formatDate, monthLabel } from '@/lib/formatters'
+import { EXPENSE_CATEGORIES, getCategoryByKey } from '@/lib/constants/expenses'
+import { currency, formatDate, monthLabel } from '@/lib/utils'
 import { Icon } from '@/components/ui/icons'
 import { Button, Toast } from '@/components/ui'
-import { PageHeader } from '@/components/shared'
+import { PageHeader } from '@/components/layout'
 
 export default function ExpensesListPage() {
   const router = useRouter()

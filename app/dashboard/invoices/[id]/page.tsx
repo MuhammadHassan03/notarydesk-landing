@@ -3,15 +3,16 @@
 import { useState, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { useInvoice, useInvoiceActions, type InvoiceStatus } from '@/hooks/use-invoices'
-import { INVOICE_STATUS_CONFIG, INVOICE_TRANSITIONS, INVOICE_PAYMENT_METHODS, invoiceNumber } from '@/lib/invoice-constants'
-import { currency, formatDate } from '@/lib/formatters'
+import { useProfile } from '@/context/auth'
+import { INVOICE_STATUS_CONFIG, INVOICE_TRANSITIONS, INVOICE_PAYMENT_METHODS, invoiceNumber } from '@/lib/constants'
+import { currency, formatDate, generateInvoiceHTML, printInvoice } from '@/lib/utils'
 import { Icon } from '@/components/ui/icons'
 import { Button, Toast } from '@/components/ui'
-import { PageHeader } from '@/components/shared'
-import { FormSection } from '@/components/shared/FormSection'
-import { FormField } from '@/components/shared/FormField'
-import { IconInput } from '@/components/shared/IconInput'
-import { IconSelect } from '@/components/shared/IconSelect'
+import { PageHeader } from '@/components/layout'
+import { FormSection } from '@/components/forms/FormSection'
+import { FormField } from '@/components/forms/FormField'
+import { IconInput } from '@/components/forms/IconInput'
+import { IconSelect } from '@/components/forms/IconSelect'
 
 export default function InvoiceDetailPage() {
   const router = useRouter()
@@ -20,6 +21,7 @@ export default function InvoiceDetailPage() {
 
   const { invoice, loading, setInvoice } = useInvoice(id)
   const { updateStatus, updateFields, remove, loading: actionLoading } = useInvoiceActions()
+  const { profile } = useProfile()
 
   const [editing, setEditing]       = useState(false)
   const [showDelete, setShowDelete] = useState(false)
@@ -193,9 +195,19 @@ export default function InvoiceDetailPage() {
         <Row icon="schedule" label="Created" value={formatDate(invoice.created_at?.split('T')[0])} />
       </div>
 
-      {/* ── Action buttons ───────────────────────────────────── */}
+      {/* ── PDF & Email actions ──────────────────────────────── */}
+      <div className="flex gap-3 mt-5">
+        <Button variant="outline" onClick={() => {
+          const html = generateInvoiceHTML(invoice as any, (profile || {}) as any)
+          printInvoice(html)
+        }}>
+          <Icon name="picture_as_pdf" size={16} style={{ color: 'inherit' }} /> Download PDF
+        </Button>
+      </div>
+
+      {/* ── Status action buttons ──────────────────────────────── */}
       {nextStatuses.length > 0 && (
-        <div className="flex gap-3 mt-5">
+        <div className="flex gap-3 mt-3">
           {nextStatuses.map(ns => {
             const nsc = INVOICE_STATUS_CONFIG[ns]
             const variant = ns === 'paid' ? 'gold' : ns === 'sent' ? 'primary' : 'outline'

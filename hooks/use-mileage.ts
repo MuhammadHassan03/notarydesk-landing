@@ -106,6 +106,30 @@ export function useCreateMileageTrip() {
   return { create, loading }
 }
 
+export interface MileageTripUpdate {
+  trip_date?: string
+  start_address?: string
+  end_address?: string
+  distance_miles?: number
+  label?: string
+  duration_minutes?: number
+}
+
+export function useUpdateMileageTrip() {
+  const [loading, setLoading] = useState(false)
+
+  const update = useCallback(async (id: string, input: MileageTripUpdate): Promise<MileageTrip> => {
+    setLoading(true)
+    try {
+      return await api.patch<MileageTrip>(`/mileage/${id}`, input)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  return { update, loading }
+}
+
 export function useDeleteMileageTrip() {
   const [loading, setLoading] = useState(false)
   const remove = useCallback(async (id: string) => {

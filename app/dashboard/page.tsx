@@ -2,15 +2,15 @@
 
 import { useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/context/authcontext'
+import { useAuth } from '@/context/auth'
 import { useDashboardStats } from '@/hooks/use-dashboard'
 import { useJobs } from '@/hooks/use-jobs'
-import { currency, greeting, firstName } from '@/lib/formatters'
+import { currency, greeting, firstName } from '@/lib/utils'
 import { JOB_STATUS_CONFIG, PAYMENT_STATUS_CONFIG, JOB_PIPELINE } from '@/lib/constants'
 import type { SigningJob } from '@/lib/types'
 
 import { Button, DataTable, StatusBadge } from '@/components/ui'
-import { PageHeader, StatsGrid, StatCard, TaxCard, EmptyState } from '@/components/shared'
+import { PageHeader, StatsGrid, StatCard, TaxCard, EmptyState } from '@/components/layout'
 import type { Column } from '@/components/ui/DataTable'
 import { Icon } from '@/components/ui/icons'
 

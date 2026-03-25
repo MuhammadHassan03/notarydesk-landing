@@ -1,4 +1,4 @@
-import { COMPETITORS, COMPARISON_FEATURES, COMPARISON_MATRIX, ROADMAP } from '@/lib/landing-content'
+import { COMPETITORS, COMPARISON_FEATURES, COMPARISON_MATRIX, ROADMAP } from '@/lib/content/landing'
 import { Icon } from '@/components/ui/icons'
 
 // ── Icon maps ─────────────────────────────────────────────────────────────

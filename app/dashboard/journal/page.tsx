@@ -3,11 +3,11 @@
 import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useJournalEntries } from '@/hooks/use-journal'
-import { getDocStyle } from '@/lib/journal-constants'
-import { currency, formatDate } from '@/lib/formatters'
+import { getDocStyle } from '@/lib/constants'
+import { currency, formatDate } from '@/lib/utils'
 import { Icon } from '@/components/ui/icons'
 import { Button, Toast } from '@/components/ui'
-import { PageHeader } from '@/components/shared'
+import { PageHeader } from '@/components/layout'
 
 export default function JournalListPage() {
   const router = useRouter()

@@ -3,11 +3,11 @@
 import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useInvoices, type InvoiceStatus } from '@/hooks/use-invoices'
-import { INVOICE_STATUS_CONFIG, invoiceNumber } from '@/lib/invoice-constants'
-import { currency, formatDate } from '@/lib/formatters'
+import { INVOICE_STATUS_CONFIG, invoiceNumber } from '@/lib/constants'
+import { currency, formatDate } from '@/lib/utils'
 import { Icon } from '@/components/ui/icons'
 import { Button } from '@/components/ui'
-import { PageHeader } from '@/components/shared'
+import { PageHeader } from '@/components/layout'
 
 const STATUS_ORDER: InvoiceStatus[] = ['draft', 'sent', 'overdue', 'paid', 'cancelled']
 

@@ -106,6 +106,21 @@ export function useCreateExpense() {
   return { create, loading }
 }
 
+export function useUpdateExpense() {
+  const [loading, setLoading] = useState(false)
+
+  const update = useCallback(async (id: string, input: Partial<ExpenseCreate>): Promise<Expense> => {
+    setLoading(true)
+    try {
+      return await api.patch<Expense>(`/expenses/${id}`, input)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  return { update, loading }
+}
+
 export function useDeleteExpense() {
   const [loading, setLoading] = useState(false)
 

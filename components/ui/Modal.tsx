@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useCallback, type ReactNode } from 'react'
-import { cn } from '@/lib/cn'
+import { cn } from '@/lib/utils'
 import Button from './Button'
 
 // ── Types ─────────────────────────────────────────────────────────────────

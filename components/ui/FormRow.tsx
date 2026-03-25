@@ -1,8 +1,6 @@
 'use client'
-import { useState, useEffect, useCallback, type ReactNode } from 'react'
-import Link from 'next/link'
-import s from '@/styles/components.module.css'
+import type { ReactNode } from 'react'
 
 export function FormRow({ children }: { children: ReactNode }) {
-  return <div className={s.formRow}>{children}</div>
+  return <div className="grid grid-cols-2 gap-4 max-sm:grid-cols-1">{children}</div>
 }

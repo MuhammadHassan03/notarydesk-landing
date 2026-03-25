@@ -1,4 +1,4 @@
-import { SOCIAL_PROOF_TYPES, PROBLEMS, FEATURES, STEPS } from '@/lib/landing-content'
+import { SOCIAL_PROOF_TYPES, PROBLEMS, FEATURES, STEPS } from '@/lib/content/landing'
 import { Icon } from '@/components/ui/icons'
 
 // ── Icon maps (replace emojis in landing-content.ts data) ─────────────────

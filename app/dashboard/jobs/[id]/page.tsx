@@ -3,12 +3,12 @@
 import { useState, useMemo, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useJob, useUpdateJob } from '@/hooks/use-jobs'
-import { currency, formatDate, formatTime } from '@/lib/formatters'
+import { currency, formatDate, formatTime } from '@/lib/utils'
 import { JOB_STATUS_CONFIG, JOB_PIPELINE, PAYMENT_STATUS_CONFIG, PAYMENT_METHODS } from '@/lib/constants'
 import { Icon } from '@/components/ui/icons'
 import { Button, Modal, ConfirmModal, StatusBadge, Toast } from '@/components/ui'
-import { PageHeader, Card, PipelineTracker } from '@/components/shared'
-import { DetailRow } from '@/components/shared'
+import { PageHeader, Card, PipelineTracker } from '@/components/layout'
+import { DetailRow } from '@/components/layout'
 
 export default function JobDetailPage() {
   const { id } = useParams<{ id: string }>()

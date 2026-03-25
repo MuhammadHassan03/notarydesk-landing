@@ -2,22 +2,69 @@
 
 import { useState, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { useMileageTrip, useDeleteMileageTrip } from '@/hooks/use-mileage'
-import { currency, formatDate } from '@/lib/formatters'
+import { useMileageTrip, useDeleteMileageTrip, useUpdateMileageTrip } from '@/hooks/use-mileage'
+import { currency, formatDate } from '@/lib/utils'
 import { Icon } from '@/components/ui/icons'
 import { Button, Toast } from '@/components/ui'
-import { PageHeader } from '@/components/shared'
+import { PageHeader } from '@/components/layout'
+import { FormSection } from '@/components/forms/FormSection'
+import { FormField } from '@/components/forms/FormField'
+import { IconInput } from '@/components/forms/IconInput'
 
 export default function MileageDetailPage() {
   const router = useRouter()
   const params = useParams<{ id: string }>()
   const id = params.id
 
-  const { trip, loading } = useMileageTrip(id)
+  const { trip, loading, setTrip } = useMileageTrip(id)
   const { remove, loading: deleting } = useDeleteMileageTrip()
+  const { update, loading: saving } = useUpdateMileageTrip()
 
+  const [editing, setEditing] = useState(false)
   const [showDelete, setShowDelete] = useState(false)
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null)
+
+  // ── Edit form state ─────────────────────────────────────────────────
+  const [tripDate, setTripDate] = useState('')
+  const [startAddr, setStartAddr] = useState('')
+  const [endAddr, setEndAddr] = useState('')
+  const [distance, setDistance] = useState('')
+  const [label, setLabel] = useState('')
+  const [duration, setDuration] = useState('')
+
+  const startEditing = useCallback(() => {
+    if (!trip) return
+    setTripDate(trip.trip_date)
+    setStartAddr(trip.start_address)
+    setEndAddr(trip.end_address)
+    setDistance(String(trip.distance_miles))
+    setLabel(trip.label || '')
+    setDuration(trip.duration_minutes ? String(trip.duration_minutes) : '')
+    setEditing(true)
+  }, [trip])
+
+  const handleSave = useCallback(async () => {
+    if (!id) return
+    const parsedDist = parseFloat(distance)
+    if (!startAddr.trim() || !endAddr.trim() || !parsedDist || parsedDist <= 0) {
+      setToast({ msg: 'Addresses and valid distance required.', type: 'error' }); return
+    }
+    try {
+      const updated = await update(id, {
+        trip_date: tripDate,
+        start_address: startAddr.trim(),
+        end_address: endAddr.trim(),
+        distance_miles: parsedDist,
+        label: label.trim() || undefined,
+        duration_minutes: duration ? parseInt(duration) : undefined,
+      })
+      setTrip(updated)
+      setEditing(false)
+      setToast({ msg: 'Trip updated!', type: 'success' })
+    } catch (e: any) {
+      setToast({ msg: e.message || 'Failed to update.', type: 'error' })
+    }
+  }, [id, tripDate, startAddr, endAddr, distance, label, duration, update, setTrip])
 
   const handleDelete = useCallback(async () => {
     if (!id) return
@@ -55,6 +102,65 @@ export default function MileageDetailPage() {
       : `${trip.duration_minutes} min`
     : null
 
+  // ═══════════════════════════════════════════════════════════════════
+  // EDIT MODE
+  // ═══════════════════════════════════════════════════════════════════
+
+  if (editing) {
+    return (
+      <div className="max-w-[720px]">
+        <PageHeader title="Edit trip" subtitle={trip.label || 'Mileage trip'}
+          action={
+            <Button variant="outline" onClick={() => setEditing(false)}>
+              <Icon name="close" size={16} style={{ color: 'inherit' }} /> Cancel edit
+            </Button>
+          } />
+
+        <FormSection title="Route" icon="route">
+          <FormField label="Start address" icon="location_on" required>
+            <IconInput icon="location_on" placeholder="Starting location" value={startAddr} onChange={e => setStartAddr(e.target.value)} />
+          </FormField>
+          <FormField label="End address" icon="location_on" required>
+            <IconInput icon="location_on" placeholder="Destination" value={endAddr} onChange={e => setEndAddr(e.target.value)} />
+          </FormField>
+        </FormSection>
+
+        <FormSection title="Details" icon="info">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-4">
+            <FormField label="Trip date" icon="schedule">
+              <IconInput icon="schedule" type="date" value={tripDate} onChange={e => setTripDate(e.target.value)} />
+            </FormField>
+            <FormField label="Distance (miles)" icon="route" required>
+              <IconInput icon="route" type="number" step="0.1" value={distance} onChange={e => setDistance(e.target.value)} />
+            </FormField>
+            <FormField label="Duration (min)" icon="schedule">
+              <IconInput icon="schedule" type="number" value={duration} onChange={e => setDuration(e.target.value)} />
+            </FormField>
+          </div>
+        </FormSection>
+
+        <FormSection title="Label" icon="edit_note">
+          <FormField label="Trip label" icon="edit_note">
+            <IconInput icon="edit_note" placeholder="e.g. Client name or purpose" value={label} onChange={e => setLabel(e.target.value)} />
+          </FormField>
+        </FormSection>
+
+        <div className="flex gap-3 mt-2 mb-8">
+          <Button variant="gold" onClick={handleSave} loading={saving} fullWidth size="lg">
+            <Icon name="check" size={16} style={{ color: 'inherit' }} /> Save changes
+          </Button>
+          <Button variant="outline" onClick={() => setEditing(false)} size="lg">Cancel</Button>
+        </div>
+
+        {toast && <Toast message={toast.msg} type={toast.type} visible={!!toast} onHide={() => setToast(null)} />}
+      </div>
+    )
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // VIEW MODE
+  // ═══════════════════════════════════════════════════════════════════
+
   return (
     <div className="max-w-[720px]">
       <PageHeader title={trip.label || 'Trip details'} subtitle={formatDate(trip.trip_date)}
@@ -62,6 +168,9 @@ export default function MileageDetailPage() {
           <div className="flex gap-2">
             <Button variant="outline" href="/dashboard/mileage">
               <Icon name="arrow_back" size={16} style={{ color: 'inherit' }} /> Back
+            </Button>
+            <Button variant="primary" onClick={startEditing}>
+              <Icon name="edit_note" size={16} style={{ color: 'inherit' }} /> Edit
             </Button>
             <Button variant="danger" size="sm" onClick={() => setShowDelete(true)}>
               <Icon name="close" size={14} style={{ color: 'inherit' }} />

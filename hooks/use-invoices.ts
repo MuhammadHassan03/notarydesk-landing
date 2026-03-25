@@ -2,29 +2,9 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { api } from '@/lib/api'
+import type { Invoice, InvoiceStatus } from '@/lib/types'
 
-// ── Types ─────────────────────────────────────────────────────────────────
-
-export type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled'
-
-export interface Invoice {
-  id: string
-  user_id: string
-  job_id: string | null
-  client_name: string
-  client_email: string | null
-  client_phone: string | null
-  service_description: string
-  amount: number
-  status: InvoiceStatus
-  due_date: string | null
-  payment_method: string | null
-  notes: string | null
-  sent_at: string | null
-  paid_at: string | null
-  created_at: string
-  updated_at: string
-}
+export type { Invoice, InvoiceStatus }
 
 export interface InvoiceCreate {
   client_name: string

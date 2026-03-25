@@ -1,7 +1,7 @@
 'use client'
 
 import { forwardRef, type TextareaHTMLAttributes, type ReactNode } from 'react'
-import { cn } from '@/lib/cn'
+import { cn } from '@/lib/utils'
 
 // ── FormTextarea ──────────────────────────────────────────────────────────
 

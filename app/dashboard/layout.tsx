@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { AuthProvider, useAuth } from '@/context/authcontext'
+import { AuthProvider, useAuth } from '@/context/auth'
 import { initSecurity, cleanupSecurity } from '@/lib/security'
 import Sidebar from '@/components/ui/Sidebar'
+import { NotificationBell } from '@/components/notifications/NotificationBell'
 import { auth } from '@/lib/api'
 
 // ── Init security on mount ────────────────────────────────────────────────
@@ -55,7 +56,11 @@ function Shell({ children }: { children: React.ReactNode }) {
         max-w + mx-auto on inner div → content doesn't stretch to infinity on ultrawide
       */}
       <main className="flex-1 min-w-0 h-screen overflow-y-auto">
-        <div className="max-w-[1200px] mx-auto px-8 py-8 max-md:px-5 max-md:py-5">
+        {/* Top bar with notification bell */}
+        <div className="max-w-[1200px] mx-auto px-8 pt-5 max-md:px-5 max-md:pt-4 flex justify-end">
+          <NotificationBell />
+        </div>
+        <div className="max-w-[1200px] mx-auto px-8 pb-8 max-md:px-5 max-md:pb-5">
           {children}
         </div>
       </main>

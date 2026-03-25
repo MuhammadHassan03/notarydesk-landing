@@ -1,16 +1,16 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { useAuth, useProfile } from '@/context/authcontext'
+import { useAuth, useProfile } from '@/context/auth'
 import { useUpdateProfile } from '@/hooks/use-profile'
 import { api, auth } from '@/lib/api'
-import { initials } from '@/lib/formatters'
+import { initials } from '@/lib/utils'
 import { Icon, type IconName } from '@/components/ui/icons'
 import { Button, Toast } from '@/components/ui'
-import { FormSection } from '@/components/shared/FormSection'
-import { FormField } from '@/components/shared/FormField'
-import { IconInput } from '@/components/shared/IconInput'
-import { IconSelect } from '@/components/shared/IconSelect'
+import { FormSection } from '@/components/forms/FormSection'
+import { FormField } from '@/components/forms/FormField'
+import { IconInput } from '@/components/forms/IconInput'
+import { IconSelect } from '@/components/forms/IconSelect'
 
 // ── Tab config ────────────────────────────────────────────────────────────
 

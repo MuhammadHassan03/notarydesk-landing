@@ -3,10 +3,10 @@
 import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useMileageTrips, useMileageSummary } from '@/hooks/use-mileage'
-import { currency, formatDate, monthLabel } from '@/lib/formatters'
+import { currency, formatDate, monthLabel } from '@/lib/utils'
 import { Icon } from '@/components/ui/icons'
 import { Button } from '@/components/ui'
-import { PageHeader } from '@/components/shared'
+import { PageHeader } from '@/components/layout'
 
 export default function MileageListPage() {
   const router = useRouter()

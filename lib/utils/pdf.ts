@@ -1,0 +1,150 @@
+import type { Profile } from '@/lib/types'
+
+interface InvoiceData {
+  id: string
+  client_name: string
+  client_email?: string | null
+  service_description: string
+  amount: number
+  status: string
+  due_date?: string | null
+  payment_method?: string | null
+  notes?: string | null
+  created_at: string
+}
+
+/**
+ * Generate an invoice HTML string for printing/PDF export.
+ * Uses window.print() with a hidden iframe — no external dependencies.
+ */
+export function generateInvoiceHTML(invoice: InvoiceData, profile: Partial<Profile>): string {
+  const invNum = `INV-${invoice.id.slice(0, 8).toUpperCase()}`
+  const createdDate = new Date(invoice.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+  const dueDate = invoice.due_date
+    ? new Date(invoice.due_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+    : 'Upon receipt'
+
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>${invNum}</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1a1a2e; padding: 40px; max-width: 800px; margin: 0 auto; }
+    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; padding-bottom: 20px; border-bottom: 2px solid #1B3A5C; }
+    .brand { font-size: 24px; font-weight: 800; color: #1B3A5C; }
+    .brand-sub { font-size: 12px; color: #64748B; margin-top: 4px; }
+    .inv-label { text-align: right; }
+    .inv-label h2 { font-size: 28px; font-weight: 800; color: #C9A84C; }
+    .inv-label p { font-size: 12px; color: #64748B; margin-top: 2px; }
+    .meta { display: flex; justify-content: space-between; margin-bottom: 32px; }
+    .meta-col h4 { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #64748B; margin-bottom: 6px; }
+    .meta-col p { font-size: 13px; line-height: 1.6; }
+    .table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+    .table th { background: #F7F9FC; text-align: left; padding: 10px 12px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #64748B; border-bottom: 1px solid #E2E8F0; }
+    .table td { padding: 14px 12px; font-size: 14px; border-bottom: 1px solid #E2E8F0; }
+    .table .amount { text-align: right; font-weight: 700; }
+    .total-row { display: flex; justify-content: flex-end; margin-bottom: 32px; }
+    .total-box { background: #1B3A5C; color: #fff; padding: 16px 24px; border-radius: 8px; text-align: right; min-width: 200px; }
+    .total-box .label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.6; }
+    .total-box .value { font-size: 28px; font-weight: 800; color: #C9A84C; margin-top: 2px; }
+    .notes { background: #F7F9FC; padding: 16px; border-radius: 8px; margin-bottom: 32px; }
+    .notes h4 { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #64748B; margin-bottom: 6px; }
+    .notes p { font-size: 13px; color: #475569; }
+    .footer { text-align: center; padding-top: 20px; border-top: 1px solid #E2E8F0; font-size: 11px; color: #94A3B8; }
+    @media print { body { padding: 20px; } }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <div class="brand">${profile.business_name || profile.full_name || 'NotaryDesk'}</div>
+      <div class="brand-sub">
+        ${profile.commission_number ? `Commission #${profile.commission_number}` : ''}
+        ${profile.state ? ` · ${profile.state}` : ''}
+      </div>
+      ${profile.business_address ? `<div class="brand-sub">${profile.business_address}</div>` : ''}
+      ${profile.phone ? `<div class="brand-sub">${profile.phone}</div>` : ''}
+    </div>
+    <div class="inv-label">
+      <h2>INVOICE</h2>
+      <p>${invNum}</p>
+    </div>
+  </div>
+
+  <div class="meta">
+    <div class="meta-col">
+      <h4>Bill To</h4>
+      <p><strong>${invoice.client_name}</strong></p>
+      ${invoice.client_email ? `<p>${invoice.client_email}</p>` : ''}
+    </div>
+    <div class="meta-col" style="text-align: right;">
+      <h4>Invoice Date</h4>
+      <p>${createdDate}</p>
+      <h4 style="margin-top: 12px;">Due Date</h4>
+      <p>${dueDate}</p>
+    </div>
+  </div>
+
+  <table class="table">
+    <thead><tr><th>Description</th><th style="text-align:right;">Amount</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>${invoice.service_description}</td>
+        <td class="amount">$${invoice.amount.toFixed(2)}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="total-row">
+    <div class="total-box">
+      <div class="label">Total Due</div>
+      <div class="value">$${invoice.amount.toFixed(2)}</div>
+    </div>
+  </div>
+
+  ${invoice.notes ? `<div class="notes"><h4>Notes</h4><p>${invoice.notes}</p></div>` : ''}
+  ${invoice.payment_method ? `<div class="notes"><h4>Payment Method</h4><p>${invoice.payment_method}</p></div>` : ''}
+
+  <div class="footer">
+    Generated by NotaryDesk · ${new Date().toLocaleDateString()}
+  </div>
+</body>
+</html>`
+}
+
+/**
+ * Open a print dialog with the invoice HTML — user can save as PDF.
+ */
+export function printInvoice(html: string) {
+  const iframe = document.createElement('iframe')
+  iframe.style.display = 'none'
+  document.body.appendChild(iframe)
+
+  const doc = iframe.contentDocument || iframe.contentWindow?.document
+  if (!doc) return
+
+  doc.open()
+  doc.write(html)
+  doc.close()
+
+  iframe.contentWindow?.focus()
+  setTimeout(() => {
+    iframe.contentWindow?.print()
+    setTimeout(() => document.body.removeChild(iframe), 1000)
+  }, 250)
+}
+
+/**
+ * Download invoice as HTML file (fallback if print doesn't work).
+ */
+export function downloadInvoiceHTML(html: string, filename: string) {
+  const blob = new Blob([html], { type: 'text/html' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  a.click()
+  URL.revokeObjectURL(url)
+}

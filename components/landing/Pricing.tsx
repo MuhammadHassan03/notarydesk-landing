@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import Link from 'next/link'
-import { PLANS } from '@/lib/landing-content'
+import { PLANS } from '@/lib/content/landing'
 import { Icon } from '@/components/ui/icons'
 
 const PLAN_ICONS: Record<string, string> = {

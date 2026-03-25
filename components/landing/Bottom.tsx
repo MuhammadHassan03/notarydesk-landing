@@ -2,7 +2,7 @@
 // Material Symbols Rounded. Zero emojis.
 
 import Link from 'next/link'
-import { TESTIMONIALS, FAQS } from '@/lib/landing-content'
+import { TESTIMONIALS, FAQS } from '@/lib/content/landing'
 
 const MI = ({ name, size = 18, className = '', style }: { name: string; size?: number; className?: string; style?: React.CSSProperties }) => (
   <span className={`material-symbols-rounded ${className}`} style={{ fontSize: size, lineHeight: 1, ...style }}>{name}</span>

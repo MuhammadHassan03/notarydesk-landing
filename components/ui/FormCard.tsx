@@ -1,12 +1,10 @@
 'use client'
-import { useState, useEffect, useCallback, type ReactNode } from 'react'
-import Link from 'next/link'
-import s from '@/styles/components.module.css'
+import type { ReactNode } from 'react'
 
 export function FormCard({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className={s.formCard}>
-      <div className={s.formSection}>{title}</div>
+    <div className="rounded-2xl p-5" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
+      <div className="text-[14px] font-bold mb-4" style={{ color: 'var(--text)' }}>{title}</div>
       {children}
     </div>
   )

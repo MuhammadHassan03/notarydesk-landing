@@ -1,14 +1,12 @@
 'use client'
-import { useState, useEffect, useCallback, type ReactNode } from 'react'
-import Link from 'next/link'
-import s from '@/styles/components.module.css'
+import type { ReactNode } from 'react'
 
 export function DetailRow({ label, value, color }: { label: string; value: string | ReactNode; color?: string }) {
   if (!value) return null
   return (
-    <div className={s.detailRow}>
-      <span className={s.detailLabel}>{label}</span>
-      <span className={s.detailValue} style={color ? { color } : undefined}>{value}</span>
+    <div className="flex items-center justify-between py-2.5" style={{ borderBottom: '1px solid var(--divider)' }}>
+      <span className="text-[13px]" style={{ color: 'var(--text-secondary)' }}>{label}</span>
+      <span className="text-[13px] font-semibold text-right" style={color ? { color } : { color: 'var(--text)' }}>{value}</span>
     </div>
   )
 }

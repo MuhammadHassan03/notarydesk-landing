@@ -5,7 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { api } from '@/lib/api'
-import { useAuth } from '@/context/authcontext'
+import { useAuth } from '@/context/auth'
 import { Icon } from '@/components/ui/icons'
 import { Button, Toast } from '@/components/ui'
 
