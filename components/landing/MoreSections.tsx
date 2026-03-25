@@ -1,11 +1,5 @@
-// components/landing/MoreSections.tsx — CompetitorSection + Roadmap
-// Material Symbols Rounded. Zero emojis.
-
 import { COMPETITORS, COMPARISON_FEATURES, COMPARISON_MATRIX, ROADMAP } from '@/lib/landing-content'
-
-const MI = ({ name, size = 18, className = '', style }: { name: string; size?: number; className?: string; style?: React.CSSProperties }) => (
-  <span className={`material-symbols-rounded ${className}`} style={{ fontSize: size, lineHeight: 1, ...style }}>{name}</span>
-)
+import { Icon } from '@/components/ui/icons'
 
 // ── Icon maps ─────────────────────────────────────────────────────────────
 
@@ -66,10 +60,10 @@ export function CompetitorSection() {
                 style={{ background: 'var(--card)', borderColor: 'var(--border)' }}>
                 <div className="flex items-start justify-between mb-3">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'var(--surface)' }}>
-                    <MI name={COMPETITOR_ICONS[c.name] || 'help'} size={20} style={{ color: 'var(--text-tertiary)' }} />
+                    <Icon name={COMPETITOR_ICONS[c.name] || 'help'} size={20} style={{ color: 'var(--text-tertiary)' }} />
                   </div>
                   <span className="flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-full" style={{ background: s.bg, color: s.color }}>
-                    <MI name={s.icon} size={11} />
+                    <Icon name={s.icon} size={11} />
                     {s.label}
                   </span>
                 </div>
@@ -99,7 +93,7 @@ export function CompetitorSection() {
                     background: col.highlight ? 'var(--primary-light, rgba(27,58,92,0.06))' : 'var(--surface)',
                   }}>
                     <div className="flex flex-col items-center gap-1">
-                      <MI name={col.icon} size={14} style={{ color: col.highlight ? 'var(--primary)' : 'var(--text-tertiary)', opacity: col.highlight ? 1 : 0.5 }} />
+                      <Icon name={col.icon} size={14} style={{ color: col.highlight ? 'var(--primary)' : 'var(--text-tertiary)', opacity: col.highlight ? 1 : 0.5 }} />
                       <span className="text-[10px] font-bold tracking-wider uppercase" style={{ color: col.highlight ? 'var(--primary)' : 'var(--text-tertiary)' }}>
                         {col.n}
                       </span>
@@ -115,8 +109,8 @@ export function CompetitorSection() {
                   {['NotaryDesk', 'Legacy', 'General', 'Spreadsheet'].map(n => (
                     <td key={n} className="px-4 py-3 text-center" style={n === 'NotaryDesk' ? { background: 'rgba(27,58,92,0.03)' } : {}}>
                       {COMPARISON_MATRIX[n]?.[i]
-                        ? <MI name="check_circle" size={18} style={{ color: 'var(--success)' }} />
-                        : <MI name="cancel" size={18} style={{ color: 'var(--text-tertiary)', opacity: 0.3 }} />
+                        ? <Icon name="check_circle" size={18} style={{ color: 'var(--success)' }} />
+                        : <Icon name="cancel" size={18} style={{ color: 'var(--text-tertiary)', opacity: 0.3 }} />
                       }
                     </td>
                   ))}
@@ -128,7 +122,7 @@ export function CompetitorSection() {
 
         {/* Bottom note */}
         <div className="flex items-center justify-center gap-2 mt-8">
-          <MI name="info" size={16} style={{ color: 'var(--text-tertiary)', opacity: 0.5 }} />
+          <Icon name="info" size={16} style={{ color: 'var(--text-tertiary)', opacity: 0.5 }} />
           <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
             Stop settling for tools that weren&apos;t made for you. Upgrade to a professional standard.
           </p>
@@ -199,7 +193,7 @@ export function Roadmap() {
               <div className="flex items-center gap-4 my-10">
                 <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
                 <span className="flex items-center gap-1.5 text-[11px] font-bold tracking-wider" style={{ color: 'var(--text-tertiary)' }}>
-                  <MI name={pi === 1 ? 'arrow_downward' : 'auto_awesome'} size={14} />
+                  <Icon name={pi === 1 ? 'arrow_downward' : 'auto_awesome'} size={14} />
                   {PHASE_DIVIDERS[pi - 1]}
                 </span>
                 <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
@@ -216,7 +210,7 @@ export function Roadmap() {
                     <span className="relative inline-flex rounded-full h-2 w-2" style={{ background: 'var(--success)' }} />
                   </span>
                 )}
-                <MI name={phase.badgeIcon} size={14} />
+                <Icon name={phase.badgeIcon} size={14} />
                 {phase.badge}
               </div>
               <h3 className="text-xl font-bold" style={{ color: 'var(--text)' }}>{phase.title}</h3>
@@ -238,14 +232,14 @@ export function Roadmap() {
                     }}>
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
                       style={{ background: phase.badgeBg }}>
-                      <MI name={iconName} size={20} style={{ color: phase.badgeColor }} />
+                      <Icon name={iconName} size={20} style={{ color: phase.badgeColor }} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-bold mb-0.5" style={{ color: 'var(--text)' }}>{f.title}</p>
                       <p className="text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{f.desc}</p>
                     </div>
                     {phase.checkIcon && (
-                      <MI name="check_circle" size={18} className="shrink-0 mt-0.5" style={{ color: 'var(--success)' }} />
+                      <Icon name="check_circle" size={18} className="shrink-0 mt-0.5" style={{ color: 'var(--success)' }} />
                     )}
                   </div>
                 )
@@ -256,7 +250,7 @@ export function Roadmap() {
 
         {/* Vision quote */}
         <div className="mt-14 p-6 rounded-2xl text-center" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-          <MI name="format_quote" size={28} style={{ color: 'var(--accent)', opacity: 0.6 }} />
+          <Icon name="format_quote" size={28} style={{ color: 'var(--accent)', opacity: 0.6 }} />
           <p className="text-sm leading-relaxed mt-2 max-w-lg mx-auto italic" style={{ color: 'var(--text-secondary)' }}>
             &quot;Our mission is to make NotaryDesk the standard for professional mobile notaries — providing the tools you need to stay organized, compliant, and profitable.&quot;
           </p>

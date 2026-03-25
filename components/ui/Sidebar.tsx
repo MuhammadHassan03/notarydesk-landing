@@ -2,15 +2,13 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/context/authcontext'
 import { NAV_ITEMS } from '@/lib/constants'
 import { cn } from '@/lib/cn'
+import { Icon } from '@/components/ui/icons'
 import ThemeToggle from '@/components/ui/ThemeToggle'
-
-const MI = ({ name, size = 20, className = '', style }: { name: string; size?: number; className?: string; style?: React.CSSProperties }) => (
-  <span className={`material-symbols-rounded ${className}`} style={{ fontSize: size, lineHeight: 1, ...style }}>{name}</span>
-)
 
 function getInitials(name: string | null): string {
   if (!name) return 'N'
@@ -37,22 +35,25 @@ export default function Sidebar() {
     >
       {/* ── Header ──────────────────────────────────────────── */}
       <div className="flex items-center justify-between px-4 py-5" style={{ borderBottom: '1px solid var(--sidebar-border)' }}>
-        <div className="flex items-center gap-2.5 min-w-0">
-          <span className="w-9 h-9 rounded-xl font-extrabold text-lg flex items-center justify-center shrink-0"
-            style={{ background: 'var(--accent)', color: 'var(--text-on-accent)' }}>
-            N
-          </span>
+        <Link href="/dashboard" className="flex items-center gap-2.5 min-w-0 no-underline">
+          <Image
+            src="/icon-192.png"
+            alt="NotaryDesk"
+            width={36}
+            height={36}
+            className="rounded-xl shrink-0"
+          />
           {!collapsed && (
             <span className="font-bold text-[17px] -tracking-wide text-white truncate">NotaryDesk</span>
           )}
-        </div>
+        </Link>
         <button
           onClick={() => setCollapsed(c => !c)}
           className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors border-none cursor-pointer"
           style={{ background: 'var(--sidebar-hover)', color: 'var(--sidebar-text)' }}
           title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
-          <MI name={collapsed ? 'chevron_right' : 'chevron_left'} size={16} />
+          <Icon name={collapsed ? 'chevron_right' : 'chevron_left'} size={16} />
         </button>
       </div>
 
@@ -76,10 +77,8 @@ export default function Sidebar() {
               onMouseEnter={e => { if (!active) e.currentTarget.style.background = 'var(--sidebar-hover)' }}
               onMouseLeave={e => { if (!active) e.currentTarget.style.background = active ? 'var(--sidebar-active)' : 'transparent' }}
             >
-              <MI name={item.icon} size={20} className="shrink-0" />
+              <Icon name={item.icon as any} size={20} />
               {!collapsed && <span className="truncate">{item.label}</span>}
-
-              {/* Active indicator dot */}
               {active && collapsed && (
                 <span className="absolute left-0 w-[3px] h-5 rounded-r-full" style={{ background: 'var(--accent)' }} />
               )}
@@ -90,64 +89,46 @@ export default function Sidebar() {
 
       {/* ── Footer ──────────────────────────────────────────── */}
       <div className="p-3" style={{ borderTop: '1px solid var(--sidebar-border)' }}>
-
-        {/* Theme toggle */}
         <div className={cn('mb-3 flex', collapsed ? 'justify-center' : 'justify-start')}>
           <ThemeToggle size="sm" showLabel={!collapsed} />
         </div>
 
-        {/* User card */}
         <div className={cn(
           'flex items-center gap-2.5 p-2 rounded-xl transition-colors',
           collapsed ? 'justify-center' : '',
-        )}
-          style={{ background: 'var(--sidebar-hover)' }}
-        >
-          <span
-            className="w-9 h-9 rounded-xl font-bold text-[12px] flex items-center justify-center shrink-0"
+        )} style={{ background: 'var(--sidebar-hover)' }}>
+          <span className="w-9 h-9 rounded-xl font-bold text-[12px] flex items-center justify-center shrink-0"
             style={{ background: 'var(--accent)', color: 'var(--text-on-accent)' }}
-            title={collapsed ? displayName || 'User' : undefined}
-          >
+            title={collapsed ? displayName || 'User' : undefined}>
             {getInitials(displayName)}
           </span>
           {!collapsed && (
             <div className="flex-1 min-w-0">
-              <p className="text-[13px] font-semibold text-white truncate">
-                {displayName || 'Notary'}
-              </p>
+              <p className="text-[13px] font-semibold text-white truncate">{displayName || 'Notary'}</p>
               <p className="text-[11px] flex items-center gap-1" style={{ color: 'var(--sidebar-text)' }}>
-                <MI name={plan === 'pro' ? 'star' : plan === 'business' ? 'diamond' : 'explore'} size={11} style={{ color: 'var(--accent)' }} />
+                <Icon name={plan === 'pro' ? 'star' : plan === 'business' ? 'verified' : 'explore'} size={11} style={{ color: 'var(--accent)' }} />
                 {(plan || 'free').charAt(0).toUpperCase() + (plan || 'free').slice(1)} plan
               </p>
             </div>
           )}
         </div>
 
-        {/* Sign out */}
         {!collapsed ? (
-          <button
-            onClick={signOut}
+          <button onClick={signOut}
             className="w-full mt-2 py-2.5 rounded-xl bg-transparent text-xs font-medium transition-colors cursor-pointer flex items-center justify-center gap-2"
-            style={{
-              border: '1px solid var(--sidebar-border)',
-              color: 'var(--sidebar-text)',
-            }}
+            style={{ border: '1px solid var(--sidebar-border)', color: 'var(--sidebar-text)' }}
             onMouseEnter={e => { e.currentTarget.style.background = 'var(--sidebar-hover)' }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
-          >
-            <MI name="logout" size={14} />
-            Sign out
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}>
+            <Icon name="logout" size={14} /> Sign out
           </button>
         ) : (
-          <button
-            onClick={signOut}
+          <button onClick={signOut}
             className="w-full mt-2 py-2 rounded-xl bg-transparent flex items-center justify-center transition-colors cursor-pointer border-none"
             style={{ color: 'var(--sidebar-text)' }}
             onMouseEnter={e => { e.currentTarget.style.background = 'var(--sidebar-hover)' }}
             onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
-            title="Sign out"
-          >
-            <MI name="logout" size={16} />
+            title="Sign out">
+            <Icon name="logout" size={16} />
           </button>
         )}
       </div>

@@ -5,9 +5,10 @@ import { useRouter } from 'next/navigation'
 import { useJobs } from '@/hooks/use-jobs'
 import { currency, formatShortDate } from '@/lib/formatters'
 import { JOB_STATUS_CONFIG, PAYMENT_STATUS_CONFIG } from '@/lib/constants'
+import { Icon } from '@/components/ui/icons'
 import type { SigningJob } from '@/lib/types'
 
-import { PageHeader, EmptyState } from '@/components/shared'
+import { PageHeader } from '@/components/shared'
 import { Button, DataTable, StatusBadge } from '@/components/ui'
 import { Column } from '@/components/ui/DataTable'
 import { FilterOption, FilterPills } from '@/components/ui/FilterPills'
@@ -62,7 +63,11 @@ export default function JobsListPage() {
   return (
     <div>
       <PageHeader title="Signing Jobs" subtitle={`${filtered.length} jobs · ${currency(total)} total`}
-        action={<Button variant="gold" href="/dashboard/jobs/new">+ New Job</Button>} />
+        action={
+          <Button variant="gold" href="/dashboard/jobs/new">
+            <Icon name="add" size={16} style={{ color: 'inherit' }} /> New Job
+          </Button>
+        } />
 
       <div className="mb-5">
         <FilterPills options={filterOpts} value={filter} onChange={setFilter} />
@@ -71,9 +76,20 @@ export default function JobsListPage() {
       {loading ? (
         <DataTable columns={COLUMNS} data={[]} loading />
       ) : filtered.length === 0 ? (
-        <EmptyState icon="◈" title={filter === 'all' ? 'No signing jobs yet' : `No ${filter} jobs`}
-          description={filter === 'all' ? 'Create your first signing job.' : 'Jobs matching this filter will appear here.'}
-          action={filter === 'all' ? <Button href="/dashboard/jobs/new">+ New Signing Job</Button> : undefined} />
+        <div className="rounded-2xl p-10 text-center" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
+          <Icon name="work" size={40} style={{ color: 'var(--text-tertiary)', opacity: 0.3 }} />
+          <div className="text-[15px] font-bold mb-1 mt-3" style={{ color: 'var(--text)' }}>
+            {filter === 'all' ? 'No signing jobs yet' : `No ${filter} jobs`}
+          </div>
+          <div className="text-[13px] mb-4" style={{ color: 'var(--text-tertiary)' }}>
+            {filter === 'all' ? 'Create your first signing job to start tracking.' : 'Jobs matching this filter will appear here.'}
+          </div>
+          {filter === 'all' && (
+            <Button variant="gold" href="/dashboard/jobs/new">
+              <Icon name="add" size={16} style={{ color: 'inherit' }} /> New Signing Job
+            </Button>
+          )}
+        </div>
       ) : (
         <DataTable columns={COLUMNS} data={filtered} onRowClick={j => router.push(`/dashboard/jobs/${j.id}`)} />
       )}

@@ -193,7 +193,7 @@ export function FinalCTA() {
 // Footer
 // ═══════════════════════════════════════════════════════════════════════════
 
-const FOOTER_LINKS = [
+const FOOTER_LINKS: { title: string; icon: string; links: { l: string; h?: string; icon: string }[] }[] = [
   {
     title: 'Product',
     icon: 'widgets',

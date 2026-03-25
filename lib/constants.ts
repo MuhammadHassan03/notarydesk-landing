@@ -61,3 +61,8 @@ export const NAV_ITEMS = [
   { href: '/dashboard/expenses', icon: 'account_balance_wallet', label: 'Expenses' },
   { href: '/dashboard/settings', icon: 'settings',               label: 'Settings' },
 ]
+
+// ── Admin session constants ──────────────────────────────────────────────
+
+export const SESSION_COOKIE = 'nd_ctrl_sess'
+export const SESSION_VALUE  = 'ok'

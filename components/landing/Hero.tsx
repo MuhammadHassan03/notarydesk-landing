@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { Icon } from '@/components/ui/icons'
 
 function useCounter(target: number, dur = 1600) {
   const [v, setV] = useState(0)
@@ -12,10 +13,6 @@ function useCounter(target: number, dur = 1600) {
   return v
 }
 
-/* Material Symbols helper */
-const MI = ({ name, size = 18, className = '', style }: { name: string; size?: number; className?: string; style?: React.CSSProperties }) => (
-  <span className={`material-symbols-rounded ${className}`} style={{ fontSize: size, lineHeight: 1, ...style }}>{name}</span>
-)
 
 const TRUST = [
   { icon: 'lock', text: 'Bank-grade encryption' },
@@ -31,9 +28,6 @@ export default function Hero() {
 
   return (
     <>
-      {/* Material Symbols font */}
-      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" />
-
       <section className="relative" style={{ background: 'var(--bg-page)', overflowX: 'clip' }}>
         <div className="absolute inset-0 opacity-[0.025]" style={{ backgroundImage: 'radial-gradient(circle, var(--primary) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[600px] rounded-full opacity-[0.06]" style={{ background: 'radial-gradient(ellipse, var(--accent), transparent 70%)', filter: 'blur(80px)' }} />
@@ -65,10 +59,10 @@ export default function Hero() {
               <div className="flex flex-wrap gap-3 mb-7">
                 <Link href="/dashboard/register" className="group flex items-center gap-2 px-7 py-4 rounded-2xl font-bold text-[15px] text-white no-underline transition-all duration-200 shadow-lg hover:shadow-xl hover:-translate-y-0.5" style={{ background: 'var(--primary)' }}>
                   Start Free No Credit Card
-                  <MI name="arrow_forward" size={18} className="transition-transform group-hover:translate-x-0.5" />
+                  <Icon name="arrow_forward" size={18} className="transition-transform group-hover:translate-x-0.5" />
                 </Link>
                 <a href="#features" className="flex items-center gap-2 px-7 py-4 rounded-2xl font-bold text-[15px] no-underline transition-all duration-200 hover:shadow-md" style={{ color: 'var(--primary)', background: 'var(--card)', border: '1.5px solid var(--border)' }}>
-                  <MI name="play_circle" size={20} />
+                  <Icon name="play_circle" size={20} />
                   See How It Works
                 </a>
               </div>
@@ -76,7 +70,7 @@ export default function Hero() {
               <div className="flex flex-wrap gap-x-5 gap-y-2">
                 {TRUST.map(t => (
                   <div key={t.text} className="flex items-center gap-1.5 text-[12px] font-medium" style={{ color: 'var(--text-tertiary)' }}>
-                    <MI name={t.icon} size={14} style={{ color: 'var(--accent)' }} />{t.text}
+                    <Icon name={t.icon} size={14} style={{ color: 'var(--accent)' }} />{t.text}
                   </div>
                 ))}
               </div>
@@ -90,7 +84,7 @@ export default function Hero() {
                 <div className="flex items-center gap-3 px-5 py-3" style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)' }}>
                   <div className="flex gap-2"><span className="w-3 h-3 rounded-full bg-[#FF5F57]" /><span className="w-3 h-3 rounded-full bg-[#FEBC2E]" /><span className="w-3 h-3 rounded-full bg-[#28C840]" /></div>
                   <div className="flex-1 mx-6 flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-medium truncate" style={{ background: 'var(--card)', color: 'var(--text-tertiary)', border: '1px solid var(--border)' }}>
-                    <MI name="lock" size={12} style={{ opacity: 0.4 }} />
+                    <Icon name="lock" size={12} style={{ opacity: 0.4 }} />
                     app.notarydesk.com/dashboard
                   </div>
                 </div>
@@ -109,7 +103,7 @@ export default function Hero() {
                     ].map(n => (
                       <div key={n.icon} className="w-9 h-9 rounded-xl flex items-center justify-center"
                         style={{ background: n.active ? 'rgba(201,168,76,0.15)' : 'transparent' }}>
-                        <MI name={n.icon} size={18} style={{ color: n.active ? 'var(--accent)' : 'rgba(255,255,255,0.35)' }} />
+                        <Icon name={n.icon} size={18} style={{ color: n.active ? 'var(--accent)' : 'rgba(255,255,255,0.35)' }} />
                       </div>
                     ))}
                   </div>
@@ -119,7 +113,7 @@ export default function Hero() {
                     <div className="flex items-center justify-between mb-4">
                       <div><p className="text-xs" style={{ color: 'var(--text-secondary)' }}>Good morning,</p><p className="text-base font-bold -tracking-wide" style={{ color: 'var(--text)' }}>Sarah Mitchell</p></div>
                       <div className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold cursor-pointer" style={{ background: 'var(--accent)', color: 'var(--primary)' }}>
-                        <MI name="add" size={14} /> New Job
+                        <Icon name="add" size={14} /> New Job
                       </div>
                     </div>
 
@@ -133,7 +127,7 @@ export default function Hero() {
                         <div key={s.l} className="rounded-xl p-3" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
                           <div className="flex items-center justify-between mb-1">
                             <p className="text-[9px] font-bold tracking-wider" style={{ color: 'var(--text-tertiary)' }}>{s.l}</p>
-                            <MI name={s.icon} size={14} style={{ color: 'var(--text-tertiary)', opacity: 0.5 }} />
+                            <Icon name={s.icon} size={14} style={{ color: 'var(--text-tertiary)', opacity: 0.5 }} />
                           </div>
                           <p className="text-[18px] font-extrabold -tracking-wider" style={{ color: s.c || 'var(--text)' }}>{s.v}</p>
                         </div>
@@ -141,7 +135,7 @@ export default function Hero() {
                     </div>
 
                     <div className="rounded-xl p-3 mb-4 flex items-center gap-3" style={{ background: 'var(--success-bg)', border: '1px solid rgba(39,174,96,0.15)' }}>
-                      <MI name="savings" size={20} style={{ color: 'var(--success)' }} />
+                      <Icon name="savings" size={20} style={{ color: 'var(--success)' }} />
                       <p className="text-xs font-bold flex-1" style={{ color: 'var(--success-text)' }}>Tax savings: <span className="text-base">$1,847</span></p>
                       {[{ v: '$982', l: 'mileage' }, { v: '$765', l: 'expenses' }].map(c => (
                         <span key={c.l} className="text-[9px] font-medium px-2 py-1 rounded-full" style={{ background: 'rgba(39,174,96,0.1)', color: 'var(--success-text)' }}>{c.v} {c.l}</span>
@@ -200,7 +194,7 @@ export default function Hero() {
                             ))}
                           </div>
                           {/* WiFi */}
-                          <MI name="wifi" size={14} style={{ color: 'var(--text)', opacity: 0.6 }} />
+                          <Icon name="wifi" size={14} style={{ color: 'var(--text)', opacity: 0.6 }} />
                           {/* Battery */}
                           <div className="flex items-center gap-[1px]">
                             <div className="w-[20px] h-[10px] rounded-[2.5px] flex items-center p-[1.5px]" style={{ border: '1px solid var(--text)', opacity: 0.35 }}>
@@ -243,7 +237,7 @@ export default function Hero() {
                           ].map(a => (
                             <div key={a.l} className="flex flex-col items-center gap-1">
                               <div className="w-[40px] h-[40px] rounded-xl flex items-center justify-center" style={{ background: a.bg }}>
-                                <MI name={a.icon} size={20} style={{ color: a.c }} />
+                                <Icon name={a.icon} size={20} style={{ color: a.c }} />
                               </div>
                               <span className="text-[8px] font-semibold" style={{ color: 'var(--text-tertiary)' }}>{a.l}</span>
                             </div>
@@ -283,7 +277,7 @@ export default function Hero() {
                             { icon: 'more_horiz', label: 'More', active: false },
                           ].map(tab => (
                             <div key={tab.label} className="flex flex-col items-center gap-0.5" style={{ opacity: tab.active ? 1 : 0.3 }}>
-                              <MI name={tab.icon} size={18} style={{ color: tab.active ? 'var(--accent)' : 'var(--text-secondary)' }} />
+                              <Icon name={tab.icon} size={18} style={{ color: tab.active ? 'var(--accent)' : 'var(--text-secondary)' }} />
                               <span className="text-[7px] font-semibold" style={{ color: tab.active ? 'var(--accent)' : 'var(--text-secondary)' }}>{tab.label}</span>
                             </div>
                           ))}
@@ -300,7 +294,7 @@ export default function Hero() {
               {/* Synced badge */}
               <div className={`absolute -bottom-6 right-[260px] lg:right-[280px] z-30 transition-all duration-500 delay-1000 ${vis ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}>
                 <div className="flex items-center gap-2 px-4 py-2 rounded-full shadow-lg text-[11px] font-bold" style={{ background: 'var(--primary)', color: 'white' }}>
-                  <MI name="sync" size={14} style={{ color: 'var(--accent)' }} />
+                  <Icon name="sync" size={14} style={{ color: 'var(--accent)' }} />
                   Synced in real-time
                 </div>
               </div>
@@ -319,7 +313,7 @@ export default function Hero() {
             ].map(s => (
               <div key={s.l} className="flex items-center gap-3 p-4 rounded-2xl" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'var(--surface)' }}>
-                  <MI name={s.icon} size={22} style={{ color: 'var(--primary)' }} />
+                  <Icon name={s.icon} size={22} style={{ color: 'var(--primary)' }} />
                 </div>
                 <div><p className="text-lg font-extrabold -tracking-wider" style={{ color: 'var(--text)' }}>{s.v}</p><p className="text-[11px]" style={{ color: 'var(--text-secondary)' }}>{s.l}</p></div>
               </div>

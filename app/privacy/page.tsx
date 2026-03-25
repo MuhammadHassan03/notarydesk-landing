@@ -1,180 +1,102 @@
-// app/privacy/page.tsx
-import Nav from '@/components/landing/Nav'
-import { Footer } from '@/components/landing'
+'use client'
 
-export const metadata = {
-  title: 'Privacy Policy — NotaryDesk',
-  description: 'How NotaryDesk collects, uses, and protects your personal information.',
-}
+import Link from 'next/link'
+import { Icon } from '@/components/ui/icons'
 
-/**
- * MI Component: Renders Material Symbols Rounded
- */
-const MI = ({ name, size = 20, className = '', style }: { 
-  name: string; 
-  size?: number; 
-  className?: string; 
-  style?: React.CSSProperties 
-}) => (
-  <span 
-    className={`material-symbols-rounded ${className}`} 
-    style={{ 
-      fontSize: size, 
-      lineHeight: 1, 
-      display: 'inline-block', 
-      verticalAlign: 'middle',
-      ...style 
-    }}
-  >
-    {name}
-  </span>
-)
+const EFFECTIVE_DATE = 'January 1, 2025'
 
-export default function PrivacyPage() {
-  const updated = 'March 25, 2026'
-
+export default function PrivacyPolicyPage() {
   return (
-    <>
-      <Nav />
-      <main className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 pb-20">
-        
-        {/* ── Header Section ────────────────────────────────────────── */}
-        <div className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800 py-16 mb-12">
-          <div className="max-w-4xl mx-auto px-6">
-            <p className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-bold tracking-wider uppercase text-xs mb-3">
-              <MI name="verified_user" size={16} />
-              Legal & Safety
-            </p>
-            <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-4 text-slate-900 dark:text-white">
-              Privacy Policy
-            </h1>
-            <p className="text-slate-500 dark:text-slate-400 text-sm font-medium uppercase tracking-wide">
-              Last updated: {updated}
-            </p>
-          </div>
+    <div className="min-h-screen" style={{ background: 'var(--bg-page)' }}>
+      {/* Header */}
+      <header className="sticky top-0 z-10 px-6 py-4 flex items-center justify-between"
+        style={{ background: 'var(--bg-page)', borderBottom: '1px solid var(--border)' }}>
+        <Link href="/" className="flex items-center gap-2 no-underline">
+          <span className="w-8 h-8 rounded-lg font-extrabold text-sm flex items-center justify-center"
+            style={{ background: 'var(--accent)', color: 'var(--primary)' }}>N</span>
+          <span className="font-bold text-sm" style={{ color: 'var(--primary)' }}>NotaryDesk</span>
+        </Link>
+        <Link href="/" className="text-[13px] font-medium no-underline hover:underline flex items-center gap-1"
+          style={{ color: 'var(--text-secondary)' }}>
+          <Icon name="arrow_back" size={16} /> Back to home
+        </Link>
+      </header>
+
+      {/* Content */}
+      <main className="max-w-[720px] mx-auto px-6 py-12">
+        <div className="flex items-center gap-3 mb-2">
+          <Icon name="shield" size={28} style={{ color: 'var(--primary)' }} />
+          <h1 className="text-[28px] font-extrabold" style={{ color: 'var(--text)' }}>Privacy Policy</h1>
+        </div>
+        <p className="text-[13px] mb-10" style={{ color: 'var(--text-tertiary)' }}>
+          Effective date: {EFFECTIVE_DATE}
+        </p>
+
+        <div className="space-y-8" style={{ color: 'var(--text-secondary)' }}>
+          <Section title="1. Information we collect">
+            <p>When you create an account, we collect your name, email address, phone number, state of commission, and notary commission number. This information is necessary to provide our notary business management services.</p>
+            <p>When you use our services, we collect data you enter including journal entries, mileage logs, invoices, appointments, expenses, and signing job details. If you enable GPS mileage tracking, we collect location data only while tracking is active.</p>
+            <p>We automatically collect device information, app version, and usage analytics to improve our services. We do not collect data from third-party sources.</p>
+          </Section>
+
+          <Section title="2. How we use your information">
+            <p>We use your information to provide and maintain the NotaryDesk service, including syncing data between your devices, generating invoices and reports, calculating tax deductions, and ensuring state compliance for notary journal entries.</p>
+            <p>We may use aggregated, anonymized data to improve our product. We do not sell your personal information to third parties. We do not use your data for advertising purposes.</p>
+          </Section>
+
+          <Section title="3. Data storage and security">
+            <p>Your data is stored securely in Supabase (PostgreSQL) with row-level security enabled. Data is encrypted in transit (TLS 1.2+) and at rest. Authentication tokens are stored securely on your device.</p>
+            <p>The mobile app stores data locally using WatermelonDB (SQLite) for offline access. Local data syncs to the cloud when connectivity is available. You can use the app fully offline.</p>
+          </Section>
+
+          <Section title="4. Data sharing">
+            <p>We do not share your personal data with third parties except in the following limited circumstances: when required by law or legal process, to protect our rights or safety, or with service providers who assist in operating our service (Supabase for database hosting, Vercel for API hosting, RevenueCat for subscription management).</p>
+            <p>These service providers are contractually bound to protect your data and use it only for providing their services to us.</p>
+          </Section>
+
+          <Section title="5. Your rights">
+            <p>You have the right to access, correct, or delete your personal data at any time. You can export your data as PDF reports from within the app. You can delete your account from the Settings screen, which permanently removes all your data from our servers.</p>
+            <p>If you are a California resident, you have additional rights under the CCPA. Contact us to exercise these rights.</p>
+          </Section>
+
+          <Section title="6. Location data">
+            <p>GPS mileage tracking is optional and only active when you explicitly start a trip. We do not track your location in the background unless you have enabled background location for active trip recording. Location data is used solely to calculate mileage and IRS deductions.</p>
+          </Section>
+
+          <Section title="7. Children's privacy">
+            <p>NotaryDesk is designed for professional notaries and is not intended for children under 13. We do not knowingly collect information from children under 13.</p>
+          </Section>
+
+          <Section title="8. Changes to this policy">
+            <p>We may update this privacy policy from time to time. We will notify you of material changes via email or in-app notification. Continued use of the service after changes constitutes acceptance of the updated policy.</p>
+          </Section>
+
+          <Section title="9. Contact us">
+            <p>If you have questions about this privacy policy or your data, contact us at:</p>
+            <p className="font-medium" style={{ color: 'var(--text)' }}>support@notarydesk.app</p>
+          </Section>
         </div>
 
-        {/* ── Body Content ─────────────────────────────────────────── */}
-        <div className="max-w-4xl mx-auto px-6">
-          <div className="space-y-12">
-            
-            <p className="text-xl leading-relaxed text-slate-600 dark:text-slate-300 italic border-l-4 border-indigo-500 pl-6 py-2">
-              NotaryDesk (&ldquo;we,&rdquo; &ldquo;our,&rdquo; or &ldquo;us&rdquo;) is committed to protecting your privacy.
-              This Privacy Policy explains how we collect, use, disclose, and safeguard your information
-              when you use our mobile application and website.
-            </p>
-
-            <section>
-              <h2 className="text-2xl font-bold mb-6 text-slate-900 dark:text-white">1. Information We Collect</h2>
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200 mb-3 flex items-center gap-2">
-                    <MI name="person_edit" size={20} className="text-indigo-500" />
-                    Information you provide directly
-                  </h3>
-                  <ul className="list-disc ml-6 text-slate-600 dark:text-slate-400 space-y-2 leading-relaxed">
-                    <li><strong>Account:</strong> Name, email address, and password.</li>
-                    <li><strong>Profile:</strong> Notary commission details, business name, and photo.</li>
-                    <li><strong>Business Data:</strong> Journal entries, signer names, invoice details, and expense records.</li>
-                  </ul>
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200 mb-3 flex items-center gap-2">
-                    <MI name="devices" size={20} className="text-indigo-500" />
-                    Information collected automatically
-                  </h3>
-                  <ul className="list-disc ml-6 text-slate-600 dark:text-slate-400 space-y-2 leading-relaxed">
-                    <li><strong>Location Data:</strong> GPS coordinates for active mileage tracking (foreground/background as permitted).</li>
-                    <li><strong>Usage Data:</strong> Feature interactions and error logs.</li>
-                    <li><strong>Device Info:</strong> Operating system, device type, and app version.</li>
-                  </ul>
-                </div>
-              </div>
-            </section>
-
-            <section>
-              <h2 className="text-2xl font-bold mb-4 text-slate-900 dark:text-white">2. How We Use Your Information</h2>
-              <div className="text-slate-600 dark:text-slate-400 space-y-4 leading-relaxed">
-                <p>We use your data to maintain the service, generate tax reports, and facilitate your notary business. <strong>We do not sell your personal information or use journal data for advertising.</strong></p>
-              </div>
-            </section>
-
-            <section>
-              <h2 className="text-2xl font-bold mb-4 text-slate-900 dark:text-white text-flex items-center gap-2">
-                <MI name="shield_lock" size={24} className="text-green-600" />
-                3. Data Storage and Security
-              </h2>
-              <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-                Your data is stored using Supabase (SOC 2 compliant). All data is encrypted in transit (TLS 1.2+) 
-                and at rest (AES-256). Journal entries are logically isolated and accessible only by you.
-              </p>
-            </section>
-
-            <section>
-              <h2 className="text-2xl font-bold mb-4 text-slate-900 dark:text-white">4. Third-Party Services</h2>
-              <p className="text-slate-600 dark:text-slate-400 mb-4">We partner with reputable providers to operate NotaryDesk:</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {[
-                  { n: 'Supabase', d: 'Auth, Database & Storage' },
-                  { n: 'RevenueCat', d: 'Subscriptions' },
-                  { n: 'Vercel', d: 'API Hosting' },
-                  { n: 'Expo', d: 'App Framework' }
-                ].map((item) => (
-                  <div key={item.n} className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
-                    <span className="block font-bold text-slate-900 dark:text-white">{item.n}</span>
-                    <span className="text-xs text-slate-500">{item.d}</span>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            <section>
-              <h2 className="text-2xl font-bold mb-4 text-slate-900 dark:text-white">5. Your Rights</h2>
-              <ul className="list-disc ml-6 text-slate-600 dark:text-slate-400 space-y-2">
-                <li><strong>Access & Export:</strong> View and download your data anytime.</li>
-                <li><strong>Deletion:</strong> Delete your account and data permanently via Settings (irreversible).</li>
-                <li><strong>Correction:</strong> Modify any record directly within the app.</li>
-              </ul>
-            </section>
-
-            {/* ── Contact Section ─────────────────────────────────────── */}
-            <section className="mt-16 p-8 bg-slate-50 dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800">
-              <h2 className="text-2xl font-bold mb-6 text-slate-900 dark:text-white flex items-center gap-3">
-                <MI name="alternate_email" size={24} className="text-indigo-600" />
-                Contact Us
-              </h2>
-              <p className="mb-8 text-slate-600 dark:text-slate-400 font-medium">
-                If you have questions regarding this Privacy Policy or your data, reach out to us:
-              </p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex items-center gap-4 p-4 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
-                  <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
-                    <MI name="privacy_tip" size={20} />
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Privacy Officer</span>
-                    <a href="mailto:privacy@notarydesk.app" className="text-sm font-semibold text-slate-900 dark:text-white hover:text-indigo-600 transition-colors">privacy@notarydesk.app</a>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4 p-4 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
-                  <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300">
-                    <MI name="support_agent" size={20} />
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Support</span>
-                    <a href="mailto:engineermirzahassan@gmail.com" className="text-sm font-semibold text-slate-900 dark:text-white hover:text-indigo-600 transition-colors truncate">mirzahassan@gmail.com</a>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-          </div>
+        {/* Footer */}
+        <div className="mt-12 pt-6 flex items-center justify-between" style={{ borderTop: '1px solid var(--border)' }}>
+          <Link href="/terms" className="text-[13px] font-medium no-underline hover:underline flex items-center gap-1"
+            style={{ color: 'var(--primary)' }}>
+            <Icon name="gavel" size={14} /> Terms of Service
+          </Link>
+          <span className="text-[12px]" style={{ color: 'var(--text-tertiary)' }}>
+            © {new Date().getFullYear()} NotaryDesk. All rights reserved.
+          </span>
         </div>
       </main>
-      <Footer />
-    </>
+    </div>
+  )
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section>
+      <h2 className="text-[17px] font-bold mb-3" style={{ color: 'var(--text)' }}>{title}</h2>
+      <div className="space-y-3 text-[14px] leading-relaxed">{children}</div>
+    </section>
   )
 }

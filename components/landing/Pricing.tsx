@@ -2,10 +2,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { PLANS } from '@/lib/landing-content'
-
-const MI = ({ name, size = 18, className = '', style }: { name: string; size?: number; className?: string; style?: React.CSSProperties }) => (
-  <span className={`material-symbols-rounded ${className}`} style={{ fontSize: size, lineHeight: 1, ...style }}>{name}</span>
-)
+import { Icon } from '@/components/ui/icons'
 
 const PLAN_ICONS: Record<string, string> = {
   Free: 'explore',
@@ -41,13 +38,13 @@ export default function Pricing() {
               aria-label="Toggle billing period"
             >
               <div className={`absolute top-1 w-5 h-5 rounded-full bg-white transition-all shadow-sm flex items-center justify-center ${yearly ? 'left-8' : 'left-1'}`}>
-                <MI name={yearly ? 'calendar_month' : 'today'} size={12} style={{ color: 'var(--primary)', opacity: 0.6 }} />
+                <Icon name={yearly ? 'calendar_month' : 'today'} size={12} style={{ color: 'var(--primary)', opacity: 0.6 }} />
               </div>
             </button>
             <span className="text-sm font-medium flex items-center gap-1.5" style={{ color: yearly ? 'var(--text)' : 'var(--text-tertiary)' }}>
               Yearly
               <span className="flex items-center gap-0.5 text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: 'var(--success-bg)', color: 'var(--success-text)' }}>
-                <MI name="savings" size={11} />
+                <Icon name="savings" size={11} />
                 Save 17%
               </span>
             </span>
@@ -69,7 +66,7 @@ export default function Pricing() {
               {plan.badge && (
                 <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[10px] font-bold text-white shadow-sm"
                   style={{ background: 'var(--primary)' }}>
-                  <MI name="star" size={12} />
+                  <Icon name="star" size={12} />
                   {plan.badge}
                 </div>
               )}
@@ -78,7 +75,7 @@ export default function Pricing() {
               <div className="flex items-center gap-2.5 mb-3">
                 <div className="w-9 h-9 rounded-xl flex items-center justify-center"
                   style={{ background: plan.highlight ? 'var(--primary)' : 'var(--surface)' }}>
-                  <MI name={PLAN_ICONS[plan.name] || 'star'} size={18}
+                  <Icon name={PLAN_ICONS[plan.name] || 'star'} size={18}
                     style={{ color: plan.highlight ? 'white' : 'var(--primary)' }} />
                 </div>
                 <h3 className="text-lg font-bold" style={{ color: 'var(--text)' }}>{plan.name}</h3>
@@ -94,7 +91,7 @@ export default function Pricing() {
               </div>
               {yearly && plan.price.monthly > 0 && (
                 <p className="text-xs mb-2 flex items-center gap-1" style={{ color: 'var(--text-tertiary)' }}>
-                  <MI name="info" size={12} style={{ opacity: 0.5 }} />
+                  <Icon name="info" size={12} style={{ opacity: 0.5 }} />
                   Billed ${Math.round(plan.price.yearly * 12)} annually
                 </p>
               )}
@@ -107,7 +104,7 @@ export default function Pricing() {
                   ? { background: 'var(--primary)' }
                   : { background: 'transparent', border: '1.5px solid var(--border)', color: 'var(--primary)' }
                 }>
-                <MI name={plan.highlight ? 'rocket_launch' : 'arrow_forward'} size={16} />
+                <Icon name={plan.highlight ? 'rocket_launch' : 'arrow_forward'} size={16} />
                 {plan.cta}
               </Link>
 
@@ -118,13 +115,13 @@ export default function Pricing() {
               <ul className="space-y-3">
                 {plan.features.map(f => (
                   <li key={f} className="flex items-start gap-2.5 text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                    <MI name="check_circle" size={15} className="shrink-0 mt-px" style={{ color: 'var(--success)' }} />
+                    <Icon name="check_circle" size={15} className="shrink-0 mt-px" style={{ color: 'var(--success)' }} />
                     {f}
                   </li>
                 ))}
                 {plan.missing.map(f => (
                   <li key={f} className="flex items-start gap-2.5 text-xs leading-relaxed" style={{ color: 'var(--text-tertiary)' }}>
-                    <MI name="cancel" size={15} className="shrink-0 mt-px" style={{ opacity: 0.35 }} />
+                    <Icon name="cancel" size={15} className="shrink-0 mt-px" style={{ opacity: 0.35 }} />
                     {f}
                   </li>
                 ))}
@@ -136,7 +133,7 @@ export default function Pricing() {
         {/* Value note */}
         <div className="flex items-start gap-3 mt-12 p-5 rounded-2xl max-w-4xl mx-auto" style={{ background: 'var(--accent-pale, #FFF8E1)', border: '1px solid rgba(201,168,76,0.15)' }}>
           <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(201,168,76,0.15)' }}>
-            <MI name="lightbulb" size={20} style={{ color: 'var(--accent)' }} />
+            <Icon name="lightbulb" size={20} style={{ color: 'var(--accent)' }} />
           </div>
           <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
             <strong style={{ color: 'var(--text)' }}>Track every notarial act for IRS savings:</strong> Most notaries miss $1,000–$3,000+ in deductions by not tracking acts performed.
@@ -151,7 +148,7 @@ export default function Pricing() {
             { icon: 'event_repeat', text: 'Cancel any time' },
           ].map(n => (
             <span key={n.text} className="flex items-center gap-1 text-xs" style={{ color: 'var(--text-tertiary)' }}>
-              <MI name={n.icon} size={13} style={{ opacity: 0.5 }} />
+              <Icon name={n.icon} size={13} style={{ opacity: 0.5 }} />
               {n.text}
             </span>
           ))}

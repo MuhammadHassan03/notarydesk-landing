@@ -12,10 +12,7 @@ function SecurityLayer({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     initSecurity({
       blockShortcuts: true,
-      onDevToolsDetected: () => {
-        // Optional: you could redirect, log, or just ignore
-        // auth.logout() // ← nuclear option
-      },
+      onDevToolsDetected: () => {},
     })
     return () => cleanupSecurity()
   }, [])
@@ -31,26 +28,36 @@ function Shell({ children }: { children: React.ReactNode }) {
 
   useEffect(() => { setMounted(true) }, [])
 
-  // Server + first client render: empty shell (prevents hydration mismatch)
   if (!mounted || loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-cream">
-        <div className="w-9 h-9 border-[3px] border-slate-200 border-t-navy rounded-full animate-spin-slow" />
+      <div className="flex items-center justify-center min-h-screen"
+        style={{ background: 'var(--bg-page)' }}>
+        <div className="w-9 h-9 border-[3px] rounded-full animate-spin-slow"
+          style={{ borderColor: 'var(--border)', borderTopColor: 'var(--primary)' }} />
       </div>
     )
   }
 
-  // Not authenticated — render auth pages without sidebar
   if (!isAuthenticated) {
-    return <div className="min-h-screen bg-cream">{children}</div>
+    return (
+      <div className="min-h-screen" style={{ background: 'var(--bg-page)' }}>
+        {children}
+      </div>
+    )
   }
 
-  // Authenticated — full dashboard shell
   return (
-    <div className="flex min-h-screen bg-cream">
+    <div className="flex min-h-screen" style={{ background: 'var(--bg-page)' }}>
       <Sidebar />
-      <main className="flex-1 p-8 max-md:p-5 overflow-y-auto max-h-screen">
-        {children}
+      {/*
+        min-w-0  → prevents flex child from overflowing when sidebar is open
+        h-screen + overflow-y-auto → sidebar stays fixed, content scrolls independently
+        max-w + mx-auto on inner div → content doesn't stretch to infinity on ultrawide
+      */}
+      <main className="flex-1 min-w-0 h-screen overflow-y-auto">
+        <div className="max-w-[1200px] mx-auto px-8 py-8 max-md:px-5 max-md:py-5">
+          {children}
+        </div>
       </main>
     </div>
   )
@@ -62,7 +69,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <SecurityLayer>
       <AuthProvider>
-        
         <Shell>{children}</Shell>
       </AuthProvider>
     </SecurityLayer>

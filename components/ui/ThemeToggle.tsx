@@ -1,10 +1,7 @@
 'use client'
 
 import { useTheme } from '@/context/themecontext'
-
-const MI = ({ name, size = 18, style }: { name: string; size?: number; style?: React.CSSProperties }) => (
-  <span className="material-symbols-rounded" style={{ fontSize: size, lineHeight: 1, ...style }}>{name}</span>
-)
+import { Icon } from '@/components/ui/icons'
 
 export interface ThemeToggleProps {
   size?: 'sm' | 'md'
@@ -30,7 +27,7 @@ export default function ThemeToggle({ size = 'md', showLabel = false, className 
       title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
       aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
     >
-      <MI
+      <Icon
         name={isDark ? 'dark_mode' : 'light_mode'}
         size={size === 'sm' ? 16 : 18}
         style={{ transition: 'transform 0.3s ease', transform: isDark ? 'rotate(-20deg)' : 'rotate(0deg)' }}

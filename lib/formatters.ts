@@ -1,8 +1,3 @@
-/**
- * lib/formatters.ts — Display formatters
- * Mirrors: mobile src/lib/formatters.ts
- */
-
 export function currency(n: number | null | undefined): string {
   return '$' + (n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
@@ -55,4 +50,16 @@ export function greeting(): string {
 
 export function firstName(full: string | null | undefined): string {
   return full?.split(' ')[0] || 'Notary'
+}
+
+// ── Added for expenses & dashboard ────────────────────────────────────────
+
+/** "March 2026" */
+export function monthLabel(): string {
+  return new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+}
+
+/** "2026-03-25" */
+export function todayISO(): string {
+  return new Date().toISOString().split('T')[0]
 }

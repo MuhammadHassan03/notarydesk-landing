@@ -1,15 +1,13 @@
 'use client'
+
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-
-const MI = ({ name, size = 18, style }: { name: string; size?: number; style?: React.CSSProperties }) => (
-  <span className="material-symbols-rounded" style={{ fontSize: size, lineHeight: 1, ...style }}>{name}</span>
-)
+import Image from 'next/image'
+import { Icon } from '@/components/ui/icons'
 
 const NAV_LINKS = [
   { href: '#features', label: 'Features', icon: 'widgets' },
   { href: '#how', label: 'How It Works', icon: 'play_circle' },
-  // { href: '#roadmap', label: 'Roadmap', icon: 'timeline' },
   { href: '#pricing', label: 'Pricing', icon: 'sell' },
   { href: '#faq', label: 'FAQ', icon: 'help' },
 ]
@@ -54,8 +52,13 @@ export default function Nav() {
 
         {/* Logo */}
         <a href="/" className="flex items-center gap-2.5 no-underline group">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center font-extrabold text-lg transition-transform group-hover:scale-105"
-            style={{ background: 'var(--accent)', color: 'var(--primary)' }}>N</div>
+          <Image
+            src="/icon-192.png"
+            alt="NotaryDesk"
+            width={36}
+            height={36}
+            className="rounded-xl transition-transform group-hover:scale-105"
+          />
           <span className="font-bold text-[17px] -tracking-wide hidden sm:inline" style={{ color: 'var(--primary)' }}>NotaryDesk</span>
         </a>
 
@@ -81,18 +84,18 @@ export default function Nav() {
           <Link href="/dashboard/login"
             className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-[13px] font-semibold no-underline transition-all hover:bg-slate-50"
             style={{ color: 'var(--primary)' }}>
-            <MI name="login" size={16} />
+            <Icon name="login" size={16} />
             Sign In
           </Link>
           <Link href="/dashboard/register"
             className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-[13px] font-bold text-white no-underline transition-all shadow-sm hover:shadow-md hover:-translate-y-px"
             style={{ background: 'var(--primary)' }}>
-            <MI name="rocket_launch" size={15} />
+            <Icon name="rocket_launch" size={15} />
             Start Free
           </Link>
         </div>
 
-        {/* Mobile burger — Material Icon toggle */}
+        {/* Mobile burger */}
         <button
           className="lg:hidden w-10 h-10 rounded-xl flex items-center justify-center transition-colors border-none cursor-pointer"
           style={{ background: open ? 'var(--primary-light, rgba(27,58,92,0.06))' : 'transparent' }}
@@ -100,7 +103,7 @@ export default function Nav() {
           aria-label="Menu"
           aria-expanded={open}
         >
-          <MI name={open ? 'close' : 'menu'} size={22} style={{ color: 'var(--primary)' }} />
+          <Icon name={open ? 'close' : 'menu'} size={22} style={{ color: 'var(--primary)' }} />
         </button>
       </div>
 
@@ -127,7 +130,7 @@ export default function Nav() {
                     color: isActive ? 'var(--primary)' : 'var(--text)',
                     background: isActive ? 'var(--primary-light, rgba(27,58,92,0.06))' : 'transparent',
                   }}>
-                  <MI name={l.icon} size={20} style={{ color: isActive ? 'var(--primary)' : 'var(--text-tertiary)' }} />
+                  <Icon name={l.icon as any} size={20} style={{ color: isActive ? 'var(--primary)' : 'var(--text-tertiary)' }} />
                   {l.label}
                 </a>
               )
@@ -140,25 +143,24 @@ export default function Nav() {
             <Link href="/dashboard/login" onClick={close}
               className="flex items-center justify-center gap-2 py-3.5 rounded-xl text-[15px] font-semibold no-underline transition-all"
               style={{ color: 'var(--primary)', border: '1.5px solid var(--border)' }}>
-              <MI name="login" size={18} />
+              <Icon name="login" size={18} />
               Sign In to Dashboard
             </Link>
             <Link href="/dashboard/register" onClick={close}
               className="flex items-center justify-center gap-2 py-3.5 rounded-xl text-[15px] font-bold text-white no-underline transition-all"
               style={{ background: 'var(--primary)' }}>
-              <MI name="rocket_launch" size={18} />
+              <Icon name="rocket_launch" size={18} />
               Start Free — No Credit Card
             </Link>
           </div>
 
           <p className="text-center mt-5 text-[11px] flex items-center justify-center gap-1.5" style={{ color: 'var(--text-tertiary)' }}>
-            <MI name="devices" size={13} style={{ opacity: 0.5 }} />
+            <Icon name="devices" size={13} style={{ opacity: 0.5 }} />
             Web Dashboard · Android App · iOS Coming Soon
           </p>
         </div>
       </div>
 
-      {/* Backdrop overlay */}
       {open && (
         <div className="lg:hidden fixed inset-0 top-[68px] -z-10" style={{ background: 'rgba(0,0,0,0.3)' }} onClick={close} />
       )}

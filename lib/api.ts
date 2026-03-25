@@ -95,7 +95,7 @@ async function apiFetch<T = any>(
     refreshPromise = null
 
     if (refreshed) {
-      const retryHeaders = { ...headers, 'X-No-Retry': 'true' }
+      const retryHeaders: Record<string, string> = { ...headers, 'X-No-Retry': 'true' }
       const { access: newAccess } = getStoredTokens()
       if (newAccess) retryHeaders['Authorization'] = `Bearer ${newAccess}`
 

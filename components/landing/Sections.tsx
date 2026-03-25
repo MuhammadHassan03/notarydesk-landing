@@ -1,11 +1,5 @@
-// components/landing/Sections.tsx — SocialProof, ProblemSection, Features, HowItWorks
-// Zero emojis. Material Symbols Rounded everywhere.
-
 import { SOCIAL_PROOF_TYPES, PROBLEMS, FEATURES, STEPS } from '@/lib/landing-content'
-
-const MI = ({ name, size = 18, className = '', style }: { name: string; size?: number; className?: string; style?: React.CSSProperties }) => (
-  <span className={`material-symbols-rounded ${className}`} style={{ fontSize: size, lineHeight: 1, ...style }}>{name}</span>
-)
+import { Icon } from '@/components/ui/icons'
 
 // ── Icon maps (replace emojis in landing-content.ts data) ─────────────────
 
@@ -56,7 +50,7 @@ export function SocialProof() {
           {SOCIAL_PROOF_TYPES.map(t => (
             <div key={t.label} className="flex items-center gap-2.5 px-5 py-2.5 rounded-full text-sm font-medium transition-all hover:shadow-sm hover:-translate-y-px"
               style={{ background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
-              <MI name={PROOF_ICONS[t.label] || 'badge'} size={16} style={{ color: 'var(--primary)', opacity: 0.7 }} />
+              <Icon name={PROOF_ICONS[t.label] || 'badge'} size={16} style={{ color: 'var(--primary)', opacity: 0.7 }} />
               {t.label}
             </div>
           ))}
@@ -93,7 +87,7 @@ export function ProblemSection() {
               {/* Header */}
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'var(--danger-bg)' }}>
-                  <MI name={PROBLEM_ICONS[p.emoji] || 'warning'} size={20} style={{ color: 'var(--danger)' }} />
+                  <Icon name={PROBLEM_ICONS[p.emoji] || 'warning'} size={20} style={{ color: 'var(--danger)' }} />
                 </div>
                 <span className="text-[10px] font-bold tracking-wider px-2.5 py-1 rounded-full"
                   style={{ background: 'var(--danger-bg)', color: 'var(--danger-text)' }}>The Old Way</span>
@@ -107,7 +101,7 @@ export function ProblemSection() {
                 <div className="flex-1 h-px" style={{ background: 'var(--divider)' }} />
                 <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full"
                   style={{ background: 'var(--success-bg)', color: 'var(--success-text)' }}>
-                  <MI name="check_circle" size={12} />
+                  <Icon name="check_circle" size={12} />
                   <span className="text-[10px] font-bold tracking-wider">NotaryDesk</span>
                 </div>
                 <div className="flex-1 h-px" style={{ background: 'var(--divider)' }} />
@@ -152,14 +146,14 @@ export function Features() {
                 {/* Content */}
                 <div className="flex-1">
                   <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5" style={{ background: fi.color }}>
-                    <MI name={fi.icon} size={28} style={{ color: fi.iconColor }} />
+                    <Icon name={fi.icon} size={28} style={{ color: fi.iconColor }} />
                   </div>
                   <h3 className="text-xl font-bold mb-3" style={{ color: 'var(--text)' }}>{f.title}</h3>
                   <p className="text-sm leading-relaxed mb-5" style={{ color: 'var(--text-secondary)' }}>{f.desc}</p>
                   <ul className="space-y-2.5">
                     {f.bullets.map(b => (
                       <li key={b} className="flex items-start gap-2.5 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                        <MI name="check_circle" size={16} className="mt-0.5 shrink-0" style={{ color: 'var(--success)' }} />
+                        <Icon name="check_circle" size={16} className="mt-0.5 shrink-0" style={{ color: 'var(--success)' }} />
                         {b}
                       </li>
                     ))}
@@ -202,12 +196,12 @@ export function HowItWorks() {
 
           <a href="#notify" className="inline-flex items-center gap-2 mt-8 px-6 py-3.5 rounded-xl font-bold text-sm text-white no-underline transition-all hover:shadow-lg hover:-translate-y-0.5"
             style={{ background: 'var(--primary)' }}>
-            <MI name="notifications" size={16} />
+            <Icon name="notifications" size={16} />
             Join the Waitlist
           </a>
 
           <p className="mt-4 text-xs flex items-center gap-1.5" style={{ color: 'var(--text-tertiary)' }}>
-            <MI name="devices" size={14} style={{ opacity: 0.5 }} />
+            <Icon name="devices" size={14} style={{ opacity: 0.5 }} />
             Coming to both iOS and Android
           </p>
         </div>
@@ -220,7 +214,7 @@ export function HowItWorks() {
               <div className="flex flex-col items-center">
                 <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm"
                   style={{ background: 'var(--primary)' }}>
-                  <MI name={STEP_ICONS[step.num] || 'star'} size={22} style={{ color: 'white' }} />
+                  <Icon name={STEP_ICONS[step.num] || 'star'} size={22} style={{ color: 'white' }} />
                 </div>
                 {i < STEPS.length - 1 && (
                   <div className="w-px flex-1 my-2" style={{ background: 'var(--border)' }} />
@@ -240,7 +234,7 @@ export function HowItWorks() {
 
                 {/* Tip card */}
                 <div className="flex items-start gap-2.5 px-4 py-3 rounded-xl" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-                  <MI name="lightbulb" size={16} className="shrink-0 mt-px" style={{ color: 'var(--accent)' }} />
+                  <Icon name="lightbulb" size={16} className="shrink-0 mt-px" style={{ color: 'var(--accent)' }} />
                   <p className="text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{step.tip}</p>
                 </div>
               </div>

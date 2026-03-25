@@ -19,6 +19,7 @@ interface AuthContextValue {
   displayName: string | null
   plan: string | null
   loading: boolean
+  signIn: (accessToken: string, refreshToken: string) => void
   signOut: () => void
   refreshProfile: () => Promise<void>
 }
@@ -45,6 +46,7 @@ const AuthContext = createContext<AuthContextValue>({
   displayName: null,
   plan: null,
   loading: true,
+  signIn: () => {},
   signOut: () => {},
   refreshProfile: async () => {},
 })
@@ -52,6 +54,8 @@ const AuthContext = createContext<AuthContextValue>({
 export function useAuth() {
   return useContext(AuthContext)
 }
+
+// ── Profile cache ─────────────────────────────────────────────────────────
 
 let _cachedProfile: Profile | null = null
 
@@ -84,12 +88,15 @@ export function useProfile() {
   return { profile, loading }
 }
 
+// ── Public paths (no auth required) ───────────────────────────────────────
 
 const PUBLIC_PATHS = [
   '/dashboard/login',
   '/dashboard/register',
+  '/dashboard/otp',
   '/dashboard/forgot-password',
   '/dashboard/new-password',
+  '/dashboard/onboarding',
 ]
 
 function isPublicPath(pathname: string | null): boolean {
@@ -97,6 +104,27 @@ function isPublicPath(pathname: string | null): boolean {
   return PUBLIC_PATHS.some(p => pathname.startsWith(p))
 }
 
+// ── Token storage helpers ─────────────────────────────────────────────────
+
+const TK_ACCESS = 'at_v1'
+const TK_REFRESH = 'rt_v1'
+
+function storeTokens(access: string, refresh: string) {
+  try {
+    // Use the same storage mechanism as api.ts
+    const { secureStorage } = require('@/lib/security')
+    secureStorage.set(TK_ACCESS, access)
+    secureStorage.set(TK_REFRESH, refresh)
+  } catch {
+    // Fallback to sessionStorage if secureStorage not available
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem(TK_ACCESS, access)
+      sessionStorage.setItem(TK_REFRESH, refresh)
+    }
+  }
+}
+
+// ── Provider ──────────────────────────────────────────────────────────────
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter()
@@ -107,6 +135,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
   const checkedRef = useRef(false)
 
+  // ── Check existing session on mount ─────────────────────────────
   useEffect(() => {
     if (checkedRef.current) return
     checkedRef.current = true
@@ -122,13 +151,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const profile = await api.get<Profile>('/auth/me')
       _cachedProfile = profile
-
-      // Only expose non-sensitive fields in context
       setIsAuthenticated(true)
       setDisplayName(profile.full_name || profile.email?.split('@')[0] || null)
       setPlan(profile.plan || 'free')
     } catch {
-      // Token invalid — clean up silently
       auth.logout()
       _cachedProfile = null
       setIsAuthenticated(false)
@@ -139,6 +165,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(false)
   }
 
+  // ── Route protection ────────────────────────────────────────────
   useEffect(() => {
     if (loading) return
     const pub = isPublicPath(pathname)
@@ -151,6 +178,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [isAuthenticated, loading, pathname, router])
 
+  // ── Sign in (called by login, register, OTP pages after getting tokens) ──
+  const signIn = useCallback((accessToken: string, refreshToken: string) => {
+    storeTokens(accessToken, refreshToken)
+    setIsAuthenticated(true)
+
+    // Fetch profile in background
+    api.get<Profile>('/auth/me')
+      .then(profile => {
+        _cachedProfile = profile
+        setDisplayName(profile.full_name || profile.email?.split('@')[0] || null)
+        setPlan(profile.plan || 'free')
+      })
+      .catch(() => {})
+  }, [])
+
+  // ── Sign out ────────────────────────────────────────────────────
   const signOut = useCallback(() => {
     _cachedProfile = null
     setIsAuthenticated(false)
@@ -159,6 +202,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     auth.logout()
   }, [])
 
+  // ── Refresh profile (after settings update, etc.) ───────────────
   const refreshProfile = useCallback(async () => {
     try {
       const profile = await api.get<Profile>('/auth/me')
@@ -173,6 +217,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     displayName,
     plan,
     loading,
+    signIn,
     signOut,
     refreshProfile,
   }

@@ -1,204 +1,116 @@
-// app/terms/page.tsx
-import Nav from '@/components/landing/Nav'
-import { Footer } from '@/components/landing'
+'use client'
 
-export const metadata = {
-  title: 'Terms of Service — NotaryDesk',
-  description: 'Terms and conditions for using NotaryDesk.',
-}
+import Link from 'next/link'
+import { Icon } from '@/components/ui/icons'
 
-/**
- * MI Component: Renders Material Symbols Rounded
- * Note: Requires the Google Font link in your layout.tsx to display.
- */
-const MI = ({ name, size = 20, className = '', style }: {
-  name: string;
-  size?: number;
-  className?: string;
-  style?: React.CSSProperties
-}) => (
-  <span
-    className={`material-symbols-rounded ${className}`}
-    style={{
-      fontSize: size,
-      lineHeight: 1,
-      display: 'inline-block',
-      verticalAlign: 'middle',
-      ...style
-    }}
-  >
-    {name}
-  </span>
-)
+const EFFECTIVE_DATE = 'January 1, 2025'
 
-export default function TermsPage() {
-  const updated = 'June 1, 2025'
-
+export default function TermsOfServicePage() {
   return (
-    <>
-      <Nav />
-      <main className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 pb-20">
+    <div className="min-h-screen" style={{ background: 'var(--bg-page)' }}>
+      {/* Header */}
+      <header className="sticky top-0 z-10 px-6 py-4 flex items-center justify-between"
+        style={{ background: 'var(--bg-page)', borderBottom: '1px solid var(--border)' }}>
+        <Link href="/" className="flex items-center gap-2 no-underline">
+          <span className="w-8 h-8 rounded-lg font-extrabold text-sm flex items-center justify-center"
+            style={{ background: 'var(--accent)', color: 'var(--primary)' }}>N</span>
+          <span className="font-bold text-sm" style={{ color: 'var(--primary)' }}>NotaryDesk</span>
+        </Link>
+        <Link href="/" className="text-[13px] font-medium no-underline hover:underline flex items-center gap-1"
+          style={{ color: 'var(--text-secondary)' }}>
+          <Icon name="arrow_back" size={16} /> Back to home
+        </Link>
+      </header>
 
-        {/* ── Header Section ────────────────────────────────────────── */}
-        <div className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800 py-16 mb-12">
-          <div className="max-w-4xl mx-auto px-6">
-            <p className="flex items-center gap-2 text-blue-600 dark:text-blue-400 font-bold tracking-wider uppercase text-xs mb-3">
-              <MI name="gavel" size={16} />
-              Legal
-            </p>
-            <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-4 text-slate-900 dark:text-white">
-              Terms of Service
-            </h1>
-            <p className="text-slate-500 dark:text-slate-400 text-sm font-medium uppercase tracking-wide">
-              Last updated: {updated}
-            </p>
-          </div>
+      {/* Content */}
+      <main className="max-w-[720px] mx-auto px-6 py-12">
+        <div className="flex items-center gap-3 mb-2">
+          <Icon name="gavel" size={28} style={{ color: 'var(--primary)' }} />
+          <h1 className="text-[28px] font-extrabold" style={{ color: 'var(--text)' }}>Terms of Service</h1>
+        </div>
+        <p className="text-[13px] mb-10" style={{ color: 'var(--text-tertiary)' }}>
+          Effective date: {EFFECTIVE_DATE}
+        </p>
+
+        <div className="space-y-8" style={{ color: 'var(--text-secondary)' }}>
+          <Section title="1. Acceptance of terms">
+            <p>By creating an account or using NotaryDesk ("the Service"), you agree to be bound by these Terms of Service. If you do not agree to these terms, do not use the Service. These terms apply to both the mobile app and the web dashboard.</p>
+          </Section>
+
+          <Section title="2. Description of service">
+            <p>NotaryDesk is a business management tool for mobile notary signing agents. It provides digital notary journal recording, GPS mileage tracking with IRS deduction calculations, invoice generation, appointment management, expense tracking, signing job pipeline management, and tax savings reporting.</p>
+            <p>The Service is a tool to assist your notary business operations. It does not provide legal, tax, or financial advice. You are responsible for ensuring your use of the Service complies with your state's notary laws and regulations.</p>
+          </Section>
+
+          <Section title="3. Account registration">
+            <p>You must provide accurate and complete information when creating an account. You are responsible for maintaining the security of your account credentials. You must be a legal adult to use the Service. You must not create accounts for others without their consent.</p>
+          </Section>
+
+          <Section title="4. Subscription plans">
+            <p>NotaryDesk offers Free, Pro, and Business subscription tiers. The Free plan includes limited signing jobs with full feature access. Paid plans unlock unlimited jobs, invoice email/SMS delivery, PDF exports, and additional features as described on our pricing page.</p>
+            <p>Paid subscriptions are billed monthly or annually through Apple App Store, Google Play Store, or our web payment system. Subscriptions auto-renew unless cancelled at least 24 hours before the end of the current billing period. Prices may change with reasonable notice.</p>
+          </Section>
+
+          <Section title="5. Acceptable use">
+            <p>You agree not to use the Service to violate any laws or regulations, to store false or fraudulent notary records, to attempt to access other users' data, to reverse engineer or decompile the app, or to use automated tools to scrape or extract data from the Service.</p>
+          </Section>
+
+          <Section title="6. Data ownership">
+            <p>You retain ownership of all data you enter into NotaryDesk, including journal entries, invoices, mileage logs, and business records. We do not claim any intellectual property rights over your content.</p>
+            <p>You grant us a limited license to store, process, and display your data as necessary to provide the Service, including syncing between devices and generating reports.</p>
+          </Section>
+
+          <Section title="7. State compliance">
+            <p>NotaryDesk includes a state compliance engine that enforces certain fields and rules based on your state's notary laws. While we strive for accuracy, the compliance engine is provided as a convenience and may not reflect the most current laws in every jurisdiction.</p>
+            <p>You are ultimately responsible for ensuring your notary practices comply with your state's requirements. NotaryDesk is not a substitute for legal counsel.</p>
+          </Section>
+
+          <Section title="8. Service availability">
+            <p>We strive to maintain 99.9% uptime but do not guarantee uninterrupted access. The mobile app works offline; data syncs when connectivity is restored. We may perform scheduled maintenance with advance notice.</p>
+          </Section>
+
+          <Section title="9. Limitation of liability">
+            <p>NotaryDesk is provided "as is" without warranties of any kind. We are not liable for any indirect, incidental, or consequential damages arising from your use of the Service. Our total liability is limited to the amount you paid for the Service in the 12 months preceding the claim.</p>
+          </Section>
+
+          <Section title="10. Account termination">
+            <p>You may delete your account at any time from the Settings screen. We may suspend or terminate accounts that violate these terms. Upon deletion, all your data is permanently removed from our servers within 30 days.</p>
+          </Section>
+
+          <Section title="11. Changes to terms">
+            <p>We may update these terms from time to time. Material changes will be communicated via email or in-app notification at least 30 days before taking effect. Continued use after changes constitutes acceptance.</p>
+          </Section>
+
+          <Section title="12. Governing law">
+            <p>These terms are governed by the laws of the United States. Any disputes will be resolved through binding arbitration in accordance with the rules of the American Arbitration Association.</p>
+          </Section>
+
+          <Section title="13. Contact">
+            <p>For questions about these terms, contact us at:</p>
+            <p className="font-medium" style={{ color: 'var(--text)' }}>support@notarydesk.app</p>
+          </Section>
         </div>
 
-        {/* ── Body Content ─────────────────────────────────────────── */}
-        <div className="max-w-4xl mx-auto px-6">
-          <div className="space-y-12">
-
-            <p className="text-xl leading-relaxed text-slate-600 dark:text-slate-300 italic border-l-4 border-blue-500 pl-6 py-2">
-              These Terms of Service (&ldquo;Terms&rdquo;) govern your access to and use of the NotaryDesk
-              mobile application and website (collectively, the &ldquo;Service&rdquo;) operated by NotaryDesk
-              (&ldquo;we,&rdquo; &ldquo;our,&rdquo; or &ldquo;us&rdquo;). By creating an account or using the Service,
-              you agree to be bound by these Terms.
-            </p>
-
-            <section>
-              <h2 className="text-2xl font-bold mb-4 text-slate-900 dark:text-white">1. Acceptance of Terms</h2>
-              <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-                By accessing or using NotaryDesk, you confirm that you are at least 18 years old,
-                have the legal authority to enter into these Terms, and agree to comply with them.
-                If you do not agree, do not use the Service.
-              </p>
-            </section>
-
-            <section>
-              <h2 className="text-2xl font-bold mb-4 text-slate-900 dark:text-white">2. Description of Service</h2>
-              <div className="text-slate-600 dark:text-slate-400 space-y-4 leading-relaxed">
-                <p>
-                  NotaryDesk is a business management application designed for US mobile notaries. The Service
-                  includes tools for maintaining a digital notary journal, tracking mileage, creating and sending
-                  invoices, managing appointments, and tracking business expenses.
-                </p>
-                <p>
-                  NotaryDesk is a productivity tool. It is your responsibility to ensure that your use of the
-                  app complies with the notary laws and regulations of your specific state. NotaryDesk does not
-                  provide legal advice and is not a substitute for consulting a licensed attorney.
-                </p>
-              </div>
-            </section>
-
-            <section>
-              <h2 className="text-2xl font-bold mb-4 text-slate-900 dark:text-white">3. Account Registration</h2>
-              <div className="text-slate-600 dark:text-slate-400 space-y-4 leading-relaxed">
-                <p>
-                  You must create an account to use NotaryDesk. You agree to provide accurate, complete,
-                  and current information. You are responsible for maintaining the confidentiality of your
-                  password and for all activity that occurs under your account.
-                </p>
-                <p>
-                  You must notify us immediately at <a href="mailto:engineermirzahassan@gmail.com" className="text-blue-600 hover:underline">engineermirzahassan@gmail.com</a> if
-                  you suspect unauthorized access to your account.
-                </p>
-              </div>
-            </section>
-
-            <section>
-              <h2 className="text-2xl font-bold mb-4 text-slate-900 dark:text-white">4. Subscriptions and Payments</h2>
-              <div className="text-slate-600 dark:text-slate-400 space-y-6 leading-relaxed">
-                <div>
-                  <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200 mb-2">Free Plan</h3>
-                  <p>NotaryDesk offers a free plan with limited features. No payment information is required.</p>
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200 mb-2">Paid Plans (Pro and Plus)</h3>
-                  <p>Paid subscriptions are billed through Apple App Store (iOS) or Google Play (Android). Subscriptions automatically renew unless cancelled 24 hours before the end of the period.</p>
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200 mb-2">Cancellations and Refunds</h3>
-                  <p>Cancel anytime via app store settings. Refunds are handled by Apple or Google per their respective policies.</p>
-                </div>
-              </div>
-            </section>
-
-            <section>
-              <h2 className="text-2xl font-bold mb-4 text-slate-900 dark:text-white">5. Acceptable Use</h2>
-              <ul className="list-disc ml-6 text-slate-600 dark:text-slate-400 space-y-2">
-                <li>Use the Service for any unlawful purpose or in violation of any regulation.</li>
-                <li>Enter false, misleading, or fraudulent information into your journal.</li>
-                <li>Attempt to reverse-engineer, decompile, or extract source code.</li>
-                <li>Use automated tools, scrapers, or bots to access the Service.</li>
-              </ul>
-            </section>
-
-            <section>
-              <h2 className="text-2xl font-bold mb-4 text-slate-900 dark:text-white">6. Your Content and Data</h2>
-              <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-                You retain ownership of Your Content. By using the Service, you grant us a limited license
-                to process and store Your Content solely to provide the Service. You are responsible for
-                the legal sufficiency of records created using the app.
-              </p>
-            </section>
-
-            <section>
-              <h2 className="text-2xl font-bold mb-4 text-slate-900 dark:text-white">7. Disclaimers</h2>
-              <div className="text-slate-600 dark:text-slate-400 space-y-4 leading-relaxed">
-                <p className="font-bold uppercase text-xs tracking-widest text-slate-500">The Service is provided &ldquo;As Is&rdquo;.</p>
-                <p>
-                  <strong>IRS and Tax Disclaimer:</strong> Mileage logs and expense summaries are for convenience
-                  only. We make no representation that records will be accepted by the IRS or any tax authority.
-                </p>
-              </div>
-            </section>
-
-            <section>
-              <h2 className="text-2xl font-bold mb-4 text-slate-900 dark:text-white">8. Limitation of Liability</h2>
-              <p className="text-slate-600 dark:text-slate-400 leading-relaxed uppercase text-sm">
-                To the maximum extent permitted by law, NotaryDesk shall not be liable for any indirect,
-                incidental, or consequential damages arising from your use of the service.
-              </p>
-            </section>
-
-            {/* ── Contact Section ─────────────────────────────────────── */}
-            <section className="mt-16 p-8 bg-slate-50 dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 transition-colors">
-              <h2 className="text-2xl font-bold mb-6 text-slate-900 dark:text-white flex items-center gap-3">
-                <MI name="contact_support" size={24} className="text-blue-600" />
-                13. Contact
-              </h2>
-              <p className="mb-8 text-slate-600 dark:text-slate-400 font-medium">For questions regarding these Terms, please reach out:</p>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex items-center gap-4 p-4 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
-                  <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
-                    <MI name="mail" size={20} />
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Legal Dept</span>
-                    <a href="mailto:legal@notarydesk.app" className="text-sm font-semibold text-slate-900 dark:text-white hover:text-blue-600">legal@notarydesk.app</a>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4 p-4 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
-                  <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300">
-                    <MI name="support_agent" size={20} />
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Tech Support</span>
-                    <a href="mailto:engineermirzahassan@gmail.com" className="text-sm font-semibold text-slate-900 dark:text-white hover:text-blue-600 transition-colors truncate">
-                      mirzahassan@gmail.com
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-          </div>
+        {/* Footer */}
+        <div className="mt-12 pt-6 flex items-center justify-between" style={{ borderTop: '1px solid var(--border)' }}>
+          <Link href="/privacy" className="text-[13px] font-medium no-underline hover:underline flex items-center gap-1"
+            style={{ color: 'var(--primary)' }}>
+            <Icon name="shield" size={14} /> Privacy Policy
+          </Link>
+          <span className="text-[12px]" style={{ color: 'var(--text-tertiary)' }}>
+            © {new Date().getFullYear()} NotaryDesk. All rights reserved.
+          </span>
         </div>
       </main>
-      <Footer />
-    </>
+    </div>
+  )
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section>
+      <h2 className="text-[17px] font-bold mb-3" style={{ color: 'var(--text)' }}>{title}</h2>
+      <div className="space-y-3 text-[14px] leading-relaxed">{children}</div>
+    </section>
   )
 }

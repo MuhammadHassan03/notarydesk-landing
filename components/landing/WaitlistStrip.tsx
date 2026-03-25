@@ -1,12 +1,6 @@
-// Replace the waitlist section in Hero.tsx with this component
-// Extract it as components/landing/WaitlistStrip.tsx or inline it
-
 'use client'
 import { useState, useRef, useCallback } from 'react'
-
-const MI = ({ name, size = 18, className = '', style }: { name: string; size?: number; className?: string; style?: React.CSSProperties }) => (
-  <span className={`material-symbols-rounded ${className}`} style={{ fontSize: size, lineHeight: 1, ...style }}>{name}</span>
-)
+import { Icon } from '@/components/ui/icons'
 
 type Status = 'idle' | 'loading' | 'success' | 'error'
 
@@ -57,7 +51,7 @@ export default function WaitlistStrip() {
       <div className="max-w-[1200px] mx-auto px-6 flex flex-col md:flex-row items-center gap-8">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
-            <MI name={status === 'success' ? 'celebration' : 'rocket_launch'} size={20} style={{ color: 'var(--accent)' }} />
+            <Icon name={status === 'success' ? 'celebration' : 'rocket_launch'} size={20} style={{ color: 'var(--accent)' }} />
             <p className="text-xl font-bold text-white">
               {status === 'success' ? "You're on the list!" : 'Get Early Access'}
             </p>
@@ -74,7 +68,7 @@ export default function WaitlistStrip() {
             /* ── Success state ─────────────────────────────────── */
             <div className="flex items-center gap-3 px-6 py-4 rounded-xl" style={{ background: 'rgba(39,174,96,0.15)', border: '1px solid rgba(39,174,96,0.25)' }}>
               <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ background: 'var(--success)' }}>
-                <MI name="check" size={22} style={{ color: 'white' }} />
+                <Icon name="check" size={22} style={{ color: 'white' }} />
               </div>
               <div>
                 <p className="text-sm font-bold text-white">Email confirmed</p>
@@ -89,7 +83,7 @@ export default function WaitlistStrip() {
             <form className="flex flex-col gap-2" onSubmit={handleSubmit}>
               <div className="flex gap-2">
                 <div className="relative flex-1 md:w-72">
-                  <MI name="mail" size={16} className="absolute left-4 top-1/2 -translate-y-1/2" style={{ color: 'rgba(255,255,255,0.3)' }} />
+                  <Icon name="mail" size={16} className="absolute left-4 top-1/2 -translate-y-1/2" style={{ color: 'rgba(255,255,255,0.3)' }} />
                   <input
                     ref={inputRef}
                     type="email"
@@ -117,7 +111,7 @@ export default function WaitlistStrip() {
                     </>
                   ) : (
                     <>
-                      <MI name="notifications_active" size={16} />
+                      <Icon name="notifications_active" size={16} />
                       Notify Me
                     </>
                   )}
@@ -127,14 +121,14 @@ export default function WaitlistStrip() {
               {/* Error message */}
               {status === 'error' && (
                 <div className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ background: 'rgba(220,38,38,0.15)' }}>
-                  <MI name="error" size={14} style={{ color: '#FCA5A5' }} />
+                  <Icon name="error" size={14} style={{ color: '#FCA5A5' }} />
                   <p className="text-xs font-medium" style={{ color: '#FCA5A5' }}>{errorMsg}</p>
                 </div>
               )}
 
               {/* Privacy note */}
               <p className="text-[10px] text-white/25 flex items-center gap-1">
-                <MI name="lock" size={10} style={{ opacity: 0.5 }} />
+                <Icon name="lock" size={10} style={{ opacity: 0.5 }} />
                 No spam, ever. Unsubscribe anytime.
               </p>
             </form>
