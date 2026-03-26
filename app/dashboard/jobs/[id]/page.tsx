@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { useJob, useUpdateJob } from '@/hooks/use-jobs'
 import { currency, formatDate, formatTime } from '@/lib/utils'
@@ -9,6 +9,8 @@ import { Icon } from '@/components/ui/icons'
 import { Button, Modal, ConfirmModal, StatusBadge, Toast } from '@/components/ui'
 import { PageHeader, Card, PipelineTracker } from '@/components/layout'
 import { DetailRow } from '@/components/layout'
+import { FormActions } from '@/components/forms/FormActions'
+import Link from 'next/link'
 
 function downloadIcs(job: NonNullable<ReturnType<typeof useJob>['job']>) {
   const pad = (n: number) => String(n).padStart(2, '0')
@@ -56,6 +58,28 @@ function downloadIcs(job: NonNullable<ReturnType<typeof useJob>['job']>) {
   URL.revokeObjectURL(url)
 }
 
+// ── Document checklist per loan type ─────────────────────────────────────
+const DOC_CHECKLISTS: Record<string, string[]> = {
+  'Purchase':          ['Closing Disclosure (CD)', 'Note', 'Deed of Trust / Mortgage', 'Right of Rescission', 'Compliance Agreement', 'Name/Signature Affidavit', 'Occupancy Affidavit', 'IRS Form 4506-C', 'Identity Verified'],
+  'Refinance':         ['Closing Disclosure (CD)', 'Note', 'Deed of Trust', 'Right of Rescission (3-day)', 'Compliance Agreement', 'Name/Signature Affidavit', 'IRS Form 4506-C', 'Identity Verified'],
+  'HELOC':             ['Note', 'Deed of Trust', 'Right of Rescission', 'Compliance Agreement', 'Identity Verified'],
+  'Reverse Mortgage':  ['Loan Agreement', 'Deed of Trust', 'Note', 'HUD-1 / Closing Disclosure', 'Counseling Certificate', 'Right of Rescission', 'TALC Disclosure', 'Identity Verified'],
+  'Loan Modification': ['Modification Agreement', 'Note Endorsement', 'Compliance Agreement', 'Identity Verified'],
+  'Power of Attorney': ['POA Document', 'Identity Verified', 'Notarial Certificate Completed', 'Journal Entry'],
+  'Deed':              ['Deed Document', 'Identity Verified', 'Notarial Certificate Completed', 'Journal Entry'],
+  'General Notarization': ['Document Reviewed', 'Identity Verified', 'Signature Witnessed', 'Notarial Certificate Completed', 'Journal Entry'],
+}
+
+function getChecklist(docType: string | null | undefined): string[] | null {
+  if (!docType) return null
+  const key = Object.keys(DOC_CHECKLISTS).find(k =>
+    docType.toLowerCase().includes(k.toLowerCase())
+  )
+  return key ? DOC_CHECKLISTS[key] : null
+}
+
+const STORAGE_KEY = (jobId: string) => `checklist:${jobId}`
+
 export default function JobDetailPage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
@@ -67,6 +91,23 @@ export default function JobDetailPage() {
   const [showDelete, setShowDelete]             = useState(false)
   const [mileageDismissed, setMileageDismissed] = useState(false)
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null)
+  const [checked, setChecked] = useState<Record<string, boolean>>({})
+
+  useEffect(() => {
+    if (!id) return
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY(id))
+      if (stored) setChecked(JSON.parse(stored))
+    } catch { /* ignore */ }
+  }, [id])
+
+  const toggleCheck = useCallback((item: string) => {
+    setChecked(prev => {
+      const next = { ...prev, [item]: !prev[item] }
+      try { localStorage.setItem(STORAGE_KEY(id), JSON.stringify(next)) } catch { /* ignore */ }
+      return next
+    })
+  }, [id])
 
   const showMileagePrompt = !mileageDismissed && searchParams.get('new') === '1'
 
@@ -133,19 +174,16 @@ export default function JobDetailPage() {
 
   return (
     <div className="max-w-[720px]">
+      <Link href="/dashboard/jobs"
+        className="inline-flex items-center gap-1.5 text-[13px] font-medium mb-4 no-underline transition-opacity hover:opacity-70"
+        style={{ color: 'var(--text-secondary)' }}>
+        <Icon name="arrow_back" size={15} style={{ color: 'inherit' }} /> Back to jobs
+      </Link>
       <PageHeader title={`Job #${job.job_number || '—'}`} subtitle={job.signer_name}
         action={
-          <div className="flex gap-2">
-            <Button variant="outline" href="/dashboard/jobs"><Icon name="arrow_back" size={16} style={{ color: 'inherit' }} /> Back</Button>
-            {!isCancelled && !isCompleted && (
-              <Button variant="outline" size="sm" onClick={() => setShowCancel(true)}>
-                <Icon name="cancel" size={14} style={{ color: 'inherit' }} /> Cancel
-              </Button>
-            )}
-            <Button variant="danger" size="sm" onClick={() => setShowDelete(true)}>
-              <Icon name="close" size={14} style={{ color: 'inherit' }} />
-            </Button>
-          </div>
+          <Button variant="danger" size="sm" onClick={() => setShowDelete(true)}>
+            <Icon name="delete" size={15} style={{ color: 'inherit' }} />
+          </Button>
         } />
 
       {/* Pipeline */}
@@ -201,6 +239,35 @@ export default function JobDetailPage() {
         </div>
       </Card>
 
+      {/* Document checklist */}
+      {getChecklist(job.document_type) && (() => {
+        const checklist = getChecklist(job.document_type)!
+        const doneCount = checklist.filter(item => checked[item]).length
+        return (
+          <Card title={`Document checklist (${doneCount}/${checklist.length})`}>
+            {/* Progress bar */}
+            <div className="w-full rounded-full h-1.5 mb-4 overflow-hidden" style={{ background: 'var(--surface)' }}>
+              <div className="h-full rounded-full transition-all" style={{ width: `${(doneCount / checklist.length) * 100}%`, background: doneCount === checklist.length ? 'var(--success)' : 'var(--primary)' }} />
+            </div>
+            <div className="flex flex-col gap-1">
+              {checklist.map(item => (
+                <button key={item} onClick={() => toggleCheck(item)}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-colors border-none cursor-pointer"
+                  style={{ background: checked[item] ? 'var(--success-bg)' : 'transparent' }}>
+                  <div className="w-5 h-5 rounded-md flex items-center justify-center shrink-0 transition-colors"
+                    style={{ background: checked[item] ? 'var(--success)' : 'var(--surface)', border: `2px solid ${checked[item] ? 'var(--success)' : 'var(--border)'}` }}>
+                    {checked[item] && <Icon name="check" size={13} style={{ color: '#fff' }} />}
+                  </div>
+                  <span className="text-[13px] font-medium" style={{ color: checked[item] ? 'var(--success)' : 'var(--text)', textDecoration: checked[item] ? 'line-through' : 'none', opacity: checked[item] ? 0.8 : 1 }}>
+                    {item}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </Card>
+        )
+      })()}
+
       {/* Payment */}
       <Card title="Payment">
         <div className="flex items-center gap-3">
@@ -212,28 +279,31 @@ export default function JobDetailPage() {
       </Card>
 
       {/* Actions */}
-      {!isCancelled && (
-        <div className="flex gap-3 flex-wrap mt-2 mb-6">
-          {nextStatus && (
-            <Button onClick={handleAdvance}>
-              <Icon name="arrow_forward" size={16} style={{ color: 'inherit' }} />
-              Advance to: {JOB_STATUS_CONFIG[nextStatus].label}
-            </Button>
-          )}
-          {!isPaid && (
-            <Button variant="gold" onClick={() => setShowPayment(true)}>
-              <Icon name="payments" size={16} style={{ color: 'inherit' }} />
-              Mark as paid
-            </Button>
-          )}
-          {job.scheduled_date && (
-            <Button variant="outline" size="sm" onClick={() => downloadIcs(job)}>
-              <Icon name="event" size={16} style={{ color: 'inherit' }} />
-              Add to Calendar
-            </Button>
-          )}
-        </div>
-      )}
+      <FormActions>
+        {!isCancelled && nextStatus && (
+          <Button variant="primary" onClick={handleAdvance} fullWidth size="lg">
+            <Icon name="arrow_forward" size={16} style={{ color: 'inherit' }} />
+            Advance to: {JOB_STATUS_CONFIG[nextStatus].label}
+          </Button>
+        )}
+        {!isCancelled && !isPaid && (
+          <Button variant="gold" onClick={() => setShowPayment(true)} fullWidth size="lg">
+            <Icon name="payments" size={16} style={{ color: 'inherit' }} />
+            Mark as paid
+          </Button>
+        )}
+        {job.scheduled_date && (
+          <Button variant="outline" onClick={() => downloadIcs(job)} size="lg">
+            <Icon name="event" size={16} style={{ color: 'inherit' }} />
+            Add to Calendar
+          </Button>
+        )}
+        {!isCancelled && !isCompleted && (
+          <Button variant="outline" onClick={() => setShowCancel(true)} size="lg">
+            <Icon name="cancel" size={15} style={{ color: 'inherit' }} /> Cancel job
+          </Button>
+        )}
+      </FormActions>
 
       {/* Payment modal */}
       <Modal open={showPayment} onClose={() => setShowPayment(false)} title="Record payment" description="How was this job paid?" size="sm">

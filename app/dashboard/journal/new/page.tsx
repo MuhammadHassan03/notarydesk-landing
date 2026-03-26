@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { useCreateJournalEntry } from '@/hooks/use-journal'
 import { DOCUMENT_TYPES, ID_TYPES } from '@/lib/constants'
 import { todayISO } from '@/lib/utils'
@@ -13,6 +14,7 @@ import { FormField } from '@/components/forms/FormField'
 import { IconInput } from '@/components/forms/IconInput'
 import { IconSelect } from '@/components/forms/IconSelect'
 import { Checkbox } from '@/components/ui/Checkbox'
+import { FormActions } from '@/components/forms/FormActions'
 
 export default function NewJournalEntryPage() {
   const router = useRouter()
@@ -59,59 +61,57 @@ export default function NewJournalEntryPage() {
 
   return (
     <div className="max-w-[720px]">
-      <PageHeader title="New journal entry" subtitle="Log a notarization for your compliant digital journal"
-        action={
-          <Button variant="outline" href="/dashboard/journal">
-            <Icon name="arrow_back" size={16} style={{ color: 'inherit' }} /> Back to journal
-          </Button>
-        } />
+      <Link href="/dashboard/journal" className="inline-flex items-center gap-1.5 text-[13px] font-medium mb-4 no-underline transition-opacity hover:opacity-70" style={{ color: 'var(--text-secondary)' }}>
+        <Icon name="arrow_back" size={15} style={{ color: 'inherit' }} /> Back to journal
+      </Link>
+      <PageHeader title="New journal entry" subtitle="Log a notarization for your compliant digital journal" />
 
       {/* ── Signing Info ─────────────────────────────────────── */}
-      <FormSection title="Signing information" icon="menu_book">
+      <FormSection title="Signing information">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
-          <FormField label="Signing date" icon="schedule" required error={errors.signingDate}>
-            <IconInput icon="schedule" type="date" value={signingDate}
+          <FormField label="Signing date" required error={errors.signingDate}>
+            <IconInput type="date" value={signingDate}
               onChange={e => { setSigningDate(e.target.value); setErrors(p => ({ ...p, signingDate: '' })) }} />
           </FormField>
-          <FormField label="Fee" icon="attach_money">
-            <IconInput icon="attach_money" type="number" step="0.01" placeholder="0.00"
+          <FormField label="Fee">
+            <IconInput type="number" step="0.01" placeholder="0.00"
               value={fee} onChange={e => setFee(e.target.value)} />
           </FormField>
         </div>
-        <FormField label="Signer name" icon="person" required error={errors.signerName}>
-          <IconInput icon="person" placeholder="Full legal name of person being notarized"
+        <FormField label="Signer name" required error={errors.signerName}>
+          <IconInput placeholder="Full legal name of person being notarized"
             value={signerName} onChange={e => { setSignerName(e.target.value); setErrors(p => ({ ...p, signerName: '' })) }} />
         </FormField>
-        <FormField label="Signer address" icon="location_on">
-          <IconInput icon="location_on" placeholder="Address where signing took place"
+        <FormField label="Signer address">
+          <IconInput placeholder="Address where signing took place"
             value={signerAddr} onChange={e => setSignerAddr(e.target.value)} />
         </FormField>
       </FormSection>
 
       {/* ── Document ─────────────────────────────────────────── */}
-      <FormSection title="Document" icon="description">
-        <FormField label="Document type" icon="description">
-          <IconSelect icon="description" value={docType} onChange={e => setDocType(e.target.value)}
+      <FormSection title="Document">
+        <FormField label="Document type">
+          <IconSelect value={docType} onChange={e => setDocType(e.target.value)}
             options={DOCUMENT_TYPES.map(d => ({ value: d, label: d }))} placeholder="Select document type" />
         </FormField>
       </FormSection>
 
       {/* ── ID Verification ──────────────────────────────────── */}
-      <FormSection title="ID verification" icon="verified">
+      <FormSection title="ID verification">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
-          <FormField label="ID type" icon="verified">
-            <IconSelect icon="verified" value={idType} onChange={e => setIdType(e.target.value)}
+          <FormField label="ID type">
+            <IconSelect value={idType} onChange={e => setIdType(e.target.value)}
               options={ID_TYPES.map(d => ({ value: d, label: d }))} placeholder="Select ID type" />
           </FormField>
-          <FormField label="ID number" icon="verified" hint="May be required by your state">
-            <IconInput icon="verified" placeholder="e.g. D1234567"
+          <FormField label="ID number" hint="May be required by your state">
+            <IconInput placeholder="e.g. D1234567"
               value={idNumber} onChange={e => setIdNumber(e.target.value)} />
           </FormField>
         </div>
       </FormSection>
 
       {/* ── Compliance ───────────────────────────────────────── */}
-      <FormSection title="State compliance" icon="gavel">
+      <FormSection title="State compliance">
         <Checkbox checked={thumbprint} onChange={setThumbprint} label="Thumbprint obtained" />
         <p className="text-[12px] mt-2" style={{ color: 'var(--text-tertiary)' }}>
           Required in some states for certain document types (e.g. Deed of Trust, Power of Attorney in California).
@@ -119,14 +119,14 @@ export default function NewJournalEntryPage() {
       </FormSection>
 
       {/* ── Notes ────────────────────────────────────────────── */}
-      <FormSection title="Notes" icon="edit_note">
+      <FormSection title="Notes">
         <textarea className="input-base resize-y min-h-[80px]" rows={3}
           placeholder="Special circumstances, additional details..."
           value={notes} onChange={e => setNotes(e.target.value)} />
       </FormSection>
 
       {/* ── Actions ──────────────────────────────────────────── */}
-      <div className="flex gap-3 mt-2 mb-8">
+      <FormActions>
         <Button variant="gold" onClick={() => handleSubmit(false)} loading={loading} fullWidth size="lg">
           <Icon name="add_circle" size={16} style={{ color: 'inherit' }} /> Save as draft
         </Button>
@@ -134,7 +134,7 @@ export default function NewJournalEntryPage() {
           <Icon name="lock" size={16} style={{ color: 'inherit' }} /> Save & finalize
         </Button>
         <Button variant="outline" href="/dashboard/journal" size="lg">Cancel</Button>
-      </div>
+      </FormActions>
 
       <div className="rounded-xl px-4 py-3 mb-8 flex items-start gap-2"
         style={{ background: 'var(--warning-bg)', border: '1px solid var(--warning)' }}>

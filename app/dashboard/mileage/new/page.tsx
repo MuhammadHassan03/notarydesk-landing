@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useCallback, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 import { useCreateMileageTrip, useMileageSummary } from '@/hooks/use-mileage'
 import { currency, todayISO } from '@/lib/utils'
 import { Icon } from '@/components/ui/icons'
@@ -11,6 +12,7 @@ import PlaceAutocomplete, { haversineDistance, type PlaceResult } from '@/compon
 import { FormSection } from '@/components/forms/FormSection'
 import { FormField } from '@/components/forms/FormField'
 import { IconInput } from '@/components/forms/IconInput'
+import { FormActions } from '@/components/forms/FormActions'
 const IRS_RATE_FALLBACK = 0.70
 
 export default function NewMileageTripPage() {
@@ -102,12 +104,10 @@ export default function NewMileageTripPage() {
 
   return (
     <div className="max-w-[720px]">
-      <PageHeader title="Log a trip" subtitle="Record a business trip for IRS mileage deduction"
-        action={
-          <Button variant="outline" href="/dashboard/mileage">
-            <Icon name="arrow_back" size={16} style={{ color: 'inherit' }} /> Back to mileage
-          </Button>
-        } />
+      <Link href="/dashboard/mileage" className="inline-flex items-center gap-1.5 text-[13px] font-medium mb-4 no-underline transition-opacity hover:opacity-70" style={{ color: 'var(--text-secondary)' }}>
+        <Icon name="arrow_back" size={15} style={{ color: 'inherit' }} /> Back to mileage
+      </Link>
+      <PageHeader title="Log a trip" subtitle="Record a business trip for IRS mileage deduction" />
 
       {/* ── Live deduction preview ───────────────────────────── */}
       {parsedMiles > 0 && (
@@ -130,14 +130,14 @@ export default function NewMileageTripPage() {
       )}
 
       {/* ── Route ────────────────────────────────────────────── */}
-      <FormSection title="Route" icon="route">
-        <FormField label="Start address" icon="location_on" required error={errors.startAddr}>
+      <FormSection title="Route">
+        <FormField label="Start address" required error={errors.startAddr}>
           <PlaceAutocomplete
             value={startAddr}
             onChange={setStartAddr}
             onSelect={handleStartSelect}
             placeholder="Search start address..."
-            icon="location_on"
+           
           />
           {startLat && (
             <div className="flex items-center gap-1 mt-1">
@@ -149,13 +149,13 @@ export default function NewMileageTripPage() {
           )}
         </FormField>
 
-        <FormField label="End address" icon="location_on" required error={errors.endAddr}>
+        <FormField label="End address" required error={errors.endAddr}>
           <PlaceAutocomplete
             value={endAddr}
             onChange={setEndAddr}
             onSelect={handleEndSelect}
             placeholder="Search end address..."
-            icon="location_on"
+           
           />
           {endLat && (
             <div className="flex items-center gap-1 mt-1">
@@ -180,11 +180,11 @@ export default function NewMileageTripPage() {
       </FormSection>
 
       {/* ── Trip details ─────────────────────────────────────── */}
-      <FormSection title="Trip details" icon="directions_car">
+      <FormSection title="Trip details">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-4">
-          <FormField label="Distance (miles)" icon="route" required error={errors.miles}
+          <FormField label="Distance (miles)" required error={errors.miles}
             hint={bothSet && !manualMiles ? 'Auto-estimated from addresses' : undefined}>
-            <IconInput icon="route" type="number" step="0.1" placeholder="12.4"
+            <IconInput type="number" step="0.1" placeholder="12.4"
               value={miles}
               onChange={e => { setMiles(e.target.value); setManualMiles(true); setErrors(p => ({ ...p, miles: '' })) }}
               style={bothSet && !manualMiles ? { background: 'var(--success-bg)' } : {}}
@@ -197,22 +197,22 @@ export default function NewMileageTripPage() {
               </button>
             )}
           </FormField>
-          <FormField label="Trip date" icon="schedule">
-            <IconInput icon="schedule" type="date" value={tripDate} onChange={e => setTripDate(e.target.value)} />
+          <FormField label="Trip date">
+            <IconInput type="date" value={tripDate} onChange={e => setTripDate(e.target.value)} />
           </FormField>
-          <FormField label="Duration (min)" icon="schedule" hint="Optional">
-            <IconInput icon="schedule" type="number" placeholder="28"
+          <FormField label="Duration (min)" hint="Optional">
+            <IconInput type="number" placeholder="28"
               value={durationMin} onChange={e => setDurationMin(e.target.value)} />
           </FormField>
         </div>
-        <FormField label="Trip label" icon="edit_note" hint="e.g. 'James Patterson signing' — helps identify trips">
-          <IconInput icon="edit_note" placeholder="Optional label for this trip"
+        <FormField label="Trip label" hint="e.g. 'James Patterson signing' — helps identify trips">
+          <IconInput placeholder="Optional label for this trip"
             value={label} onChange={e => setLabel(e.target.value)} />
         </FormField>
       </FormSection>
 
       {/* ── IRS info ─────────────────────────────────────────── */}
-      <FormSection title="IRS deduction" icon="savings">
+      <FormSection title="IRS deduction">
         <div className="flex items-center gap-3 py-2">
           <Icon name="info" size={15} style={{ color: 'var(--text-tertiary)' }} />
           <p className="text-[12px] leading-relaxed" style={{ color: 'var(--text-tertiary)' }}>
@@ -224,12 +224,12 @@ export default function NewMileageTripPage() {
       </FormSection>
 
       {/* ── Actions ──────────────────────────────────────────── */}
-      <div className="flex gap-3 mt-2 mb-8">
+      <FormActions>
         <Button variant="gold" onClick={handleSubmit} loading={loading} fullWidth size="lg">
           <Icon name="add_circle" size={16} style={{ color: 'inherit' }} /> Save trip
         </Button>
         <Button variant="outline" href="/dashboard/mileage" size="lg">Cancel</Button>
-      </div>
+      </FormActions>
 
       {toast && <Toast message={toast.msg} type={toast.type} visible={!!toast} onHide={() => setToast(null)} />}
     </div>

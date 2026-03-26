@@ -47,40 +47,68 @@ function stripConsole() {
 }
 
 // ── 2. DevTools Detection ─────────────────────────────────────────────────
-// Detects when DevTools are opened and optionally takes action.
+// Detects when DevTools are opened and shows a security warning overlay.
 // NOT bulletproof — but deters casual inspection.
 
 let devtoolsOpen = false
 let detectionInterval: ReturnType<typeof setInterval> | null = null
+let warningOverlay: HTMLElement | null = null
+
+function showDevToolsWarning() {
+  if (warningOverlay) return
+
+  warningOverlay = document.createElement('div')
+  warningOverlay.id = '__nd_security_warning'
+  warningOverlay.style.cssText = [
+    'position:fixed', 'inset:0', 'z-index:2147483647',
+    'display:flex', 'align-items:center', 'justify-content:center',
+    'flex-direction:column', 'gap:16px',
+    'background:rgba(15,23,42,0.97)',
+    'font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif',
+    'backdrop-filter:blur(8px)',
+  ].join(';')
+
+  warningOverlay.innerHTML = `
+    <svg width="56" height="56" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="11" stroke="#C9A84C" stroke-width="1.5"/>
+      <path d="M12 7v6" stroke="#C9A84C" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="12" cy="16.5" r="1" fill="#C9A84C"/>
+    </svg>
+    <div style="text-align:center;max-width:380px;padding:0 24px;">
+      <div style="color:#E8ECF0;font-size:18px;font-weight:700;margin-bottom:8px;">
+        Developer Tools Detected
+      </div>
+      <div style="color:#8B95A5;font-size:13px;line-height:1.6;">
+        For the security of our users and their data, this application
+        does not support browser developer tools.<br><br>
+        If you believe this is an error, please contact
+        <strong style="color:#C9A84C;">support@notarydesk.com</strong>
+      </div>
+    </div>
+    <button onclick="this.parentElement.style.display='none'"
+      style="margin-top:8px;padding:10px 28px;border-radius:10px;border:1px solid #2D5A8E;background:transparent;color:#E8ECF0;font-size:13px;font-weight:600;cursor:pointer;">
+      I understand — dismiss
+    </button>
+  `
+
+  document.body.appendChild(warningOverlay)
+}
 
 function detectDevTools(onDetected?: () => void) {
   if (!IS_PROD || typeof window === 'undefined') return
 
-  // Method 1: debugger timing
-  function check() {
-    const start = performance.now()
-    // This debugger statement pauses execution if DevTools are open
-    // eslint-disable-next-line no-debugger
-    debugger
-    const delta = performance.now() - start
-    if (delta > 100 && !devtoolsOpen) {
-      devtoolsOpen = true
-      onDetected?.()
-    }
-  }
-
-  // Method 2: console.log object trick
   const el = new Image()
   Object.defineProperty(el, 'id', {
     get: () => {
       if (!devtoolsOpen) {
         devtoolsOpen = true
+        showDevToolsWarning()
         onDetected?.()
       }
     },
   })
 
-  // Check periodically (every 2s, not aggressive)
+  // Check periodically (every 2s)
   detectionInterval = setInterval(() => {
     devtoolsOpen = false
     console.log('%c', el as any)

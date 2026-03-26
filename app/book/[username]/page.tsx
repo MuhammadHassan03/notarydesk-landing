@@ -41,6 +41,7 @@ export default function BookingPage() {
   const [notes, setNotes]             = useState('')
   const [submitting, setSubmitting]   = useState(false)
   const [submitted, setSubmitted]     = useState(false)
+  const [chatUrl, setChatUrl]         = useState('')
   const [error, setError]             = useState('')
 
   useEffect(() => {
@@ -71,6 +72,8 @@ export default function BookingPage() {
         }),
       })
       if (!res.ok) { const j = await res.json(); throw new Error(j.detail || 'Failed') }
+      const json = await res.json()
+      if (json.chat_url) setChatUrl(json.chat_url)
       setSubmitted(true)
     } catch (err: any) {
       setError(err.message || 'Something went wrong. Please try again.')
@@ -168,6 +171,30 @@ export default function BookingPage() {
               <p className="text-sm leading-relaxed" style={{ color: '#64748b' }}>
                 {notary.name} will reach out to confirm your signing appointment.
               </p>
+              {chatUrl && (
+                <div className="w-full mt-2 rounded-xl p-4 flex flex-col items-center gap-3"
+                  style={{ background: '#EFF6FF', border: '1px solid #BFDBFE' }}>
+                  <div className="flex items-center gap-2">
+                    <Icon name="chat" size={16} style={{ color: '#1B3A5C' }} />
+                    <span className="text-[13px] font-semibold" style={{ color: '#1B3A5C' }}>
+                      Chat directly with your notary
+                    </span>
+                  </div>
+                  <p className="text-[12px]" style={{ color: '#64748b', margin: 0 }}>
+                    Use this private link to message {notary.name} directly — save it for your records.
+                  </p>
+                  <a href={chatUrl}
+                    className="w-full py-3 rounded-xl font-bold text-[14px] text-center no-underline"
+                    style={{ background: '#1B3A5C', color: '#C9A84C', display: 'block' }}>
+                    Open Chat →
+                  </a>
+                  <div className="flex items-center gap-1.5 px-3 py-2 rounded-lg w-full"
+                    style={{ background: '#f8fafc', border: '1px solid #e2e8f0' }}>
+                    <Icon name="link" size={12} style={{ color: '#94a3b8', flexShrink: 0 }} />
+                    <span className="text-[11px] truncate" style={{ color: '#94a3b8' }}>{chatUrl}</span>
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <>

@@ -19,14 +19,15 @@ export interface StatCardProps {
 
 export function StatCard({ label, value, color, icon, className }: StatCardProps) {
   return (
-    <div className={cn('bg-white border border-slate-200 rounded-xl p-5', className)}>
+    <div className={cn('rounded-xl p-5', className)}
+      style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-xs font-semibold text-slate-400 uppercase tracking-wide">{label}</span>
+        <span className="text-[11px] font-bold uppercase tracking-wide" style={{ color: 'var(--text-tertiary)' }}>{label}</span>
         {icon}
       </div>
       <div
         className="text-[28px] font-extrabold tracking-tight leading-none"
-        style={color ? { color } : undefined}
+        style={{ color: color || 'var(--text)' }}
       >
         {value}
       </div>

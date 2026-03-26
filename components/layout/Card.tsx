@@ -14,13 +14,13 @@ export interface CardProps {
 
 export default function Card({ title, children, flush = false, className }: CardProps) {
   return (
-    <div className={cn(
-      'bg-white border border-slate-200 rounded-2xl p-5',
-      !flush && 'mb-5',
-      className,
-    )}>
+    <div
+      className={cn('rounded-2xl p-4 sm:p-5', !flush && 'mb-4', className)}
+      style={{ background: 'var(--card)', border: '1px solid var(--border)' }}
+    >
       {title && (
-        <h3 className="text-[11px] font-bold text-slate-400 tracking-[1.5px] uppercase mb-3">
+        <h3 className="text-[11px] font-bold tracking-[1.5px] uppercase mb-3"
+          style={{ color: 'var(--text-tertiary)' }}>
           {title}
         </h3>
       )}

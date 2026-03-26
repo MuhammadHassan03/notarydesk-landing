@@ -203,6 +203,42 @@ export default function AnalyticsPage() {
       .map(([label, value]) => ({ label, value, max: maxVal, color: 'var(--primary)', subtitle: currency(value) }))
   }, [jobs])
 
+  // ── Profit per mile ────────────────────────────────────────────────────
+  // Groups completed jobs with same-day mileage to compute net $/mile
+  const profitPerMile = useMemo(() => {
+    const now = new Date()
+    const result: { label: string; value: number }[] = []
+    for (let i = 2; i >= 0; i--) {
+      const mo = new Date(now.getFullYear(), now.getMonth() - i, 1)
+      const key = `${mo.getFullYear()}-${String(mo.getMonth() + 1).padStart(2, '0')}`
+      const label = `${MONTHS[mo.getMonth()]} '${String(mo.getFullYear()).slice(2)}`
+      const income = jobs
+        .filter(j => j.status === 'completed' && getMonthKey(j.created_at) === key)
+        .reduce((s, j) => s + j.fee + (j.travel_fee || 0), 0)
+      const miles = trips
+        .filter(t => getMonthKey(t.trip_date) === key)
+        .reduce((s, t) => s + t.distance_miles, 0)
+      result.push({ label, value: miles > 0 ? parseFloat((income / miles).toFixed(2)) : 0 })
+    }
+    return result
+  }, [jobs, trips])
+
+  // ── Year-over-year ─────────────────────────────────────────────────────
+  const yoy = useMemo(() => {
+    const now = new Date()
+    const thisYear = now.getFullYear()
+    const lastYear = thisYear - 1
+    let thisYearTotal = 0, lastYearTotal = 0
+    jobs.filter(j => j.status === 'completed').forEach(j => {
+      const yr = new Date(j.created_at).getFullYear()
+      const fee = j.fee + (j.travel_fee || 0)
+      if (yr === thisYear) thisYearTotal += fee
+      if (yr === lastYear) lastYearTotal += fee
+    })
+    const pct = lastYearTotal > 0 ? ((thisYearTotal - lastYearTotal) / lastYearTotal * 100) : null
+    return { thisYear: thisYearTotal, lastYear: lastYearTotal, pct }
+  }, [jobs])
+
   // ── Summary stats ──────────────────────────────────────────────────────
   const totalIncome    = useMemo(() => jobs.filter(j => j.status === 'completed').reduce((s, j) => s + j.fee + (j.travel_fee || 0), 0), [jobs])
   const avgFee         = useMemo(() => jobs.filter(j => j.status === 'completed').length > 0 ? totalIncome / jobs.filter(j => j.status === 'completed').length : 0, [jobs, totalIncome])
@@ -245,22 +281,22 @@ export default function AnalyticsPage() {
       <div className="grid grid-cols-2 gap-5 mb-5 max-lg:grid-cols-1">
 
         {/* Monthly income */}
-        <ChartCard title="Monthly revenue (12 months)" icon="bar_chart">
+        <ChartCard title="Monthly revenue (12 months)">
           <BarChart data={monthlyIncome} color="var(--primary)" height={160} />
         </ChartCard>
 
         {/* Monthly jobs */}
-        <ChartCard title="Jobs per month (12 months)" icon="work">
+        <ChartCard title="Jobs per month (12 months)">
           <BarChart data={monthlyJobs} color="var(--info)" height={160} valueFormat={v => `${v} jobs`} />
         </ChartCard>
 
         {/* Monthly mileage */}
-        <ChartCard title="Miles driven per month (12 months)" icon="route">
+        <ChartCard title="Miles driven per month (12 months)">
           <BarChart data={monthlyMiles} color="var(--success)" height={160} valueFormat={v => `${v.toFixed(0)} mi`} />
         </ChartCard>
 
         {/* Payment status */}
-        <ChartCard title="Payment status breakdown" icon="payments">
+        <ChartCard title="Payment status breakdown">
           {paymentBreakdown.length === 0 ? (
             <p className="text-[13px]" style={{ color: 'var(--text-tertiary)' }}>No jobs yet</p>
           ) : (
@@ -271,10 +307,10 @@ export default function AnalyticsPage() {
         </ChartCard>
       </div>
 
-      <div className="grid grid-cols-3 gap-5 max-lg:grid-cols-1">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
 
         {/* Job types */}
-        <ChartCard title="Jobs by type" icon="category">
+        <ChartCard title="Jobs by type">
           {jobTypeBreakdown.length === 0 ? (
             <p className="text-[13px]" style={{ color: 'var(--text-tertiary)' }}>No jobs yet</p>
           ) : (
@@ -285,7 +321,7 @@ export default function AnalyticsPage() {
         </ChartCard>
 
         {/* Top clients */}
-        <ChartCard title="Top clients by revenue" icon="people">
+        <ChartCard title="Top clients by revenue">
           {topClients.length === 0 ? (
             <p className="text-[13px]" style={{ color: 'var(--text-tertiary)' }}>No completed jobs yet</p>
           ) : (
@@ -296,13 +332,86 @@ export default function AnalyticsPage() {
         </ChartCard>
 
         {/* Expense categories */}
-        <ChartCard title="Expenses by category" icon="account_balance_wallet">
+        <ChartCard title="Expenses by category">
           {expenseBreakdown.length === 0 ? (
             <p className="text-[13px]" style={{ color: 'var(--text-tertiary)' }}>No expenses yet</p>
           ) : (
             expenseBreakdown.map(x => (
               <HBar key={x.label} label={x.label} value={x.value} max={x.max} color={x.color} subtitle={x.subtitle} />
             ))
+          )}
+        </ChartCard>
+
+      </div>
+
+      {/* ── Second row ─────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-5">
+
+        {/* Profit per mile */}
+        <ChartCard title="Profit per mile ($/mi)">
+          {profitPerMile.every(x => x.value === 0) ? (
+            <p className="text-[13px]" style={{ color: 'var(--text-tertiary)' }}>No mileage + jobs data yet</p>
+          ) : (
+            profitPerMile.map(x => (
+              <HBar key={x.label} label={x.label} value={x.value} max={Math.max(...profitPerMile.map(p => p.value), 1)} color="var(--primary)" subtitle={`$${x.value.toFixed(2)}/mi`} />
+            ))
+          )}
+        </ChartCard>
+
+        {/* Year-over-year */}
+        <ChartCard title="Year-over-year revenue">
+          {yoy.thisYear === 0 && yoy.lastYear === 0 ? (
+            <p className="text-[13px]" style={{ color: 'var(--text-tertiary)' }}>No completed jobs yet</p>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {[
+                { label: String(new Date().getFullYear()), value: yoy.thisYear, color: 'var(--primary)' },
+                { label: String(new Date().getFullYear() - 1), value: yoy.lastYear, color: 'var(--text-tertiary)' },
+              ].map(x => (
+                <HBar key={x.label} label={x.label} value={x.value} max={Math.max(yoy.thisYear, yoy.lastYear, 1)} color={x.color} subtitle={currency(x.value)} />
+              ))}
+              {yoy.pct !== null && (
+                <div className="flex items-center gap-2 pt-1 border-t" style={{ borderColor: 'var(--divider)' }}>
+                  <span className="text-[12px]" style={{ color: 'var(--text-tertiary)' }}>vs last year</span>
+                  <span className="text-[13px] font-bold px-2 py-0.5 rounded-lg"
+                    style={{ background: yoy.pct >= 0 ? 'var(--success-bg)' : 'var(--danger-bg)', color: yoy.pct >= 0 ? 'var(--success)' : 'var(--danger)' }}>
+                    {yoy.pct >= 0 ? '+' : ''}{yoy.pct.toFixed(1)}%
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+        </ChartCard>
+
+        {/* Net income */}
+        <ChartCard title="Net income">
+          {totalIncome === 0 ? (
+            <p className="text-[13px]" style={{ color: 'var(--text-tertiary)' }}>No completed jobs yet</p>
+          ) : (
+            <div className="flex flex-col gap-4">
+              <div className="flex justify-between items-baseline">
+                <span className="text-[13px]" style={{ color: 'var(--text-secondary)' }}>Gross income</span>
+                <span className="text-[15px] font-bold" style={{ color: 'var(--success)' }}>{currency(totalIncome)}</span>
+              </div>
+              <div className="flex justify-between items-baseline">
+                <span className="text-[13px]" style={{ color: 'var(--text-secondary)' }}>Expenses</span>
+                <span className="text-[15px] font-bold" style={{ color: 'var(--danger)' }}>−{currency(totalExpenses)}</span>
+              </div>
+              <div className="border-t pt-3" style={{ borderColor: 'var(--divider)' }}>
+                <div className="flex justify-between items-baseline mb-2">
+                  <span className="text-[13px] font-bold" style={{ color: 'var(--text)' }}>Net income</span>
+                  <span className="text-[17px] font-extrabold" style={{ color: (totalIncome - totalExpenses) >= 0 ? 'var(--success)' : 'var(--danger)' }}>{currency(totalIncome - totalExpenses)}</span>
+                </div>
+                {/* Net margin bar */}
+                <div className="w-full rounded-full h-2 overflow-hidden" style={{ background: 'var(--surface)' }}>
+                  <div className="h-full rounded-full transition-all"
+                    style={{ width: `${Math.min(100, Math.max(0, ((totalIncome - totalExpenses) / totalIncome) * 100))}%`, background: 'var(--success)' }} />
+                </div>
+                <div className="text-[11px] mt-1 text-right" style={{ color: 'var(--text-tertiary)' }}>
+                  {totalIncome > 0 ? `${(((totalIncome - totalExpenses) / totalIncome) * 100).toFixed(1)}% margin` : ''}
+                </div>
+              </div>
+            </div>
           )}
         </ChartCard>
 

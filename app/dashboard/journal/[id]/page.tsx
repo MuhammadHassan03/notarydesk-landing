@@ -13,6 +13,7 @@ import { FormField } from '@/components/forms/FormField'
 import { IconInput } from '@/components/forms/IconInput'
 import { IconSelect } from '@/components/forms/IconSelect'
 import { Checkbox } from '@/components/ui/Checkbox'
+import { FormActions } from '@/components/forms/FormActions'
 
 export default function JournalDetailPage() {
   const router = useRouter()
@@ -123,48 +124,48 @@ export default function JournalDetailPage() {
         <PageHeader title="Edit entry" subtitle={entry.signer_name}
           action={<Button variant="outline" onClick={() => setEditing(false)}><Icon name="close" size={16} style={{ color: 'inherit' }} /> Cancel</Button>} />
 
-        <FormSection title="Signing information" icon="menu_book">
-          <FormField label="Signer name" icon="person" required>
-            <IconInput icon="person" value={signerName} onChange={e => setSignerName(e.target.value)} />
+        <FormSection title="Signing information">
+          <FormField label="Signer name" required>
+            <IconInput value={signerName} onChange={e => setSignerName(e.target.value)} />
           </FormField>
-          <FormField label="Signer address" icon="location_on">
-            <IconInput icon="location_on" value={signerAddr} onChange={e => setSignerAddr(e.target.value)} />
+          <FormField label="Signer address">
+            <IconInput value={signerAddr} onChange={e => setSignerAddr(e.target.value)} />
           </FormField>
-          <FormField label="Fee" icon="attach_money">
-            <IconInput icon="attach_money" type="number" step="0.01" value={fee} onChange={e => setFee(e.target.value)} />
+          <FormField label="Fee">
+            <IconInput type="number" step="0.01" value={fee} onChange={e => setFee(e.target.value)} />
           </FormField>
         </FormSection>
 
-        <FormSection title="Document & ID" icon="description">
+        <FormSection title="Document & ID">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
-            <FormField label="Document type" icon="description">
-              <IconSelect icon="description" value={docType} onChange={e => setDocType(e.target.value)}
+            <FormField label="Document type">
+              <IconSelect value={docType} onChange={e => setDocType(e.target.value)}
                 options={DOCUMENT_TYPES.map(d => ({ value: d, label: d }))} />
             </FormField>
-            <FormField label="ID type" icon="verified">
-              <IconSelect icon="verified" value={idType} onChange={e => setIdType(e.target.value)}
+            <FormField label="ID type">
+              <IconSelect value={idType} onChange={e => setIdType(e.target.value)}
                 options={ID_TYPES.map(d => ({ value: d, label: d }))} />
             </FormField>
           </div>
-          <FormField label="ID number" icon="verified">
-            <IconInput icon="verified" value={idNumber} onChange={e => setIdNumber(e.target.value)} />
+          <FormField label="ID number">
+            <IconInput value={idNumber} onChange={e => setIdNumber(e.target.value)} />
           </FormField>
         </FormSection>
 
-        <FormSection title="Compliance" icon="gavel">
+        <FormSection title="Compliance">
           <Checkbox checked={thumbprint} onChange={setThumbprint} label="Thumbprint obtained" />
         </FormSection>
 
-        <FormSection title="Notes" icon="edit_note">
+        <FormSection title="Notes">
           <textarea className="input-base resize-y min-h-[80px]" rows={3} value={notes} onChange={e => setNotes(e.target.value)} />
         </FormSection>
 
-        <div className="flex gap-3 mt-2 mb-8">
+        <FormActions>
           <Button variant="gold" onClick={handleSave} loading={saving} fullWidth size="lg">
             <Icon name="check" size={16} style={{ color: 'inherit' }} /> Save changes
           </Button>
           <Button variant="outline" onClick={() => setEditing(false)} size="lg">Cancel</Button>
-        </div>
+        </FormActions>
 
         {toast && <Toast message={toast.msg} type={toast.type} visible={!!toast} onHide={() => setToast(null)} />}
       </div>
@@ -222,18 +223,18 @@ export default function JournalDetailPage() {
 
         {/* Detail rows */}
         <div className="space-y-0">
-          <Row icon="schedule" label="Signing date" value={formatDate(entry.signing_date)} />
-          <Row icon="person" label="Signer" value={entry.signer_name} />
-          {entry.signer_address && <Row icon="location_on" label="Address" value={entry.signer_address} />}
-          {entry.id_type && <Row icon="verified" label="ID type" value={entry.id_type} />}
-          {entry.id_number && <Row icon="verified" label="ID number" value={entry.id_number} />}
+          <Row label="Signing date" value={formatDate(entry.signing_date)} />
+          <Row label="Signer" value={entry.signer_name} />
+          {entry.signer_address && <Row label="Address" value={entry.signer_address} />}
+          {entry.id_type && <Row label="ID type" value={entry.id_type} />}
+          {entry.id_number && <Row label="ID number" value={entry.id_number} />}
           {entry.thumbprint_obtained != null && (
-            <Row icon="fingerprint" label="Thumbprint" value={entry.thumbprint_obtained ? 'Obtained' : 'Not obtained'} />
+            <Row label="Thumbprint" value={entry.thumbprint_obtained ? 'Obtained' : 'Not obtained'} />
           )}
-          {entry.venue_county && <Row icon="gavel" label="Venue / County" value={entry.venue_county} />}
-          {entry.entry_number && <Row icon="menu_book" label="Entry #" value={entry.entry_number} />}
-          {entry.notes && <Row icon="edit_note" label="Notes" value={entry.notes} />}
-          <Row icon="schedule" label="Created" value={formatDate(entry.created_at?.split('T')[0])} />
+          {entry.venue_county && <Row label="Venue / County" value={entry.venue_county} />}
+          {entry.entry_number && <Row label="Entry #" value={entry.entry_number} />}
+          {entry.notes && <Row label="Notes" value={entry.notes} />}
+          <Row label="Created" value={formatDate(entry.created_at?.split('T')[0])} />
         </div>
       </div>
 

@@ -11,6 +11,11 @@ export interface Client {
   w9_sent: boolean | null
   expects_1099: boolean | null
   created_at: string
+  // Per-client rate & flags
+  default_fee: number | null
+  do_not_accept: boolean | null
+  do_not_accept_reason: string | null
+  referral_source: string | null
 }
 
 export interface CreateClientInput {
@@ -31,4 +36,8 @@ export interface UpdateClientInput {
   notes?: string
   w9_sent?: boolean
   expects_1099?: boolean
+  default_fee?: number | null
+  do_not_accept?: boolean
+  do_not_accept_reason?: string | null
+  referral_source?: string | null
 }

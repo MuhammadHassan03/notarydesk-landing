@@ -11,6 +11,7 @@ import { Button, Toast } from '@/components/ui'
 import { FormField } from '@/components/forms/FormField'
 import { IconInput } from '@/components/forms/IconInput'
 import { IconSelect } from '@/components/forms/IconSelect'
+import { PhoneInput } from '@/components/forms/PhoneInput'
 import { ONBOARDING_FEATURES, type OnboardingFeature } from '@/lib/content/onboarding'
 
 const US_STATES = [
@@ -179,18 +180,18 @@ export default function OnboardingPage() {
             </div>
 
             <div className="rounded-2xl p-6 mb-6" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
-              <FormField label="Full name" icon="person" required>
-                <IconInput icon="person" placeholder="Your full legal name" value={fullName} onChange={e => setFullName(e.target.value)} />
+              <FormField label="Full name" required>
+                <IconInput placeholder="Your full legal name" value={fullName} onChange={e => setFullName(e.target.value)} />
               </FormField>
-              <FormField label="Phone" icon="phone_iphone">
-                <IconInput icon="phone_iphone" type="tel" placeholder="(555) 123-4567" value={phone} onChange={e => setPhone(e.target.value)} />
+              <FormField label="Phone">
+                <PhoneInput value={phone} onChange={setPhone} />
               </FormField>
-              <FormField label="Commission state" icon="location_on" required>
-                <IconSelect icon="location_on" value={state} onChange={e => setState(e.target.value)} placeholder="Select your state"
+              <FormField label="Commission state" required>
+                <IconSelect value={state} onChange={e => setState(e.target.value)} placeholder="Select your state"
                   options={US_STATES.map(s => ({ value: s, label: s }))} />
               </FormField>
-              <FormField label="Commission number" icon="verified">
-                <IconInput icon="verified" placeholder="Your notary commission #" value={commission} onChange={e => setCommission(e.target.value)} />
+              <FormField label="Commission number">
+                <IconInput placeholder="Your notary commission #" value={commission} onChange={e => setCommission(e.target.value)} />
               </FormField>
             </div>
 
@@ -214,18 +215,18 @@ export default function OnboardingPage() {
             </div>
 
             <div className="rounded-2xl p-6 mb-6" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
-              <FormField label="Business name" icon="work">
-                <IconInput icon="work" placeholder="Your business or DBA name" value={bizName} onChange={e => setBizName(e.target.value)} />
+              <FormField label="Business name">
+                <IconInput placeholder="Your business or DBA name" value={bizName} onChange={e => setBizName(e.target.value)} />
               </FormField>
-              <FormField label="Business address" icon="location_on">
-                <IconInput icon="location_on" placeholder="Street, City, State ZIP" value={bizAddress} onChange={e => setBizAddress(e.target.value)} />
+              <FormField label="Business address">
+                <IconInput placeholder="Street, City, State ZIP" value={bizAddress} onChange={e => setBizAddress(e.target.value)} />
               </FormField>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
-                <FormField label="Default signing fee" icon="attach_money">
-                  <IconInput icon="attach_money" type="number" step="0.01" placeholder="150.00" value={defaultFee} onChange={e => setDefaultFee(e.target.value)} />
+                <FormField label="Default signing fee">
+                  <IconInput type="number" step="0.01" placeholder="150.00" value={defaultFee} onChange={e => setDefaultFee(e.target.value)} />
                 </FormField>
-                <FormField label="Years of experience" icon="schedule">
-                  <IconSelect icon="schedule" value={experience} onChange={e => setExperience(e.target.value)} placeholder="Select"
+                <FormField label="Years of experience">
+                  <IconSelect value={experience} onChange={e => setExperience(e.target.value)} placeholder="Select"
                     options={[
                       { value: 'less_than_1', label: 'Less than 1 year' },
                       { value: '1_3', label: '1-3 years' },

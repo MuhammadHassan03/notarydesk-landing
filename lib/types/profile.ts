@@ -13,4 +13,9 @@ export interface Profile {
   logo_url: string | null
   username: string | null
   plan: 'free' | 'pro' | 'business'
+  // Compliance expiration dates
+  eo_expiry_date: string | null
+  nna_cert_expiry: string | null
+  background_check_expiry: string | null
+  commission_expiry: string | null
 }

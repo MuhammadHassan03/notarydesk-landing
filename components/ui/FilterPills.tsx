@@ -25,12 +25,12 @@ export function PillSelector({ options, value, onChange, className }: PillSelect
           key={o.value}
           type="button"
           onClick={() => onChange(o.value)}
-          className={cn(
-            'px-4 py-2 rounded-full text-[13px] font-medium border transition-all',
-            value === o.value
-              ? 'bg-navy border-navy text-white'
-              : 'bg-transparent border-slate-200 text-slate-500 hover:border-navy hover:text-navy',
-          )}
+          className="px-4 py-2 rounded-full text-[13px] font-medium transition-all"
+          style={{
+            background: value === o.value ? 'var(--primary)' : 'var(--surface)',
+            color: value === o.value ? '#fff' : 'var(--text-secondary)',
+            border: `1px solid ${value === o.value ? 'var(--primary)' : 'var(--border)'}`,
+          }}
         >
           {o.icon && <span className="mr-1.5">{o.icon}</span>}
           {o.label}
@@ -63,28 +63,28 @@ export function FilterPills<T extends string>({
 }: FilterPillsProps<T>) {
   return (
     <div className={cn('flex flex-wrap gap-2', className)}>
-      {options.map(o => (
-        <button
-          key={o.key}
-          onClick={() => onChange(o.key)}
-          className={cn(
-            'px-4 py-2 rounded-full text-[13px] font-medium border transition-all',
-            value === o.key
-              ? 'bg-navy border-navy text-white'
-              : 'bg-transparent border-slate-200 text-slate-500 hover:border-navy hover:text-navy',
-          )}
-        >
-          {o.label}
-          {o.count !== undefined && (
-            <span className={cn(
-              'ml-1.5 text-[11px]',
-              value === o.key ? 'text-white/70' : 'text-slate-400',
-            )}>
-              {o.count}
-            </span>
-          )}
-        </button>
-      ))}
+      {options.map(o => {
+        const active = value === o.key
+        return (
+          <button
+            key={o.key}
+            onClick={() => onChange(o.key)}
+            className="px-3.5 py-1.5 rounded-full text-[13px] font-medium transition-all"
+            style={{
+              background: active ? 'var(--primary)' : 'var(--surface)',
+              color: active ? '#fff' : 'var(--text-secondary)',
+              border: `1px solid ${active ? 'var(--primary)' : 'var(--border)'}`,
+            }}
+          >
+            {o.label}
+            {o.count !== undefined && (
+              <span className="ml-1.5 text-[11px]" style={{ opacity: active ? 0.7 : 0.6 }}>
+                {o.count}
+              </span>
+            )}
+          </button>
+        )
+      })}
     </div>
   )
 }

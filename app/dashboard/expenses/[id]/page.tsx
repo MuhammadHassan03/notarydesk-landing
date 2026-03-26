@@ -15,6 +15,7 @@ import { FormField } from '@/components/forms/FormField'
 import { IconInput } from '@/components/forms/IconInput'
 import { IconSelect } from '@/components/forms/IconSelect'
 import { Checkbox } from '@/components/ui/Checkbox'
+import { FormActions } from '@/components/forms/FormActions'
 
 export default function ExpenseDetailPage() {
   const router = useRouter()
@@ -156,12 +157,12 @@ export default function ExpenseDetailPage() {
 
           {/* Detail rows */}
           <div className="space-y-0">
-            <DetailRow icon="schedule" label="Date" value={formatDate(expense.expense_date)} />
-            {expense.vendor && <DetailRow icon="work" label="Vendor" value={expense.vendor} />}
-            {expense.payment_method && <DetailRow icon="payments" label="Payment" value={expense.payment_method} />}
-            {cat.taxLine && <DetailRow icon="savings" label="IRS Line" value={cat.taxLine} />}
-            {expense.notes && <DetailRow icon="edit_note" label="Notes" value={expense.notes} />}
-            <DetailRow icon="schedule" label="Created" value={formatDate(expense.created_at?.split('T')[0])} />
+            <DetailRow label="Date" value={formatDate(expense.expense_date)} />
+            {expense.vendor && <DetailRow label="Vendor" value={expense.vendor} />}
+            {expense.payment_method && <DetailRow label="Payment" value={expense.payment_method} />}
+            {cat.taxLine && <DetailRow label="IRS Line" value={cat.taxLine} />}
+            {expense.notes && <DetailRow label="Notes" value={expense.notes} />}
+            <DetailRow label="Created" value={formatDate(expense.created_at?.split('T')[0])} />
           </div>
         </div>
 
@@ -194,7 +195,7 @@ export default function ExpenseDetailPage() {
           </Button>
         } />
 
-      <FormSection title="Category" icon="work">
+      <FormSection title="Category">
         <div className="flex flex-wrap gap-2">
           {EXPENSE_CATEGORIES.map(c => {
             const active = category === c.key
@@ -209,42 +210,42 @@ export default function ExpenseDetailPage() {
         </div>
       </FormSection>
 
-      <FormSection title="Details" icon="description">
+      <FormSection title="Details">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
-          <FormField label="Description" icon="description" required>
-            <IconInput icon="description" value={description} onChange={e => setDescription(e.target.value)} />
+          <FormField label="Description" required>
+            <IconInput value={description} onChange={e => setDescription(e.target.value)} />
           </FormField>
-          <FormField label="Amount" icon="attach_money" required>
-            <IconInput icon="attach_money" type="number" step="0.01" value={amount} onChange={e => setAmount(e.target.value)} />
+          <FormField label="Amount" required>
+            <IconInput type="number" step="0.01" value={amount} onChange={e => setAmount(e.target.value)} />
           </FormField>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-4">
-          <FormField label="Date" icon="schedule">
-            <IconInput icon="schedule" type="date" value={expDate} onChange={e => setExpDate(e.target.value)} />
+          <FormField label="Date">
+            <IconInput type="date" value={expDate} onChange={e => setExpDate(e.target.value)} />
           </FormField>
-          <FormField label="Vendor" icon="work">
-            <IconInput icon="work" value={vendor} onChange={e => setVendor(e.target.value)} />
+          <FormField label="Vendor">
+            <IconInput value={vendor} onChange={e => setVendor(e.target.value)} />
           </FormField>
-          <FormField label="Payment" icon="payments">
-            <IconSelect icon="payments" value={payMethod} onChange={e => setPayMethod(e.target.value)} options={PAYMENT_METHODS} />
+          <FormField label="Payment">
+            <IconSelect value={payMethod} onChange={e => setPayMethod(e.target.value)} options={PAYMENT_METHODS} />
           </FormField>
         </div>
       </FormSection>
 
-      <FormSection title="Tax" icon="savings">
+      <FormSection title="Tax">
         <Checkbox checked={deductible} onChange={setDeductible} label="Tax deductible" />
       </FormSection>
 
-      <FormSection title="Notes" icon="edit_note">
+      <FormSection title="Notes">
         <textarea className="input-base resize-y min-h-[80px]" rows={3} value={notes} onChange={e => setNotes(e.target.value)} />
       </FormSection>
 
-      <div className="flex gap-3 mt-2 mb-8">
+      <FormActions>
         <Button variant="gold" onClick={handleSave} loading={saving} fullWidth size="lg">
           <Icon name="check" size={16} style={{ color: 'inherit' }} /> Save changes
         </Button>
         <Button variant="outline" onClick={() => setEditing(false)} size="lg">Cancel</Button>
-      </div>
+      </FormActions>
 
       {toast && <Toast message={toast.msg} type={toast.type} visible={!!toast} onHide={() => setToast(null)} />}
     </div>

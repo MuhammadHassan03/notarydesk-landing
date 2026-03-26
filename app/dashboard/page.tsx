@@ -29,10 +29,22 @@ export default function DashboardPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { displayName, refreshProfile } = useAuth()
-  const { stats, loading: statsLoading } = useDashboardStats()
-  const { jobs, loading: jobsLoading } = useJobs()
+  const { stats, loading: statsLoading, refresh: refreshStats } = useDashboardStats()
+  const { jobs, loading: jobsLoading, refresh: refreshJobs } = useJobs()
   const [exporting, setExporting] = useState(false)
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'info' } | null>(null)
+
+  // Re-fetch when tab becomes visible (user returns from another tab/window)
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') {
+        refreshStats()
+        refreshJobs()
+      }
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
+  }, [refreshStats, refreshJobs])
 
   // Show success message after Lemon Squeezy redirect
   useEffect(() => {
@@ -203,7 +215,7 @@ export default function DashboardPage() {
 
       {recentJobs.length === 0 ? (
         <EmptyState
-          icon="◈"
+         
           title="No signing jobs yet"
           description="Create your first signing job to start tracking your business."
           action={<Button href="/dashboard/jobs/new">+ New Signing Job</Button>}

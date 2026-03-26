@@ -11,18 +11,36 @@ import { FormSection } from '@/components/forms/FormSection'
 import { FormField } from '@/components/forms/FormField'
 import { IconInput } from '@/components/forms/IconInput'
 import { IconSelect } from '@/components/forms/IconSelect'
+import { PhoneInput } from '@/components/forms/PhoneInput'
 
 // ── Tab config ────────────────────────────────────────────────────────────
 
-type TabId = 'profile' | 'business' | 'account' | 'legal' | 'danger'
+type TabId = 'profile' | 'business' | 'compliance' | 'account' | 'legal' | 'danger'
 
 const TABS: { id: TabId; label: string; icon: IconName }[] = [
-  { id: 'profile',  label: 'Profile',     icon: 'person' },
-  { id: 'business', label: 'Business',    icon: 'work' },
-  { id: 'account',  label: 'Account',     icon: 'settings' },
-  { id: 'legal',    label: 'Legal',       icon: 'gavel' },
-  { id: 'danger',   label: 'Danger Zone', icon: 'error' },
+  { id: 'profile',    label: 'Profile',     icon: 'person' },
+  { id: 'business',   label: 'Business',    icon: 'work' },
+  { id: 'compliance', label: 'Compliance',  icon: 'verified_user' },
+  { id: 'account',    label: 'Account',     icon: 'settings' },
+  { id: 'legal',      label: 'Legal',       icon: 'gavel' },
+  { id: 'danger',     label: 'Danger Zone', icon: 'error' },
 ]
+
+// ── Compliance helpers ─────────────────────────────────────────────────────
+
+function daysUntil(dateStr: string | null): number | null {
+  if (!dateStr) return null
+  const d = new Date(dateStr + 'T00:00:00')
+  return Math.ceil((d.getTime() - Date.now()) / 86400000)
+}
+
+function expiryStatus(days: number | null): { color: string; bg: string; label: string } {
+  if (days === null) return { color: 'var(--text-tertiary)', bg: 'var(--surface)', label: 'Not set' }
+  if (days < 0)   return { color: 'var(--danger)',  bg: 'var(--danger-bg)',  label: 'Expired' }
+  if (days <= 30) return { color: 'var(--danger)',  bg: 'var(--danger-bg)',  label: `${days}d left` }
+  if (days <= 90) return { color: 'var(--warning)', bg: 'var(--warning-bg)', label: `${days}d left` }
+  return { color: 'var(--success)', bg: 'var(--success-bg)', label: `${days}d left` }
+}
 
 const US_STATES = [
   'Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut',
@@ -85,9 +103,38 @@ export default function SettingsPage() {
   const [bizName, setBizName] = useState(''); const [bizAddr, setBizAddr] = useState('')
   const [defaultFee, setDefaultFee] = useState(''); const [bizDirty, setBizDirty] = useState(false)
 
+  // Compliance expiry dates
+  const [eoExpiry, setEoExpiry]       = useState('')
+  const [nnaCert, setNnaCert]         = useState('')
+  const [bgCheck, setBgCheck]         = useState('')
+  const [commExpiry, setCommExpiry]   = useState('')
+  const [compDirty, setCompDirty]     = useState(false)
+
   // Logo upload
   const [logoUploading, setLogoUploading] = useState(false)
   const logoInputRef = useRef<HTMLInputElement>(null)
+
+  // Avatar upload
+  const [avatarUploading, setAvatarUploading] = useState(false)
+  const avatarInputRef = useRef<HTMLInputElement>(null)
+
+  const handleAvatarUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (file.size > 2 * 1024 * 1024) { setToast({ msg: 'Image must be under 2 MB.', type: 'error' }); return }
+    setAvatarUploading(true)
+    try {
+      const form = new FormData()
+      form.append('file', file)
+      await api.post('/auth/upload-avatar', form)
+      await refreshProfile()
+      setToast({ msg: 'Avatar updated!', type: 'success' })
+    } catch (err: any) {
+      setToast({ msg: err.message || 'Upload failed.', type: 'error' })
+    }
+    setAvatarUploading(false)
+    e.target.value = ''
+  }, [refreshProfile])
 
   // Password
   const [newPw, setNewPw] = useState(''); const [confirmPw, setConfirmPw] = useState('')
@@ -107,6 +154,10 @@ export default function SettingsPage() {
     setBizName(profile.business_name || ''); setBizAddr(profile.business_address || '')
     setDefaultFee(profile.default_fee ? String(profile.default_fee) : '')
     setUsername(profile.username || '')
+    setEoExpiry(profile.eo_expiry_date || '')
+    setNnaCert(profile.nna_cert_expiry || '')
+    setBgCheck(profile.background_check_expiry || '')
+    setCommExpiry(profile.commission_expiry || '')
   }, [profile])
 
   const mark = <T,>(fn: (v: T) => void, biz = false) => (v: T) => { fn(v); biz ? setBizDirty(true) : setDirty(true) }
@@ -136,6 +187,19 @@ export default function SettingsPage() {
       setBizDirty(false); await refreshProfile(); setToast({ msg: 'Business settings saved!', type: 'success' })
     } catch (e: any) { setToast({ msg: e.message, type: 'error' }) }
   }, [bizName, bizAddr, defaultFee, updateProfile, refreshProfile])
+
+  const saveCompliance = useCallback(async () => {
+    try {
+      await updateProfile({
+        eo_expiry_date: eoExpiry || null,
+        nna_cert_expiry: nnaCert || null,
+        background_check_expiry: bgCheck || null,
+        commission_expiry: commExpiry || null,
+      } as any)
+      setCompDirty(false); await refreshProfile()
+      setToast({ msg: 'Compliance dates saved!', type: 'success' })
+    } catch (e: any) { setToast({ msg: e.message, type: 'error' }) }
+  }, [eoExpiry, nnaCert, bgCheck, commExpiry, updateProfile, refreshProfile])
 
   const handleLogoUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -189,9 +253,24 @@ export default function SettingsPage() {
 
       {/* Profile banner */}
       <div className="flex items-center gap-4 rounded-2xl p-5 mb-6" style={{ background: 'var(--primary)', color: '#fff' }}>
-        <div className="w-14 h-14 rounded-2xl font-bold text-xl flex items-center justify-center shrink-0" style={{ background: 'var(--accent)', color: 'var(--primary)' }}>
-          {initials(profile?.full_name)}
-        </div>
+        {/* Clickable avatar */}
+        <button
+          onClick={() => avatarInputRef.current?.click()}
+          disabled={avatarUploading}
+          className="relative w-14 h-14 rounded-2xl shrink-0 border-none cursor-pointer group"
+          title="Click to change photo"
+          style={{ background: 'var(--accent)' }}>
+          {profile?.avatar_url
+            ? <img src={profile.avatar_url} alt="Avatar" className="w-full h-full rounded-2xl object-cover" />
+            : <span className="w-full h-full flex items-center justify-center font-bold text-xl" style={{ color: 'var(--primary)' }}>{initials(profile?.full_name)}</span>
+          }
+          <div className="absolute inset-0 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+            style={{ background: 'rgba(0,0,0,0.45)' }}>
+            <Icon name={avatarUploading ? 'hourglass_empty' : 'photo_camera'} size={18} style={{ color: '#fff' }} />
+          </div>
+        </button>
+        <input ref={avatarInputRef} type="file" accept="image/png,image/jpeg,image/webp"
+          className="hidden" onChange={handleAvatarUpload} disabled={avatarUploading} />
         <div className="flex-1 min-w-0">
           <div className="text-[17px] font-bold truncate">{profile?.full_name || 'Notary'}</div>
           <div className="text-[13px] opacity-60 truncate">{profile?.email}</div>
@@ -220,27 +299,27 @@ export default function SettingsPage() {
         <div className="flex-1 min-w-0">
           {/* PROFILE */}
           {activeTab === 'profile' && (<>
-            <FormSection title="Personal information" icon="person">
-              <FormField label="Full legal name" icon="person">
-                <IconInput icon="person" value={fullName} onChange={e => mark(setFullName)(e.target.value)} placeholder="Sarah Johnson" />
+            <FormSection title="Personal information">
+              <FormField label="Full legal name">
+                <IconInput value={fullName} onChange={e => mark(setFullName)(e.target.value)} placeholder="Sarah Johnson" />
               </FormField>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
-                <FormField label="Phone number" icon="phone_iphone">
-                  <IconInput icon="phone_iphone" type="tel" value={phone} onChange={e => mark(setPhone)(e.target.value)} placeholder="(555) 123-4567" />
+                <FormField label="Phone number">
+                  <PhoneInput value={phone} onChange={v => mark(setPhone)(v)} />
                 </FormField>
-                <FormField label="Years as a notary" icon="schedule">
-                  <IconSelect icon="schedule" value={yearsExp} onChange={e => mark(setYearsExp)(e.target.value)}
+                <FormField label="Years as a notary">
+                  <IconSelect value={yearsExp} onChange={e => mark(setYearsExp)(e.target.value)}
                     options={['Less than 1','1-3','3-5','5-10','10+'].map(v => ({ value: v, label: v + ' years' }))} />
                 </FormField>
               </div>
             </FormSection>
-            <FormSection title="Notary commission" icon="verified">
+            <FormSection title="Notary commission">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
-                <FormField label="Commission number" icon="verified" hint="Found on your notary certificate">
-                  <IconInput icon="verified" value={commission} onChange={e => mark(setCommission)(e.target.value)} placeholder="e.g. 2345678" />
+                <FormField label="Commission number" hint="Found on your notary certificate">
+                  <IconInput value={commission} onChange={e => mark(setCommission)(e.target.value)} placeholder="e.g. 2345678" />
                 </FormField>
-                <FormField label="State of commission" icon="location_on">
-                  <IconSelect icon="location_on" value={state} onChange={e => mark(setState)(e.target.value)}
+                <FormField label="State of commission">
+                  <IconSelect value={state} onChange={e => mark(setState)(e.target.value)}
                     options={US_STATES.map(s => ({ value: s, label: s }))} />
                 </FormField>
               </div>
@@ -250,15 +329,15 @@ export default function SettingsPage() {
               <Button variant="outline" onClick={() => setDirty(false)}>Cancel</Button>
             </div>}
 
-            <FormSection title="Your booking link" icon="link">
+            <FormSection title="Your booking link">
               <div className="text-[12px] mb-3 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
                 Share this link so clients can request a signing — no phone tag needed.
               </div>
-              <FormField label="Your username" icon="alternate_email" error={usernameError}
+              <FormField label="Your username" error={usernameError}
                 hint="Lowercase letters, numbers, hyphens only">
                 <div className="flex gap-2">
                   <div className="flex-1">
-                    <IconInput icon="alternate_email" value={username}
+                    <IconInput value={username}
                       onChange={e => { setUsername(e.target.value.toLowerCase()); setUsernameError('') }}
                       placeholder="sarah-johnson-notary" />
                   </div>
@@ -286,21 +365,21 @@ export default function SettingsPage() {
 
           {/* BUSINESS */}
           {activeTab === 'business' && (<>
-            <FormSection title="Business details" icon="work">
-              <FormField label="Business / DBA name" icon="work" hint="Leave blank to use your full name on invoices">
-                <IconInput icon="work" value={bizName} onChange={e => mark(setBizName, true)(e.target.value)} placeholder="Sarah Johnson Notary Services" />
+            <FormSection title="Business details">
+              <FormField label="Business / DBA name" hint="Leave blank to use your full name on invoices">
+                <IconInput value={bizName} onChange={e => mark(setBizName, true)(e.target.value)} placeholder="Sarah Johnson Notary Services" />
               </FormField>
-              <FormField label="Business address" icon="location_on">
-                <IconInput icon="location_on" value={bizAddr} onChange={e => mark(setBizAddr, true)(e.target.value)} placeholder="123 Main St, Miami, FL 33101" />
+              <FormField label="Business address">
+                <IconInput value={bizAddr} onChange={e => mark(setBizAddr, true)(e.target.value)} placeholder="123 Main St, Miami, FL 33101" />
               </FormField>
             </FormSection>
-            <FormSection title="Fees & rates" icon="payments">
-              <FormField label="Default signing fee" icon="attach_money" hint="Auto-fills when creating new jobs and invoices">
-                <IconInput icon="attach_money" type="number" step="0.01" value={defaultFee} onChange={e => mark(setDefaultFee, true)(e.target.value)} placeholder="150.00" />
+            <FormSection title="Fees & rates">
+              <FormField label="Default signing fee" hint="Auto-fills when creating new jobs and invoices">
+                <IconInput type="number" step="0.01" value={defaultFee} onChange={e => mark(setDefaultFee, true)(e.target.value)} placeholder="150.00" />
               </FormField>
-              <SettingsRow icon="route" iconBg="var(--accent-pale)" iconColor="var(--accent)" label="IRS mileage rate" description="Used for all deduction calculations" value="$0.70/mi" />
+              <SettingsRow iconBg="var(--accent-pale)" iconColor="var(--accent)" label="IRS mileage rate" description="Used for all deduction calculations" value="$0.70/mi" />
             </FormSection>
-            <FormSection title="Invoice logo" icon="image">
+            <FormSection title="Invoice logo">
               <div className="flex items-center gap-4 py-2">
                 {profile?.logo_url ? (
                   <img src={profile.logo_url} alt="Business logo"
@@ -330,8 +409,8 @@ export default function SettingsPage() {
               </div>
             </FormSection>
 
-            <FormSection title="Compliance" icon="gavel">
-              <SettingsRow icon="gavel" iconBg={state ? 'var(--success-bg)' : 'var(--warning-bg)'} iconColor={state ? 'var(--success)' : 'var(--warning)'}
+            <FormSection title="Compliance">
+              <SettingsRow iconBg={state ? 'var(--success-bg)' : 'var(--warning-bg)'} iconColor={state ? 'var(--success)' : 'var(--warning)'}
                 label={`${state || 'State'} compliance`} description={state ? 'Journal requirements for your state' : 'Set your state in Profile'} value={state ? state.slice(0, 2).toUpperCase() : '—'} />
             </FormSection>
             {bizDirty && <div className="flex gap-3 mb-5">
@@ -340,11 +419,75 @@ export default function SettingsPage() {
             </div>}
           </>)}
 
+          {/* COMPLIANCE */}
+          {activeTab === 'compliance' && (<>
+            <div className="rounded-xl px-4 py-3 mb-5 flex items-start gap-2"
+              style={{ background: 'var(--primary-light)', border: '1px solid var(--primary)30' }}>
+              <Icon name="info" size={15} style={{ color: 'var(--primary)', marginTop: 2 }} />
+              <p className="text-[12px] leading-relaxed" style={{ color: 'var(--primary)' }}>
+                NotaryDesk tracks your certification and insurance expiry dates and warns you 90 days before renewal.
+                <strong> Green = valid, Yellow = expires in 90 days, Red = expires in 30 days or expired.</strong>
+              </p>
+            </div>
+
+            {/* Status summary */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+              {[
+                { label: 'E&O Insurance', days: daysUntil(eoExpiry || null) },
+                { label: 'NNA Cert', days: daysUntil(nnaCert || null) },
+                { label: 'Background Check', days: daysUntil(bgCheck || null) },
+                { label: 'Commission', days: daysUntil(commExpiry || null) },
+              ].map(item => {
+                const s = expiryStatus(item.days)
+                return (
+                  <div key={item.label} className="rounded-xl p-3 text-center"
+                    style={{ background: s.bg, border: `1px solid ${s.color}30` }}>
+                    <div className="text-[13px] font-bold mb-0.5" style={{ color: s.color }}>{s.label}</div>
+                    <div className="text-[11px] font-medium" style={{ color: s.color }}>{item.label}</div>
+                  </div>
+                )
+              })}
+            </div>
+
+            <FormSection title="E&O Insurance">
+              <FormField label="Expiry date" hint="Errors & Omissions insurance renewal date">
+                <IconInput type="date" value={eoExpiry} onChange={e => { setEoExpiry(e.target.value); setCompDirty(true) }} />
+              </FormField>
+            </FormSection>
+
+            <FormSection title="NNA Certification">
+              <FormField label="NNA cert expiry" hint="National Notary Association certification">
+                <IconInput type="date" value={nnaCert} onChange={e => { setNnaCert(e.target.value); setCompDirty(true) }} />
+              </FormField>
+            </FormSection>
+
+            <FormSection title="Background Check">
+              <FormField label="Background check expiry" hint="Most signing services require annual renewal">
+                <IconInput type="date" value={bgCheck} onChange={e => { setBgCheck(e.target.value); setCompDirty(true) }} />
+              </FormField>
+            </FormSection>
+
+            <FormSection title="Notary Commission">
+              <FormField label="Commission expiry" hint="Your state notary commission end date">
+                <IconInput type="date" value={commExpiry} onChange={e => { setCommExpiry(e.target.value); setCompDirty(true) }} />
+              </FormField>
+            </FormSection>
+
+            {compDirty && (
+              <div className="flex gap-3 mb-5">
+                <Button variant="gold" onClick={saveCompliance} loading={saving}>
+                  <Icon name="check" size={16} style={{ color: 'inherit' }} /> Save compliance dates
+                </Button>
+                <Button variant="outline" onClick={() => setCompDirty(false)}>Cancel</Button>
+              </div>
+            )}
+          </>)}
+
           {/* ACCOUNT */}
           {activeTab === 'account' && (<>
-            <FormSection title="Account details" icon="person">
-              <SettingsRow icon="mail" label="Email" value={profile?.email || '—'} />
-              <SettingsRow icon="star" iconBg="var(--accent-pale)" iconColor="var(--accent)" label="Current plan" description="Manage your subscription" value={planLabel} />
+            <FormSection title="Account details">
+              <SettingsRow label="Email" value={profile?.email || '—'} />
+              <SettingsRow iconBg="var(--accent-pale)" iconColor="var(--accent)" label="Current plan" description="Manage your subscription" value={planLabel} />
               {(plan === 'free' || !plan) && (
                 <div className="pt-3 pb-1">
                   <Button variant="gold" fullWidth href="/dashboard/upgrade">
@@ -353,12 +496,12 @@ export default function SettingsPage() {
                 </div>
               )}
             </FormSection>
-            <FormSection title="Change password" icon="lock">
-              <FormField label="New password" icon="lock">
-                <IconInput icon="lock" type="password" value={newPw} onChange={e => setNewPw(e.target.value)} placeholder="Min. 8 characters" />
+            <FormSection title="Change password">
+              <FormField label="New password">
+                <IconInput type="password" value={newPw} onChange={e => setNewPw(e.target.value)} placeholder="Min. 8 characters" />
               </FormField>
-              <FormField label="Confirm password" icon="lock">
-                <IconInput icon="lock" type="password" value={confirmPw} onChange={e => setConfirmPw(e.target.value)} placeholder="Re-enter" />
+              <FormField label="Confirm password">
+                <IconInput type="password" value={confirmPw} onChange={e => setConfirmPw(e.target.value)} placeholder="Re-enter" />
               </FormField>
               {newPw && confirmPw && newPw === confirmPw && (
                 <div className="flex items-center gap-1.5 mb-3 text-[12px] font-medium" style={{ color: 'var(--success)' }}>
@@ -373,14 +516,14 @@ export default function SettingsPage() {
 
           {/* LEGAL */}
           {activeTab === 'legal' && (<>
-            <FormSection title="Legal documents" icon="gavel">
-              <SettingsRow icon="shield" label="Privacy Policy" description="How we collect, use, and protect your data" onClick={() => window.open('/privacy', '_blank')} />
-              <SettingsRow icon="description" label="Terms of Service" description="Rules and conditions" onClick={() => window.open('/terms', '_blank')} />
-              <SettingsRow icon="mail" label="Contact Support" description="engineermirzahassan@gmail.com" onClick={() => window.open('mailto:engineermirzahassan@gmail.com')} />
+            <FormSection title="Legal documents">
+              <SettingsRow label="Privacy Policy" description="How we collect, use, and protect your data" onClick={() => window.open('/privacy', '_blank')} />
+              <SettingsRow label="Terms of Service" description="Rules and conditions" onClick={() => window.open('/terms', '_blank')} />
+              <SettingsRow label="Contact Support" description="engineermirzahassan@gmail.com" onClick={() => window.open('mailto:engineermirzahassan@gmail.com')} />
             </FormSection>
-            <FormSection title="App information" icon="info">
-              <SettingsRow icon="language" label="Version" value="1.0.0" />
-              <SettingsRow icon="devices" label="Platform" value="Web Dashboard" />
+            <FormSection title="App information">
+              <SettingsRow label="Version" value="1.0.0" />
+              <SettingsRow label="Platform" value="Web Dashboard" />
             </FormSection>
           </>)}
 

@@ -1,17 +1,25 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useExpenses, useExpenseSummary, useDeleteExpense } from '@/hooks/use-expenses'
 import { EXPENSE_CATEGORIES, getCategoryByKey } from '@/lib/constants/expenses'
 import { currency, formatDate, monthLabel } from '@/lib/utils'
 import { Icon } from '@/components/ui/icons'
 import { Button, Toast } from '@/components/ui'
+import { FilterPills } from '@/components/ui/FilterPills'
 import { PageHeader } from '@/components/layout'
+import { Pagination } from '@/components/ui/Pagination'
+
+const PAGE_SIZE = 20
 
 export default function ExpensesListPage() {
   const router = useRouter()
   const [filter, setFilter] = useState<string | null>(null)
+  const [search, setSearch] = useState('')
+  const [page, setPage] = useState(1)
+
+  useEffect(() => setPage(1), [filter, search])
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null)
 
@@ -19,9 +27,20 @@ export default function ExpensesListPage() {
   const { summary, refresh: refreshSummary } = useExpenseSummary()
   const { remove, loading: deleting } = useDeleteExpense()
 
-  const sorted = useMemo(() =>
-    [...expenses].sort((a, b) => b.expense_date.localeCompare(a.expense_date)),
-  [expenses])
+  const sorted = useMemo(() => {
+    let list = [...expenses].sort((a, b) => b.expense_date.localeCompare(a.expense_date))
+    if (search.trim()) {
+      const q = search.toLowerCase()
+      list = list.filter(e =>
+        e.description?.toLowerCase().includes(q) ||
+        e.vendor?.toLowerCase().includes(q)
+      )
+    }
+    return list
+  }, [expenses, search])
+
+  const totalPages = Math.ceil(sorted.length / PAGE_SIZE)
+  const paginated = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   const catCounts = useMemo(() => {
     const map: Record<string, number> = {}
@@ -64,7 +83,20 @@ export default function ExpensesListPage() {
         </div>
       </div>
 
-      {/* ── Category Filters ─────────────────────────────────── */}
+      {/* ── Search + Category Filters ────────────────────────── */}
+      <div className="mb-3">
+        <div className="relative">
+          <Icon name="search" size={15} style={{ color: 'var(--text-tertiary)', position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
+          <input
+            type="text"
+            placeholder="Search expenses…"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="w-full pl-8 pr-3 py-2.5 rounded-xl text-[13px] outline-none"
+            style={{ background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border)' }}
+          />
+        </div>
+      </div>
       <div className="flex flex-wrap gap-2 mb-5">
         <button onClick={() => setFilter(null)}
           className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-[12px] font-semibold border-none cursor-pointer transition-all"
@@ -93,8 +125,9 @@ export default function ExpensesListPage() {
           <Button variant="gold" href="/dashboard/expenses/new"><Icon name="add" size={16} style={{ color: 'inherit' }} /> Add expense</Button>
         </div>
       ) : (
+        <>
         <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
-          {sorted.map((exp, i) => {
+          {paginated.map((exp, i) => {
             const cat = getCategoryByKey(exp.category)
             return (
               <div key={exp.id} className="flex items-center gap-3 px-5 py-4 transition-colors cursor-pointer"
@@ -136,6 +169,8 @@ export default function ExpensesListPage() {
             )
           })}
         </div>
+        <Pagination page={page} totalPages={totalPages} totalItems={sorted.length} pageSize={PAGE_SIZE} onPage={setPage} />
+        </>
       )}
 
       {/* ── Category Breakdown ───────────────────────────────── */}

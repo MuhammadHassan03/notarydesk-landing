@@ -13,6 +13,9 @@ import { FormSection } from '@/components/forms/FormSection'
 import { FormField } from '@/components/forms/FormField'
 import { IconInput } from '@/components/forms/IconInput'
 import { IconSelect } from '@/components/forms/IconSelect'
+import { PhoneInput } from '@/components/forms/PhoneInput'
+import { FormActions } from '@/components/forms/FormActions'
+import Link from 'next/link'
 
 export default function InvoiceDetailPage() {
   const router = useRouter()
@@ -110,35 +113,39 @@ export default function InvoiceDetailPage() {
 
   if (editing) return (
     <div className="max-w-[720px]">
-      <PageHeader title={`Edit ${invNum}`} subtitle={invoice.client_name}
-        action={<Button variant="outline" onClick={() => setEditing(false)}><Icon name="close" size={16} style={{ color: 'inherit' }} /> Cancel</Button>} />
+      <Link href="#" onClick={e => { e.preventDefault(); setEditing(false) }}
+        className="inline-flex items-center gap-1.5 text-[13px] font-medium mb-4 no-underline transition-opacity hover:opacity-70"
+        style={{ color: 'var(--text-secondary)' }}>
+        <Icon name="arrow_back" size={15} style={{ color: 'inherit' }} /> Back to invoice
+      </Link>
+      <PageHeader title={`Edit ${invNum}`} subtitle={invoice.client_name} />
 
-      <FormSection title="Client" icon="person">
-        <FormField label="Client name" icon="person" required>
-          <IconInput icon="person" value={clientName} onChange={e => setClientName(e.target.value)} />
+      <FormSection title="Client">
+        <FormField label="Client name" required>
+          <IconInput value={clientName} onChange={e => setClientName(e.target.value)} />
         </FormField>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
-          <FormField label="Email" icon="mail"><IconInput icon="mail" type="email" value={clientEmail} onChange={e => setClientEmail(e.target.value)} /></FormField>
-          <FormField label="Phone" icon="phone_iphone"><IconInput icon="phone_iphone" type="tel" value={clientPhone} onChange={e => setClientPhone(e.target.value)} /></FormField>
+          <FormField label="Email"><IconInput type="email" value={clientEmail} onChange={e => setClientEmail(e.target.value)} /></FormField>
+          <FormField label="Phone"><PhoneInput value={clientPhone} onChange={setClientPhone} /></FormField>
         </div>
       </FormSection>
-      <FormSection title="Service" icon="receipt_long">
-        <FormField label="Description" icon="description" required><IconInput icon="description" value={service} onChange={e => setService(e.target.value)} /></FormField>
+      <FormSection title="Service">
+        <FormField label="Description" required><IconInput value={service} onChange={e => setService(e.target.value)} /></FormField>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
-          <FormField label="Amount" icon="attach_money" required><IconInput icon="attach_money" type="number" step="0.01" value={amount} onChange={e => setAmount(e.target.value)} /></FormField>
-          <FormField label="Due date" icon="schedule"><IconInput icon="schedule" type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} /></FormField>
+          <FormField label="Amount" required><IconInput type="number" step="0.01" value={amount} onChange={e => setAmount(e.target.value)} /></FormField>
+          <FormField label="Due date"><IconInput type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} /></FormField>
         </div>
       </FormSection>
-      <FormSection title="Payment" icon="payments">
-        <FormField label="Method" icon="payments"><IconSelect icon="payments" value={payMethod} onChange={e => setPayMethod(e.target.value)} options={INVOICE_PAYMENT_METHODS} /></FormField>
+      <FormSection title="Payment">
+        <FormField label="Method"><IconSelect value={payMethod} onChange={e => setPayMethod(e.target.value)} options={INVOICE_PAYMENT_METHODS} /></FormField>
       </FormSection>
-      <FormSection title="Notes" icon="edit_note">
+      <FormSection title="Notes">
         <textarea className="input-base resize-y min-h-[80px]" rows={3} value={notes} onChange={e => setNotes(e.target.value)} />
       </FormSection>
-      <div className="flex gap-3 mt-2 mb-8">
+      <FormActions>
         <Button variant="gold" onClick={handleSave} loading={actionLoading} fullWidth size="lg"><Icon name="check" size={16} style={{ color: 'inherit' }} /> Save</Button>
         <Button variant="outline" onClick={() => setEditing(false)} size="lg">Cancel</Button>
-      </div>
+      </FormActions>
       {toast && <Toast message={toast.msg} type={toast.type} visible={!!toast} onHide={() => setToast(null)} />}
     </div>
   )
@@ -149,12 +156,16 @@ export default function InvoiceDetailPage() {
 
   return (
     <div className="max-w-[720px]">
+      <Link href="/dashboard/invoices"
+        className="inline-flex items-center gap-1.5 text-[13px] font-medium mb-4 no-underline transition-opacity hover:opacity-70"
+        style={{ color: 'var(--text-secondary)' }}>
+        <Icon name="arrow_back" size={15} style={{ color: 'inherit' }} /> Back to invoices
+      </Link>
       <PageHeader title={invNum} subtitle={invoice.client_name}
         action={
           <div className="flex gap-2">
-            <Button variant="outline" href="/dashboard/invoices"><Icon name="arrow_back" size={16} style={{ color: 'inherit' }} /> Back</Button>
-            {canEdit && <Button variant="primary" onClick={startEdit}><Icon name="edit_note" size={16} style={{ color: 'inherit' }} /> Edit</Button>}
-            <Button variant="danger" size="sm" onClick={() => setShowDelete(true)}><Icon name="close" size={14} style={{ color: 'inherit' }} /></Button>
+            {canEdit && <Button variant="primary" size="sm" onClick={startEdit}><Icon name="edit_note" size={16} style={{ color: 'inherit' }} /> Edit</Button>}
+            <Button variant="danger" size="sm" onClick={() => setShowDelete(true)}><Icon name="delete" size={15} style={{ color: 'inherit' }} /></Button>
           </div>
         } />
 
@@ -185,52 +196,46 @@ export default function InvoiceDetailPage() {
       <div className="rounded-2xl p-6" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
         <div className="text-[32px] font-extrabold mb-5" style={{ color: 'var(--text)' }}>{currency(invoice.amount)}</div>
 
-        <Row icon="person" label="Client" value={invoice.client_name} />
-        {invoice.client_email && <Row icon="mail" label="Email" value={invoice.client_email} />}
-        {invoice.client_phone && <Row icon="phone_iphone" label="Phone" value={invoice.client_phone} />}
-        <Row icon="description" label="Service" value={invoice.service_description} />
-        {invoice.due_date && <Row icon="schedule" label="Due date" value={formatDate(invoice.due_date)} />}
-        {invoice.payment_method && <Row icon="payments" label="Payment method" value={invoice.payment_method} />}
-        {invoice.notes && <Row icon="edit_note" label="Notes" value={invoice.notes} />}
-        <Row icon="schedule" label="Created" value={formatDate(invoice.created_at?.split('T')[0])} />
+        <Row label="Client" value={invoice.client_name} />
+        {invoice.client_email && <Row label="Email" value={invoice.client_email} />}
+        {invoice.client_phone && <Row label="Phone" value={invoice.client_phone} />}
+        <Row label="Service" value={invoice.service_description} />
+        {invoice.due_date && <Row label="Due date" value={formatDate(invoice.due_date)} />}
+        {invoice.payment_method && <Row label="Payment method" value={invoice.payment_method} />}
+        {invoice.notes && <Row label="Notes" value={invoice.notes} />}
+        <Row label="Created" value={formatDate(invoice.created_at?.split('T')[0])} />
       </div>
 
-      {/* ── PDF & Email actions ──────────────────────────────── */}
-      <div className="flex gap-3 mt-5">
-        <Button variant="outline" onClick={() => {
-          const html = generateInvoiceHTML(invoice as any, (profile || {}) as any)
-          printInvoice(html)
-        }}>
-          <Icon name="picture_as_pdf" size={16} style={{ color: 'inherit' }} /> Download PDF
-        </Button>
-      </div>
-
-      {/* ── Status action buttons ──────────────────────────────── */}
-      {nextStatuses.length > 0 && (
-        <div className="flex gap-3 mt-3">
-          {nextStatuses.map(ns => {
-            const nsc = INVOICE_STATUS_CONFIG[ns]
-            const variant = ns === 'paid' ? 'gold' : ns === 'sent' ? 'primary' : 'outline'
-            return (
-              <Button key={ns} variant={variant as any} onClick={() => handleStatusChange(ns)} loading={actionLoading} size="lg">
-                <Icon name={nsc.icon} size={16} style={{ color: 'inherit' }} />
-                {ns === 'sent' ? 'Send invoice' : ns === 'paid' ? 'Mark as paid' : `Mark ${nsc.label.toLowerCase()}`}
-              </Button>
-            )
-          })}
-        </div>
-      )}
-
-      {/* Delete */}
+      {/* Delete confirm */}
       {showDelete && (
-        <div className="rounded-xl p-4 mt-5 flex items-center justify-between" style={{ background: 'var(--danger-bg)', border: '1px solid var(--danger)' }}>
+        <div className="rounded-xl p-4 mt-5 flex items-center justify-between gap-3" style={{ background: 'var(--danger-bg)', border: '1px solid var(--danger)' }}>
           <span className="text-[13px] font-medium" style={{ color: 'var(--danger)' }}>Permanently delete {invNum}?</span>
-          <div className="flex gap-2">
+          <div className="flex gap-2 shrink-0">
             <Button variant="danger" size="sm" onClick={handleDelete} loading={actionLoading}>Yes, delete</Button>
             <Button variant="ghost" size="sm" onClick={() => setShowDelete(false)}>Cancel</Button>
           </div>
         </div>
       )}
+
+      {/* ── Actions ──────────────────────────────────────────── */}
+      <FormActions>
+        {nextStatuses.map(ns => {
+          const nsc = INVOICE_STATUS_CONFIG[ns]
+          const variant = ns === 'paid' ? 'gold' : ns === 'sent' ? 'primary' : 'outline'
+          return (
+            <Button key={ns} variant={variant as any} onClick={() => handleStatusChange(ns)} loading={actionLoading} fullWidth size="lg">
+              <Icon name={nsc.icon} size={16} style={{ color: 'inherit' }} />
+              {ns === 'sent' ? 'Send invoice' : ns === 'paid' ? 'Mark as paid' : `Mark ${nsc.label.toLowerCase()}`}
+            </Button>
+          )
+        })}
+        <Button variant="outline" size="lg" onClick={() => {
+          const html = generateInvoiceHTML(invoice as any, (profile || {}) as any)
+          printInvoice(html)
+        }}>
+          <Icon name="picture_as_pdf" size={16} style={{ color: 'inherit' }} /> Download PDF
+        </Button>
+      </FormActions>
 
       {toast && <Toast message={toast.msg} type={toast.type} visible={!!toast} onHide={() => setToast(null)} />}
     </div>

@@ -64,6 +64,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [displayName, setDisplayName] = useState<string | null>(null)
   const [plan, setPlan] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  // needsOnboarding is set to true when profile has no full_name.
+  // It's React state so the route-protection effect re-runs when it changes.
+  const [needsOnboarding, setNeedsOnboarding] = useState(false)
   const checkedRef = useRef(false)
 
   // ── Check existing session on mount ─────────────────────────────
@@ -85,12 +88,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsAuthenticated(true)
       setDisplayName(profile.full_name || profile.email?.split('@')[0] || null)
       setPlan(profile.plan || 'free')
+      setNeedsOnboarding(!profile.full_name)
     } catch {
       auth.logout()
       _cachedProfile = null
       setIsAuthenticated(false)
       setDisplayName(null)
       setPlan(null)
+      setNeedsOnboarding(false)
     }
 
     setLoading(false)
@@ -103,11 +108,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (!isAuthenticated && !pub && pathname?.startsWith('/dashboard')) {
       router.replace('/dashboard/login')
+      return
     }
-    if (isAuthenticated && pub) {
+    if (isAuthenticated && pub && !needsOnboarding) {
       router.replace('/dashboard')
+      return
     }
-  }, [isAuthenticated, loading, pathname, router])
+    // New users: redirect to onboarding if profile incomplete
+    if (isAuthenticated && needsOnboarding && pathname !== '/dashboard/onboarding') {
+      router.replace('/dashboard/onboarding')
+    }
+  }, [isAuthenticated, loading, needsOnboarding, pathname, router])
 
   // ── Sign in ───────────────────────────────────────────────────────
   const signIn = useCallback((accessToken: string, refreshToken: string) => {
@@ -119,6 +130,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         _cachedProfile = profile
         setDisplayName(profile.full_name || profile.email?.split('@')[0] || null)
         setPlan(profile.plan || 'free')
+        // Setting state triggers route-protection effect above
+        setNeedsOnboarding(!profile.full_name)
       })
       .catch(() => {})
   }, [])
@@ -129,6 +142,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsAuthenticated(false)
     setDisplayName(null)
     setPlan(null)
+    setNeedsOnboarding(false)
     auth.logout()
   }, [])
 
@@ -139,6 +153,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       _cachedProfile = profile
       setDisplayName(profile.full_name || profile.email?.split('@')[0] || null)
       setPlan(profile.plan || 'free')
+      // Clear onboarding flag once profile is complete
+      if (profile.full_name) setNeedsOnboarding(false)
     } catch {}
   }, [])
 

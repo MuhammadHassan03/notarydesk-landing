@@ -7,10 +7,13 @@ import { JOB_TYPES, DOC_TYPES } from '@/lib/constants'
 import { Icon } from '@/components/ui/icons'
 import { Button, Toast } from '@/components/ui'
 import { PageHeader } from '@/components/layout'
+import Link from 'next/link'
 import { FormSection } from '@/components/forms/FormSection'
 import { FormField } from '@/components/forms/FormField'
+import { FormActions } from '@/components/forms/FormActions'
 import { IconInput } from '@/components/forms/IconInput'
 import { IconSelect } from '@/components/forms/IconSelect'
+import { PhoneInput } from '@/components/forms/PhoneInput'
 import { Toggle } from '@/components/ui/Toggle'
 
 const JOB_TYPE_ICONS: Record<string, string> = {
@@ -105,12 +108,16 @@ export default function NewJobPage() {
 
   return (
     <div className="max-w-[720px]">
-      <PageHeader title="New signing job" subtitle="Create a job to track your signing workflow"
-        action={<Button variant="outline" href="/dashboard/jobs"><Icon name="arrow_back" size={16} style={{ color: 'inherit' }} /> Back to jobs</Button>} />
+      <Link href="/dashboard/jobs"
+        className="inline-flex items-center gap-1.5 text-[13px] font-medium mb-4 no-underline transition-opacity hover:opacity-70"
+        style={{ color: 'var(--text-secondary)' }}>
+        <Icon name="arrow_back" size={15} style={{ color: 'inherit' }} /> Back to jobs
+      </Link>
+      <PageHeader title="New signing job" subtitle="Create a job to track your signing workflow" />
 
       <form onSubmit={handleSubmit}>
         {/* Job Type */}
-        <FormSection title="Job type" icon="work">
+        <FormSection title="Job type">
           <div className="flex flex-wrap gap-2">
             {JOB_TYPES.map(jt => {
               const active = jobType === jt.value
@@ -128,51 +135,51 @@ export default function NewJobPage() {
         </FormSection>
 
         {/* Signer */}
-        <FormSection title="Signer information" icon="person">
-          <FormField label="Signer name" icon="person" required error={errors.signerName}>
-            <IconInput icon="person" placeholder="Person being notarized"
+        <FormSection title="Signer information">
+          <FormField label="Signer name" required error={errors.signerName}>
+            <IconInput placeholder="Person being notarized"
               value={signerName} onChange={e => { setSignerName(e.target.value); setErrors(p => ({ ...p, signerName: '' })) }} />
           </FormField>
-          <FormField label="Signing address" icon="location_on">
-            <IconInput icon="location_on" placeholder="Where the signing will take place" value={signerAddr} onChange={e => setSignerAddr(e.target.value)} />
+          <FormField label="Signing address">
+            <IconInput placeholder="Where the signing will take place" value={signerAddr} onChange={e => setSignerAddr(e.target.value)} />
           </FormField>
         </FormSection>
 
         {/* Client */}
-        <FormSection title="Client / company" icon="work">
-          <FormField label="Client name" icon="work">
-            <IconInput icon="work" placeholder="Title co, signing service, or direct client" value={clientName} onChange={e => setClientName(e.target.value)} />
+        <FormSection title="Client / company">
+          <FormField label="Client name">
+            <IconInput placeholder="Title co, signing service, or direct client" value={clientName} onChange={e => setClientName(e.target.value)} />
           </FormField>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
-            <FormField label="Email" icon="mail">
-              <IconInput icon="mail" type="email" placeholder="client@example.com" value={clientEmail} onChange={e => setClientEmail(e.target.value)} />
+            <FormField label="Email">
+              <IconInput type="email" placeholder="client@example.com" value={clientEmail} onChange={e => setClientEmail(e.target.value)} />
             </FormField>
-            <FormField label="Phone" icon="phone_iphone">
-              <IconInput icon="phone_iphone" type="tel" placeholder="(555) 123-4567" value={clientPhone} onChange={e => setClientPhone(e.target.value)} />
+            <FormField label="Phone">
+              <PhoneInput value={clientPhone} onChange={setClientPhone} />
             </FormField>
           </div>
         </FormSection>
 
         {/* Signing Details */}
-        <FormSection title="Signing details" icon="description">
-          <FormField label="Document type" icon="description">
-            <IconSelect icon="description" value={docType} onChange={e => setDocType(e.target.value)} placeholder="Select document type"
+        <FormSection title="Signing details">
+          <FormField label="Document type">
+            <IconSelect value={docType} onChange={e => setDocType(e.target.value)} placeholder="Select document type"
               options={DOC_TYPES.map(d => ({ value: d, label: d }))} />
           </FormField>
-          <FormField label="Number of notarial acts" icon="edit_note" hint="Each notarized document = 1 act.">
+          <FormField label="Number of notarial acts" hint="Each notarized document = 1 act.">
             <ActsCounter value={acts} onChange={setActs} />
           </FormField>
         </FormSection>
 
         {/* Fee */}
-        <FormSection title="Fee" icon="payments">
+        <FormSection title="Fee">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
-            <FormField label="Signing fee" icon="attach_money" required error={errors.fee}>
-              <IconInput icon="attach_money" type="number" step="0.01" placeholder="0.00"
+            <FormField label="Signing fee" required error={errors.fee}>
+              <IconInput type="number" step="0.01" placeholder="0.00"
                 value={fee} onChange={e => { setFee(e.target.value); setErrors(p => ({ ...p, fee: '' })) }} />
             </FormField>
-            <FormField label="Travel fee" icon="directions_car" hint="Optional">
-              <IconInput icon="directions_car" type="number" step="0.01" placeholder="0.00" value={travelFee} onChange={e => setTravelFee(e.target.value)} />
+            <FormField label="Travel fee" hint="Optional">
+              <IconInput type="number" step="0.01" placeholder="0.00" value={travelFee} onChange={e => setTravelFee(e.target.value)} />
             </FormField>
           </div>
           {total > 0 && (
@@ -186,22 +193,22 @@ export default function NewJobPage() {
         </FormSection>
 
         {/* Schedule */}
-        <FormSection title="Schedule" icon="schedule">
+        <FormSection title="Schedule">
           <div className="mb-4">
             <Toggle value={hasSchedule} onChange={setHasSchedule} label="Set a date & time" description="An appointment will be auto-created" />
           </div>
           {hasSchedule && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 animate-slide-up">
-              <FormField label="Date" icon="calendar_month">
-                <IconInput icon="calendar_month" type="date" value={schedDate} onChange={e => setSchedDate(e.target.value)} />
+              <FormField label="Date">
+                <IconInput type="date" value={schedDate} onChange={e => setSchedDate(e.target.value)} />
               </FormField>
-              <FormField label="Time" icon="schedule">
-                <IconInput icon="schedule" type="time" value={schedTime} onChange={e => setSchedTime(e.target.value)} />
+              <FormField label="Time">
+                <IconInput type="time" value={schedTime} onChange={e => setSchedTime(e.target.value)} />
               </FormField>
             </div>
           )}
           {hasSchedule && (
-            <FormField label="Send client reminder" icon="notifications">
+            <FormField label="Send client reminder">
               <select value={reminderMinutes} onChange={e => setReminderMinutes(Number(e.target.value))}
                 className="w-full px-4 py-3 rounded-xl text-[14px] outline-none"
                 style={{ border: '1.5px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}>
@@ -222,17 +229,17 @@ export default function NewJobPage() {
         </FormSection>
 
         {/* Notes */}
-        <FormSection title="Notes" icon="edit_note">
+        <FormSection title="Notes">
           <textarea rows={3} placeholder="Confirmation #, special instructions, gate codes..." value={notes} onChange={e => setNotes(e.target.value)} className="input-base resize-y min-h-[80px]" />
         </FormSection>
 
         {/* Actions */}
-        <div className="flex gap-3 mt-2 mb-8">
+        <FormActions>
           <Button type="submit" variant="gold" fullWidth loading={loading} size="lg" disabled={!isValid && !loading}>
             <Icon name="add_circle" size={18} style={{ color: 'inherit' }} /> Create signing job
           </Button>
           <Button variant="outline" href="/dashboard/jobs" size="lg">Cancel</Button>
-        </div>
+        </FormActions>
       </form>
 
       {toast && <Toast message={toast.msg} type={toast.type} visible={!!toast} onHide={() => setToast(null)} />}

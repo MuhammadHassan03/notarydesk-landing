@@ -131,11 +131,11 @@ export default function MessagesPage() {
       {/* New conversation modal */}
       <Modal open={showNew} onClose={() => setShowNew(false)} title="New conversation" description="Start a message thread with a client." size="sm">
         <div className="flex flex-col gap-1">
-          <FormField label="Client name" icon="person" required>
-            <IconInput icon="person" placeholder="Client or signer name" value={newName} onChange={e => setNewName(e.target.value)} />
+          <FormField label="Client name" required>
+            <IconInput placeholder="Client or signer name" value={newName} onChange={e => setNewName(e.target.value)} />
           </FormField>
-          <FormField label="Email (optional)" icon="mail">
-            <IconInput icon="mail" type="email" placeholder="client@example.com" value={newEmail} onChange={e => setNewEmail(e.target.value)} />
+          <FormField label="Email (optional)">
+            <IconInput type="email" placeholder="client@example.com" value={newEmail} onChange={e => setNewEmail(e.target.value)} />
           </FormField>
           <div className="flex gap-3 mt-3">
             <Button variant="gold" fullWidth onClick={handleCreate} loading={creating}>

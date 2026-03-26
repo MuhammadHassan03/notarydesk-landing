@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useInvoices, type InvoiceStatus } from '@/hooks/use-invoices'
 import { INVOICE_STATUS_CONFIG, invoiceNumber } from '@/lib/constants'
@@ -8,6 +8,9 @@ import { currency, formatDate } from '@/lib/utils'
 import { Icon } from '@/components/ui/icons'
 import { Button } from '@/components/ui'
 import { PageHeader } from '@/components/layout'
+import { Pagination } from '@/components/ui/Pagination'
+
+const PAGE_SIZE = 20
 
 const STATUS_ORDER: InvoiceStatus[] = ['draft', 'sent', 'overdue', 'paid', 'cancelled']
 
@@ -15,11 +18,22 @@ export default function InvoicesListPage() {
   const router = useRouter()
   const { invoices, loading } = useInvoices()
   const [filter, setFilter] = useState<InvoiceStatus | null>(null)
+  const [search, setSearch] = useState('')
+  const [page, setPage] = useState(1)
+
+  useEffect(() => setPage(1), [filter, search])
 
   const filtered = useMemo(() => {
-    const list = filter ? invoices.filter(i => i.status === filter) : invoices
+    let list = filter ? invoices.filter(i => i.status === filter) : invoices
+    if (search.trim()) {
+      const q = search.toLowerCase()
+      list = list.filter(i =>
+        i.client_name?.toLowerCase().includes(q) ||
+        i.service_description?.toLowerCase().includes(q)
+      )
+    }
     return [...list].sort((a, b) => b.created_at.localeCompare(a.created_at))
-  }, [invoices, filter])
+  }, [invoices, filter, search])
 
   const statusCounts = useMemo(() => {
     const m: Record<string, number> = {}
@@ -27,9 +41,27 @@ export default function InvoicesListPage() {
     return m
   }, [invoices])
 
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
+  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+
   // Stats
   const totalRevenue = useMemo(() => invoices.filter(i => i.status === 'paid').reduce((s, i) => s + i.amount, 0), [invoices])
   const unpaidTotal = useMemo(() => invoices.filter(i => i.status === 'sent' || i.status === 'overdue').reduce((s, i) => s + i.amount, 0), [invoices])
+
+  // AR Aging — days since invoice was created (for sent/overdue only)
+  const arAging = useMemo(() => {
+    const now = Date.now()
+    const open = invoices.filter(i => i.status === 'sent' || i.status === 'overdue')
+    const bucket = (inv: typeof open[0]) => {
+      const days = Math.floor((now - new Date(inv.created_at).getTime()) / 86400000)
+      if (days <= 30) return '0–30 days'
+      if (days <= 60) return '31–60 days'
+      return '60+ days'
+    }
+    const buckets: Record<string, number> = { '0–30 days': 0, '31–60 days': 0, '60+ days': 0 }
+    open.forEach(inv => { buckets[bucket(inv)] += inv.amount })
+    return buckets
+  }, [invoices])
 
   return (
     <div>
@@ -41,7 +73,7 @@ export default function InvoicesListPage() {
         } />
 
       {/* ── Stats strip ──────────────────────────────────────── */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
         {[
           { label: 'Total invoices', value: String(invoices.length), icon: 'receipt_long' as const, color: 'var(--primary)' },
           { label: 'Revenue (paid)', value: currency(totalRevenue), icon: 'check_circle' as const, color: 'var(--success)' },
@@ -60,7 +92,44 @@ export default function InvoicesListPage() {
         ))}
       </div>
 
-      {/* ── Status filter pills ──────────────────────────────── */}
+      {/* ── AR Aging ─────────────────────────────────────────── */}
+      {unpaidTotal > 0 && (
+        <div className="rounded-2xl p-4 mb-5" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
+          <div className="flex items-center gap-2 mb-3">
+            <Icon name="schedule" size={15} style={{ color: 'var(--text-secondary)' }} />
+            <span className="text-[12px] font-bold tracking-[0.8px] uppercase" style={{ color: 'var(--text-secondary)' }}>
+              Accounts Receivable Aging
+            </span>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { label: '0–30 days', color: 'var(--success)', bg: 'var(--success-bg)' },
+              { label: '31–60 days', color: 'var(--warning)', bg: 'var(--warning-bg)' },
+              { label: '60+ days', color: 'var(--danger)', bg: 'var(--danger-bg)' },
+            ].map(b => (
+              <div key={b.label} className="rounded-xl p-3 text-center" style={{ background: b.bg }}>
+                <div className="text-[16px] font-extrabold" style={{ color: b.color }}>{currency(arAging[b.label])}</div>
+                <div className="text-[11px] font-medium mt-0.5" style={{ color: b.color }}>{b.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Status filter pills + search ─────────────────────── */}
+      <div className="flex flex-wrap items-center gap-2 mb-5">
+        <div className="relative">
+          <Icon name="search" size={15} style={{ color: 'var(--text-tertiary)', position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
+          <input
+            type="text"
+            placeholder="Search invoices…"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="pl-8 pr-3 py-2 rounded-lg text-[13px] outline-none"
+            style={{ background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border)', width: 180 }}
+          />
+        </div>
+      </div>
       <div className="flex flex-wrap gap-2 mb-5">
         <button onClick={() => setFilter(null)}
           className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-[12px] font-semibold border-none cursor-pointer transition-all"
@@ -93,8 +162,9 @@ export default function InvoicesListPage() {
           <Button variant="gold" href="/dashboard/invoices/new"><Icon name="add" size={16} style={{ color: 'inherit' }} /> Create invoice</Button>
         </div>
       ) : (
+        <>
         <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
-          {filtered.map((inv, i) => {
+          {paginated.map((inv, i) => {
             const cfg = INVOICE_STATUS_CONFIG[inv.status]
             return (
               <div key={inv.id}
@@ -134,6 +204,8 @@ export default function InvoicesListPage() {
             )
           })}
         </div>
+        <Pagination page={page} totalPages={totalPages} totalItems={filtered.length} pageSize={PAGE_SIZE} onPage={setPage} />
+        </>
       )}
     </div>
   )

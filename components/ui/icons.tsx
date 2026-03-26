@@ -33,7 +33,7 @@ export interface IconProps {
 
 function IconBase({ name, size = 20, style, className, fill = true }: IconProps) {
   // Normalize: convert hyphens to underscores so both conventions work
-  const ligature = name.replace(/-/g, '_')
+  const ligature = name?.replace(/-/g, '_') ?? ''
 
   return (
     <span

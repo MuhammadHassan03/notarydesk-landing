@@ -9,7 +9,6 @@ import { useAuth } from '@/context/auth'
 import { NAV_ITEMS } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 import { Icon } from '@/components/ui/icons'
-import ThemeToggle from '@/components/ui/ThemeToggle'
 
 function getInitials(name: string | null): string {
   if (!name) return 'N'
@@ -107,10 +106,6 @@ export default function Sidebar() {
 
       {/* ── Footer ──────────────────────────────────────────── */}
       <div className="p-3" style={{ borderTop: '1px solid var(--sidebar-border)' }}>
-        <div className={cn('mb-3 flex', collapsed ? 'justify-center' : 'justify-start')}>
-          <ThemeToggle size="sm" showLabel={!collapsed} />
-        </div>
-
         <div className={cn(
           'flex items-center gap-2.5 p-2 rounded-xl transition-colors',
           collapsed ? 'justify-center' : '',

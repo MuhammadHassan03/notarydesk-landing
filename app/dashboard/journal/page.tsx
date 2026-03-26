@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useJournalEntries } from '@/hooks/use-journal'
 import { getDocStyle } from '@/lib/constants'
@@ -8,13 +8,23 @@ import { currency, formatDate } from '@/lib/utils'
 import { downloadPdf } from '@/lib/utils/pdf'
 import { Icon } from '@/components/ui/icons'
 import { Button, Toast } from '@/components/ui'
+import { FilterPills, FilterOption } from '@/components/ui/FilterPills'
 import { PageHeader } from '@/components/layout'
+import { Pagination } from '@/components/ui/Pagination'
+
+const PAGE_SIZE = 20
+
+type JournalFilter = 'all' | 'finalized' | 'draft'
 
 export default function JournalListPage() {
   const router = useRouter()
   const { entries, loading } = useJournalEntries()
   const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState<JournalFilter>('all')
   const [exporting, setExporting] = useState(false)
+  const [page, setPage] = useState(1)
+
+  useEffect(() => setPage(1), [statusFilter, search])
 
   const handleExport = async () => {
     setExporting(true)
@@ -25,15 +35,28 @@ export default function JournalListPage() {
   }
 
   const filtered = useMemo(() => {
+    let list = entries
+    if (statusFilter === 'finalized') list = list.filter(e => e.is_finalized)
+    if (statusFilter === 'draft')     list = list.filter(e => !e.is_finalized)
     const q = search.toLowerCase().trim()
-    const list = q
-      ? entries.filter(e =>
-          e.signer_name.toLowerCase().includes(q) ||
-          (e.document_type || '').toLowerCase().includes(q) ||
-          (e.signer_address || '').toLowerCase().includes(q))
-      : entries
+    if (q) {
+      list = list.filter(e =>
+        e.signer_name.toLowerCase().includes(q) ||
+        (e.document_type || '').toLowerCase().includes(q) ||
+        (e.signer_address || '').toLowerCase().includes(q)
+      )
+    }
     return [...list].sort((a, b) => b.signing_date.localeCompare(a.signing_date))
-  }, [entries, search])
+  }, [entries, search, statusFilter])
+
+  const filterOpts: FilterOption<JournalFilter>[] = [
+    { key: 'all',       label: 'All',       count: entries.length },
+    { key: 'finalized', label: 'Finalized', count: entries.filter(e => e.is_finalized).length },
+    { key: 'draft',     label: 'Draft',     count: entries.filter(e => !e.is_finalized).length },
+  ]
+
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
+  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   // Stats
   const totalFees = useMemo(() => entries.reduce((s, e) => s + (e.fee || 0), 0), [entries])
@@ -55,7 +78,7 @@ export default function JournalListPage() {
         } />
 
       {/* ── Stats strip ──────────────────────────────────────── */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
         {[
           { label: 'Total entries', value: String(entries.length), icon: 'menu_book' as const, color: 'var(--primary)' },
           { label: 'Finalized', value: `${finalized} / ${entries.length}`, icon: 'lock' as const, color: 'var(--success)' },
@@ -75,13 +98,17 @@ export default function JournalListPage() {
         ))}
       </div>
 
-      {/* ── Search ───────────────────────────────────────────── */}
-      <div className="relative mb-5">
-        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--text-tertiary)' }}>
-          <Icon name="description" size={17} />
-        </span>
-        <input className="input-base pl-10" placeholder="Search by signer name, document type, or address..."
-          value={search} onChange={e => setSearch(e.target.value)} />
+      {/* ── Filter pills + search ─────────────────────────────── */}
+      <div className="flex flex-wrap items-center gap-3 mb-5">
+        <FilterPills options={filterOpts} value={statusFilter} onChange={setStatusFilter} />
+        <div className="ml-auto relative">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--text-tertiary)' }}>
+            <Icon name="search" size={15} />
+          </span>
+          <input className="pl-8 pr-3 py-2 rounded-lg text-[13px] outline-none" placeholder="Search entries…"
+            value={search} onChange={e => setSearch(e.target.value)}
+            style={{ background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border)', width: 200 }} />
+        </div>
       </div>
 
       {/* ── List ─────────────────────────────────────────────── */}
@@ -106,8 +133,9 @@ export default function JournalListPage() {
           )}
         </div>
       ) : (
+        <>
         <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
-          {filtered.map((entry, i) => {
+          {paginated.map((entry, i) => {
             const doc = getDocStyle(entry.document_type)
             return (
               <div key={entry.id}
@@ -161,6 +189,8 @@ export default function JournalListPage() {
             )
           })}
         </div>
+        <Pagination page={page} totalPages={totalPages} totalItems={filtered.length} pageSize={PAGE_SIZE} onPage={setPage} />
+        </>
       )}
     </div>
   )

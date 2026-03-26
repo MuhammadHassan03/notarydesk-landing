@@ -70,10 +70,9 @@ export default function OtpPage() {
       const res = await api.post<any>('/auth/verify-otp', { email, token: code })
 
       if (res.access_token) {
-        // Store tokens and sign in
+        // signIn loads profile → sets needsOnboarding → route guard redirects
         signIn(res.access_token, res.refresh_token)
         setToast({ msg: 'Email verified! Redirecting...', type: 'success' })
-        setTimeout(() => router.push('/dashboard'), 800)
       } else {
         setToast({ msg: 'Verification failed. Try again.', type: 'error' })
       }

@@ -10,6 +10,7 @@ import { PageHeader } from '@/components/layout'
 import { FormSection } from '@/components/forms/FormSection'
 import { FormField } from '@/components/forms/FormField'
 import { IconInput } from '@/components/forms/IconInput'
+import { FormActions } from '@/components/forms/FormActions'
 
 export default function MileageDetailPage() {
   const router = useRouter()
@@ -116,41 +117,41 @@ export default function MileageDetailPage() {
             </Button>
           } />
 
-        <FormSection title="Route" icon="route">
-          <FormField label="Start address" icon="location_on" required>
-            <IconInput icon="location_on" placeholder="Starting location" value={startAddr} onChange={e => setStartAddr(e.target.value)} />
+        <FormSection title="Route">
+          <FormField label="Start address" required>
+            <IconInput placeholder="Starting location" value={startAddr} onChange={e => setStartAddr(e.target.value)} />
           </FormField>
-          <FormField label="End address" icon="location_on" required>
-            <IconInput icon="location_on" placeholder="Destination" value={endAddr} onChange={e => setEndAddr(e.target.value)} />
+          <FormField label="End address" required>
+            <IconInput placeholder="Destination" value={endAddr} onChange={e => setEndAddr(e.target.value)} />
           </FormField>
         </FormSection>
 
-        <FormSection title="Details" icon="info">
+        <FormSection title="Details">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-4">
-            <FormField label="Trip date" icon="schedule">
-              <IconInput icon="schedule" type="date" value={tripDate} onChange={e => setTripDate(e.target.value)} />
+            <FormField label="Trip date">
+              <IconInput type="date" value={tripDate} onChange={e => setTripDate(e.target.value)} />
             </FormField>
-            <FormField label="Distance (miles)" icon="route" required>
-              <IconInput icon="route" type="number" step="0.1" value={distance} onChange={e => setDistance(e.target.value)} />
+            <FormField label="Distance (miles)" required>
+              <IconInput type="number" step="0.1" value={distance} onChange={e => setDistance(e.target.value)} />
             </FormField>
-            <FormField label="Duration (min)" icon="schedule">
-              <IconInput icon="schedule" type="number" value={duration} onChange={e => setDuration(e.target.value)} />
+            <FormField label="Duration (min)">
+              <IconInput type="number" value={duration} onChange={e => setDuration(e.target.value)} />
             </FormField>
           </div>
         </FormSection>
 
-        <FormSection title="Label" icon="edit_note">
-          <FormField label="Trip label" icon="edit_note">
-            <IconInput icon="edit_note" placeholder="e.g. Client name or purpose" value={label} onChange={e => setLabel(e.target.value)} />
+        <FormSection title="Label">
+          <FormField label="Trip label">
+            <IconInput placeholder="e.g. Client name or purpose" value={label} onChange={e => setLabel(e.target.value)} />
           </FormField>
         </FormSection>
 
-        <div className="flex gap-3 mt-2 mb-8">
+        <FormActions>
           <Button variant="gold" onClick={handleSave} loading={saving} fullWidth size="lg">
             <Icon name="check" size={16} style={{ color: 'inherit' }} /> Save changes
           </Button>
           <Button variant="outline" onClick={() => setEditing(false)} size="lg">Cancel</Button>
-        </div>
+        </FormActions>
 
         {toast && <Toast message={toast.msg} type={toast.type} visible={!!toast} onHide={() => setToast(null)} />}
       </div>
@@ -248,15 +249,15 @@ export default function MileageDetailPage() {
           <span className="text-[12px] font-bold tracking-[1px] uppercase" style={{ color: 'var(--text-secondary)' }}>Details</span>
         </div>
 
-        <Row icon="schedule" label="Trip date" value={formatDate(trip.trip_date)} />
-        <Row icon="route" label="Distance" value={`${trip.distance_miles.toFixed(1)} miles`} />
-        <Row icon="savings" label="IRS deduction" value={currency(trip.irs_deduction)} accent />
-        <Row icon="attach_money" label="IRS rate" value={`$${(trip.irs_rate || 0.70).toFixed(2)}/mi`} />
-        {durationDisplay && <Row icon="schedule" label="Duration" value={durationDisplay} />}
-        {trip.label && <Row icon="edit_note" label="Label" value={trip.label} />}
-        {hasGPS && <Row icon="location_on" label="Start coords" value={`${trip.start_lat?.toFixed(4)}, ${trip.start_lng?.toFixed(4)}`} />}
-        {hasGPS && <Row icon="location_on" label="End coords" value={`${trip.end_lat?.toFixed(4)}, ${trip.end_lng?.toFixed(4)}`} />}
-        <Row icon="schedule" label="Created" value={formatDate(trip.created_at?.split('T')[0])} />
+        <Row label="Trip date" value={formatDate(trip.trip_date)} />
+        <Row label="Distance" value={`${trip.distance_miles.toFixed(1)} miles`} />
+        <Row label="IRS deduction" value={currency(trip.irs_deduction)} accent />
+        <Row label="IRS rate" value={`$${(trip.irs_rate || 0.70).toFixed(2)}/mi`} />
+        {durationDisplay && <Row label="Duration" value={durationDisplay} />}
+        {trip.label && <Row label="Label" value={trip.label} />}
+        {hasGPS && <Row label="Start coords" value={`${trip.start_lat?.toFixed(4)}, ${trip.start_lng?.toFixed(4)}`} />}
+        {hasGPS && <Row label="End coords" value={`${trip.end_lat?.toFixed(4)}, ${trip.end_lng?.toFixed(4)}`} />}
+        <Row label="Created" value={formatDate(trip.created_at?.split('T')[0])} />
       </div>
 
       {/* ── Delete confirmation ──────────────────────────────── */}

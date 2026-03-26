@@ -1,20 +1,30 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useMileageTrips, useMileageSummary } from '@/hooks/use-mileage'
 import { currency, formatDate, monthLabel } from '@/lib/utils'
 import { downloadPdf } from '@/lib/utils/pdf'
 import { Icon } from '@/components/ui/icons'
 import { Button } from '@/components/ui'
+import { FilterPills, FilterOption } from '@/components/ui/FilterPills'
 import { PageHeader } from '@/components/layout'
+import { Pagination } from '@/components/ui/Pagination'
+
+const PAGE_SIZE = 20
+
+type PeriodFilter = 'all' | 'this_month' | 'last_month' | 'this_year'
 
 export default function MileageListPage() {
   const router = useRouter()
   const { trips, loading } = useMileageTrips()
   const { summary } = useMileageSummary()
-  const [search, setSearch] = useState('')
+  const [search, setSearch]   = useState('')
+  const [period, setPeriod]   = useState<PeriodFilter>('all')
   const [exporting, setExporting] = useState(false)
+  const [page, setPage] = useState(1)
+
+  useEffect(() => setPage(1), [period, search])
 
   const handleExport = async () => {
     setExporting(true)
@@ -25,15 +35,30 @@ export default function MileageListPage() {
   }
 
   const filtered = useMemo(() => {
+    const now = new Date()
+    const thisMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+    const lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+    const lastMonth = `${lastMonthDate.getFullYear()}-${String(lastMonthDate.getMonth() + 1).padStart(2, '0')}`
+    const thisYear  = String(now.getFullYear())
+
+    let list = trips
+    if (period === 'this_month') list = list.filter(t => t.trip_date.startsWith(thisMonth))
+    if (period === 'last_month') list = list.filter(t => t.trip_date.startsWith(lastMonth))
+    if (period === 'this_year')  list = list.filter(t => t.trip_date.startsWith(thisYear))
+
     const q = search.toLowerCase().trim()
-    const list = q
-      ? trips.filter(t =>
-          (t.label || '').toLowerCase().includes(q) ||
-          t.start_address.toLowerCase().includes(q) ||
-          t.end_address.toLowerCase().includes(q))
-      : trips
+    if (q) {
+      list = list.filter(t =>
+        (t.label || '').toLowerCase().includes(q) ||
+        t.start_address.toLowerCase().includes(q) ||
+        t.end_address.toLowerCase().includes(q)
+      )
+    }
     return [...list].sort((a, b) => b.trip_date.localeCompare(a.trip_date))
-  }, [trips, search])
+  }, [trips, search, period])
+
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
+  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   // Month stats
   const now = new Date()
@@ -100,13 +125,30 @@ export default function MileageListPage() {
         )}
       </div>
 
-      {/* ── Search ───────────────────────────────────────────── */}
-      <div className="relative mb-5">
-        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--text-tertiary)' }}>
-          <Icon name="route" size={17} />
-        </span>
-        <input className="input-base pl-10" placeholder="Search by label or address..."
-          value={search} onChange={e => setSearch(e.target.value)} />
+      {/* ── Period filter + search ────────────────────────────── */}
+      <div className="flex flex-wrap items-center gap-3 mb-5">
+        <FilterPills<PeriodFilter>
+          options={[
+            { key: 'all',        label: 'All time' },
+            { key: 'this_month', label: 'This month' },
+            { key: 'last_month', label: 'Last month' },
+            { key: 'this_year',  label: 'This year' },
+          ]}
+          value={period}
+          onChange={setPeriod}
+        />
+        <div className="ml-auto relative">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--text-tertiary)' }}>
+            <Icon name="search" size={15} />
+          </span>
+          <input
+            className="pl-8 pr-3 py-2 rounded-lg text-[13px] outline-none"
+            placeholder="Search trips…"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            style={{ background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border)', width: 180 }}
+          />
+        </div>
       </div>
 
       {/* ── Info banner (web = manual only) ───────────────────── */}
@@ -141,8 +183,9 @@ export default function MileageListPage() {
           )}
         </div>
       ) : (
+        <>
         <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
-          {filtered.map((trip, i) => {
+          {paginated.map((trip, i) => {
             const dateObj = new Date(trip.trip_date + 'T00:00:00')
             const monthShort = dateObj.toLocaleDateString('en-US', { month: 'short' }).toUpperCase()
             const day = dateObj.getDate()
@@ -192,6 +235,8 @@ export default function MileageListPage() {
             )
           })}
         </div>
+        <Pagination page={page} totalPages={totalPages} totalItems={filtered.length} pageSize={PAGE_SIZE} onPage={setPage} />
+        </>
       )}
     </div>
   )

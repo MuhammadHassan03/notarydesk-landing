@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { useCreateClient } from '@/hooks/use-clients'
 import { Icon } from '@/components/ui/icons'
 import { Button, Toast } from '@/components/ui'
@@ -9,6 +10,8 @@ import { PageHeader } from '@/components/layout'
 import { FormSection } from '@/components/forms/FormSection'
 import { FormField } from '@/components/forms/FormField'
 import { IconInput } from '@/components/forms/IconInput'
+import { PhoneInput } from '@/components/forms/PhoneInput'
+import { FormActions } from '@/components/forms/FormActions'
 
 export default function NewClientPage() {
   const router = useRouter()
@@ -48,41 +51,43 @@ export default function NewClientPage() {
 
   return (
     <div className="max-w-[720px]">
-      <PageHeader title="New client" subtitle="Add a client to your directory"
-        action={<Button variant="outline" href="/dashboard/clients"><Icon name="arrow_back" size={16} style={{ color: 'inherit' }} /> Back to clients</Button>} />
+      <Link href="/dashboard/clients" className="inline-flex items-center gap-1.5 text-[13px] font-medium mb-4 no-underline transition-opacity hover:opacity-70" style={{ color: 'var(--text-secondary)' }}>
+        <Icon name="arrow_back" size={15} style={{ color: 'inherit' }} /> Back to clients
+      </Link>
+      <PageHeader title="New client" subtitle="Add a client to your directory" />
 
       <form onSubmit={handleSubmit}>
-        <FormSection title="Client information" icon="person">
-          <FormField label="Client / company name" icon="person" required error={errors.name}>
-            <IconInput icon="person" placeholder="Title company, law firm, or individual"
+        <FormSection title="Client information">
+          <FormField label="Client / company name" required error={errors.name}>
+            <IconInput placeholder="Title company, law firm, or individual"
               value={name} onChange={e => { setName(e.target.value); setErrors(p => ({ ...p, name: '' })) }} />
           </FormField>
-          <FormField label="Company" icon="work">
-            <IconInput icon="work" placeholder="Company or organization" value={company} onChange={e => setCompany(e.target.value)} />
+          <FormField label="Company">
+            <IconInput placeholder="Company or organization" value={company} onChange={e => setCompany(e.target.value)} />
           </FormField>
         </FormSection>
 
-        <FormSection title="Contact details" icon="mail">
+        <FormSection title="Contact details">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
-            <FormField label="Email" icon="mail">
-              <IconInput icon="mail" type="email" placeholder="client@example.com" value={email} onChange={e => setEmail(e.target.value)} />
+            <FormField label="Email">
+              <IconInput type="email" placeholder="client@example.com" value={email} onChange={e => setEmail(e.target.value)} />
             </FormField>
-            <FormField label="Phone" icon="phone_iphone">
-              <IconInput icon="phone_iphone" type="tel" placeholder="(555) 123-4567" value={phone} onChange={e => setPhone(e.target.value)} />
+            <FormField label="Phone">
+              <PhoneInput value={phone} onChange={setPhone} />
             </FormField>
           </div>
         </FormSection>
 
-        <FormSection title="Notes" icon="edit_note">
+        <FormSection title="Notes">
           <textarea rows={3} placeholder="Special instructions, preferences, gate codes..." value={notes} onChange={e => setNotes(e.target.value)} className="input-base resize-y min-h-[80px]" />
         </FormSection>
 
-        <div className="flex gap-3 mt-2 mb-8">
+        <FormActions>
           <Button type="submit" variant="gold" fullWidth loading={loading} size="lg" disabled={!isValid && !loading}>
             <Icon name="person_add" size={18} style={{ color: 'inherit' }} /> Add client
           </Button>
           <Button variant="outline" href="/dashboard/clients" size="lg">Cancel</Button>
-        </div>
+        </FormActions>
       </form>
 
       {toast && <Toast message={toast.msg} type={toast.type} visible={!!toast} onHide={() => setToast(null)} />}
