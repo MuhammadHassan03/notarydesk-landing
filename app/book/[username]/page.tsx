@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { Icon } from '@/components/ui/icons'
 import { Button } from '@/components/ui'
 import { API_URL } from '@/lib/api/client'
@@ -27,6 +27,7 @@ function initials(name: string) {
 
 export default function BookingPage() {
   const { username } = useParams<{ username: string }>()
+  const router = useRouter()
   const [notary, setNotary] = useState<NotaryProfile | null>(null)
   const [notFound, setNotFound] = useState(false)
   const [loadingProfile, setLoadingProfile] = useState(true)
@@ -43,6 +44,7 @@ export default function BookingPage() {
   const [submitted, setSubmitted]     = useState(false)
   const [chatUrl, setChatUrl]         = useState('')
   const [error, setError]             = useState('')
+  const [countdown, setCountdown]     = useState(5)
 
   useEffect(() => {
     if (!username) return
@@ -52,6 +54,14 @@ export default function BookingPage() {
       .catch(() => setNotFound(true))
       .finally(() => setLoadingProfile(false))
   }, [username])
+
+  // Auto-redirect to chat after submission
+  useEffect(() => {
+    if (!submitted || !chatUrl) return
+    if (countdown <= 0) { router.push(chatUrl); return }
+    const t = setTimeout(() => setCountdown(c => c - 1), 1000)
+    return () => clearTimeout(t)
+  }, [submitted, chatUrl, countdown, router])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -177,16 +187,16 @@ export default function BookingPage() {
                   <div className="flex items-center gap-2">
                     <Icon name="chat" size={16} style={{ color: '#1B3A5C' }} />
                     <span className="text-[13px] font-semibold" style={{ color: '#1B3A5C' }}>
-                      Chat directly with your notary
+                      Opening your chat with {notary.name}…
                     </span>
                   </div>
                   <p className="text-[12px]" style={{ color: '#64748b', margin: 0 }}>
-                    Use this private link to message {notary.name} directly — save it for your records.
+                    Redirecting in {countdown}s — save this link for future messages.
                   </p>
                   <a href={chatUrl}
                     className="w-full py-3 rounded-xl font-bold text-[14px] text-center no-underline"
                     style={{ background: '#1B3A5C', color: '#C9A84C', display: 'block' }}>
-                    Open Chat →
+                    Open Chat Now →
                   </a>
                   <div className="flex items-center gap-1.5 px-3 py-2 rounded-lg w-full"
                     style={{ background: '#f8fafc', border: '1px solid #e2e8f0' }}>

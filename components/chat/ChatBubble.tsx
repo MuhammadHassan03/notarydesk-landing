@@ -8,6 +8,8 @@ interface Props {
   senderName: string
   timestamp: string
   isRead?: boolean
+  attachmentUrl?: string | null
+  attachmentName?: string | null
 }
 
 function timeLabel(dateStr: string): string {
@@ -24,7 +26,11 @@ function timeLabel(dateStr: string): string {
   return `${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} ${time}`
 }
 
-export function ChatBubble({ content, senderType, senderName, timestamp, isRead }: Props) {
+function isImageUrl(url: string): boolean {
+  return /\.(jpg|jpeg|png|gif|webp|heic)(\?|$)/i.test(url)
+}
+
+export function ChatBubble({ content, senderType, senderName, timestamp, isRead, attachmentUrl, attachmentName }: Props) {
   const isNotary = senderType === 'notary'
 
   return (
@@ -45,12 +51,36 @@ export function ChatBubble({ content, senderType, senderName, timestamp, isRead 
             border: isNotary ? 'none' : '1px solid var(--border)',
           }}>
           {content}
+          {/* Attachment */}
+          {attachmentUrl && (
+            <div className="mt-2">
+              {isImageUrl(attachmentUrl) ? (
+                <a href={attachmentUrl} target="_blank" rel="noopener noreferrer">
+                  <img src={attachmentUrl} alt={attachmentName || 'Attachment'}
+                    className="rounded-lg max-w-full max-h-[200px] object-cover cursor-pointer" />
+                </a>
+              ) : (
+                <a href={attachmentUrl} target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-[12px] font-medium no-underline transition-opacity hover:opacity-80"
+                  style={{ background: isNotary ? 'rgba(255,255,255,0.15)' : 'var(--bg-page)', color: isNotary ? '#fff' : 'var(--primary)' }}>
+                  <Icon name="attachment" size={14} style={{ color: 'inherit' }} />
+                  {attachmentName || 'Attachment'}
+                </a>
+              )}
+            </div>
+          )}
         </div>
         {/* Time + read status */}
         <div className={`flex items-center gap-1 mt-0.5 text-[10px] ${isNotary ? 'justify-end' : 'justify-start'}`}
           style={{ color: 'var(--text-tertiary)' }}>
           {timeLabel(timestamp)}
-          {isNotary && isRead && <Icon name="done_all" size={12} style={{ color: 'var(--success)' }} />}
+          {isNotary && (
+            <Icon
+              name={isRead ? 'done_all' : 'check'}
+              size={12}
+              style={{ color: isRead ? 'var(--success)' : 'var(--text-tertiary)' }}
+            />
+          )}
         </div>
       </div>
     </div>

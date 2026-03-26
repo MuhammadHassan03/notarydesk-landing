@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/context/auth'
+import { useProfile } from '@/context/auth/useProfile'
 import { useDashboardStats } from '@/hooks/use-dashboard'
 import { useJobs } from '@/hooks/use-jobs'
 import { currency, greeting, firstName } from '@/lib/utils'
@@ -12,6 +13,7 @@ import type { SigningJob } from '@/lib/types'
 
 import { Button, DataTable, StatusBadge, Toast } from '@/components/ui'
 import { PageHeader, StatsGrid, StatCard, TaxCard, EmptyState } from '@/components/layout'
+import OnboardingChecklist from '@/components/layout/OnboardingChecklist'
 import type { Column } from '@/components/ui/DataTable'
 import { Icon } from '@/components/ui/icons'
 
@@ -29,6 +31,7 @@ export default function DashboardPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { displayName, refreshProfile } = useAuth()
+  const { profile } = useProfile()
   const { stats, loading: statsLoading, refresh: refreshStats } = useDashboardStats()
   const { jobs, loading: jobsLoading, refresh: refreshJobs } = useJobs()
   const [exporting, setExporting] = useState(false)
@@ -107,6 +110,9 @@ export default function DashboardPage() {
 
   return (
     <div>
+      {/* ── Onboarding Checklist ───────────────────────────────── */}
+      <OnboardingChecklist checklist={(profile as any)?.onboarding_checklist} />
+
       {/* ── Hero Section ─────────────────────────────────────────── */}
       <div className="mb-7">
         <div className="flex items-start justify-between flex-wrap gap-4 mb-6">

@@ -7,6 +7,8 @@ import { useMileageTrips } from '@/hooks/use-mileage'
 import { currency } from '@/lib/utils'
 import { Icon } from '@/components/ui/icons'
 import { PageHeader } from '@/components/layout'
+import { Button } from '@/components/ui'
+import { downloadCsv } from '@/lib/utils/csv'
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -255,7 +257,19 @@ export default function AnalyticsPage() {
 
   return (
     <div>
-      <PageHeader title="Analytics" subtitle="Revenue trends, job performance, and business insights" />
+      <PageHeader title="Analytics" subtitle="Revenue trends, job performance, and business insights"
+        action={
+          <div className="flex gap-2 flex-wrap">
+            {(['journal', 'mileage', 'invoices', 'expenses'] as const).map(type => (
+              <Button key={type} variant="outline" size="sm"
+                onClick={() => downloadCsv(`/dashboard/export/csv?type=${type}&year=${new Date().getFullYear()}`, `notarydesk-${type}-${new Date().getFullYear()}.csv`)}>
+                <Icon name="table_chart" size={14} style={{ color: 'inherit' }} />
+                {type.charAt(0).toUpperCase() + type.slice(1)} CSV
+              </Button>
+            ))}
+          </div>
+        }
+      />
 
       {/* ── Summary strip ──────────────────────────────────────── */}
       <div className="grid grid-cols-4 gap-4 mb-6 max-md:grid-cols-2">

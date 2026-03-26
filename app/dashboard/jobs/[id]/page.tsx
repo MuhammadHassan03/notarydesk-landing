@@ -3,6 +3,7 @@
 import { useState, useMemo, useCallback, useEffect } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { useJob, useUpdateJob } from '@/hooks/use-jobs'
+import { api } from '@/lib/api/client'
 import { currency, formatDate, formatTime } from '@/lib/utils'
 import { JOB_STATUS_CONFIG, JOB_PIPELINE, PAYMENT_STATUS_CONFIG, PAYMENT_METHODS } from '@/lib/constants'
 import { Icon } from '@/components/ui/icons'
@@ -92,6 +93,7 @@ export default function JobDetailPage() {
   const [mileageDismissed, setMileageDismissed] = useState(false)
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null)
   const [checked, setChecked] = useState<Record<string, boolean>>({})
+  const [messagingClient, setMessagingClient] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -153,6 +155,30 @@ export default function JobDetailPage() {
       router.push('/dashboard/jobs')
     } catch (e: any) { setToast({ msg: e.message, type: 'error' }) }
   }, [job, deleteJob, router])
+
+  const handleMessageClient = useCallback(async () => {
+    if (!job) return
+    setMessagingClient(true)
+    try {
+      // Check if a conversation already exists for this job
+      const existing = await api.get<any>(`/messages/conversations/by-job/${job.id}`).catch(() => null)
+      if (existing?.id) {
+        router.push(`/dashboard/messages/${existing.id}`)
+        return
+      }
+      // Create a new conversation linked to this job
+      const conv = await api.post<any>('/messages/conversations', {
+        client_name: job.signer_name,
+        client_email: job.client_email || undefined,
+        job_id: job.id,
+      })
+      router.push(`/dashboard/messages/${conv.id}`)
+    } catch (e: any) {
+      setToast({ msg: e.message || 'Failed to start conversation.', type: 'error' })
+    } finally {
+      setMessagingClient(false)
+    }
+  }, [job, router])
 
   if (loading) return (
     <div className="flex items-center justify-center min-h-[400px]">
@@ -292,10 +318,20 @@ export default function JobDetailPage() {
             Mark as paid
           </Button>
         )}
+        <Button variant="outline" onClick={handleMessageClient} loading={messagingClient} size="lg">
+          <Icon name="chat" size={16} style={{ color: 'inherit' }} />
+          Message Client
+        </Button>
         {job.scheduled_date && (
           <Button variant="outline" onClick={() => downloadIcs(job)} size="lg">
             <Icon name="event" size={16} style={{ color: 'inherit' }} />
             Add to Calendar
+          </Button>
+        )}
+        {job.signer_address && (
+          <Button variant="outline" onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(job.signer_address)}`, '_blank')} size="lg">
+            <Icon name="directions" size={16} style={{ color: 'inherit' }} />
+            Get Directions
           </Button>
         )}
         {!isCancelled && !isCompleted && (

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import { API_URL } from '@/lib/api/client'
+import { supabase } from '@/lib/supabase'
 
 interface Message {
   id: string
@@ -41,13 +42,12 @@ export default function ClientChatPage() {
   const [sending, setSending] = useState(false)
   const [error, setError]     = useState('')
   const bottomRef = useRef<HTMLDivElement>(null)
-  const pollRef   = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const fetchMessages = useCallback(async () => {
     if (!token) return
     try {
       const res = await fetch(`${API_URL}/messages/client/${token}`)
-      if (res.status === 404) { setNotFound(true); return }
+      if (res.status === 404 || res.status === 410) { setNotFound(true); return }
       if (!res.ok) return
       const json = await res.json()
       const data = json.data ?? json
@@ -68,11 +68,39 @@ export default function ClientChatPage() {
     fetchMessages().finally(() => setLoading(false))
   }, [fetchMessages])
 
-  // Poll for new messages every 4 seconds
+  // Subscribe to real-time messages via Supabase Realtime (replaces 4-second polling)
   useEffect(() => {
-    pollRef.current = setInterval(fetchMessages, 4000)
-    return () => { if (pollRef.current) clearInterval(pollRef.current) }
-  }, [fetchMessages])
+    if (!conv) return
+
+    const channel = supabase
+      .channel(`client-chat:${conv.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `conversation_id=eq.${conv.id}`,
+        },
+        (payload) => {
+          const msg = payload.new as Message
+          setMessages(prev => {
+            if (prev.some(m => m.id === msg.id)) return prev
+            // Replace the matching temp message (by content), keep other temps intact
+            const tempIdx = prev.findIndex(m => m.id.startsWith('temp-') && m.content === msg.content)
+            if (tempIdx >= 0) {
+              const next = [...prev]
+              next[tempIdx] = msg
+              return next
+            }
+            return [...prev, msg]
+          })
+        }
+      )
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
+  }, [conv?.id])
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -168,8 +196,8 @@ export default function ClientChatPage() {
           )}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#22C55E' }} />
-          <span style={{ color: 'rgba(255,255,255,0.65)', fontSize: 12 }}>Active</span>
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'rgba(255,255,255,0.35)' }} />
+          <span style={{ color: 'rgba(255,255,255,0.50)', fontSize: 12 }}>Chat</span>
         </div>
       </div>
 

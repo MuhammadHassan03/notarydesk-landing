@@ -1,27 +1,66 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { api } from '@/lib/api/client'
-import { connectSocket, disconnectSocket } from '@/lib/socket'
+import { subscribeToMessages } from '@/lib/realtime'
 import type { Conversation, Message } from '@/lib/types'
-import type { Socket } from 'socket.io-client'
+
+function useDebouncedCallback<T extends (...args: any[]) => void>(fn: T, delay: number): T {
+  const timer = useRef<ReturnType<typeof setTimeout>>()
+  return useCallback((...args: any[]) => {
+    clearTimeout(timer.current)
+    timer.current = setTimeout(() => fn(...args), delay)
+  }, [fn, delay]) as unknown as T
+}
 
 export function useConversations() {
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [loading, setLoading] = useState(true)
+  // Track cleanup functions for per-conversation channel subscriptions
+  const channelCleanups = useRef<(() => void)[]>([])
 
   const load = useCallback(async () => {
     setLoading(true)
     try {
       const data = await api.get<Conversation[]>('/messages/conversations')
-      setConversations(Array.isArray(data) ? data : [])
+      const list: Conversation[] = Array.isArray(data) ? data : []
+      setConversations(list)
+
+      // Tear down previous channel subscriptions before creating new ones
+      channelCleanups.current.forEach(fn => fn())
+      channelCleanups.current = []
+
+      // Subscribe to each conversation's messages so the list stays live:
+      // unread counts, last message preview and timestamp update in real time.
+      list.forEach(conv => {
+        const unsub = subscribeToMessages(conv.id, (msg: Message) => {
+          setConversations(prev => prev.map(c =>
+            c.id === conv.id
+              ? {
+                  ...c,
+                  last_message_preview: msg.content,
+                  last_message_at: msg.created_at,
+                  unread_count: msg.sender_type === 'client'
+                    ? c.unread_count + 1
+                    : c.unread_count,
+                }
+              : c
+          ))
+        })
+        channelCleanups.current.push(unsub)
+      })
     } catch {
       // endpoint may not exist yet
     }
     setLoading(false)
   }, [])
 
-  useEffect(() => { load() }, [load])
+  useEffect(() => {
+    load()
+    return () => {
+      channelCleanups.current.forEach(fn => fn())
+    }
+  }, [load])
 
   return { conversations, loading, refresh: load }
 }
@@ -41,6 +80,9 @@ export function useConversation(id: string | undefined) {
       ])
       setConversation(conv)
       setMessages(Array.isArray(msgs) ? msgs : [])
+
+      // Mark as read
+      api.patch(`/messages/conversations/${id}/read`).catch(() => {})
     } catch {
       setConversation(null)
       setMessages([])
@@ -49,6 +91,36 @@ export function useConversation(id: string | undefined) {
   }, [id])
 
   useEffect(() => { load() }, [load])
+
+  // Debounced mark-as-read to avoid spamming API on rapid messages
+  const debouncedMarkRead = useDebouncedCallback(() => {
+    if (id) api.patch(`/messages/conversations/${id}/read`).catch(() => {})
+  }, 500)
+
+  // Subscribe to real-time messages via Supabase Realtime
+  useEffect(() => {
+    if (!id) return
+
+    const unsubscribe = subscribeToMessages(id, (msg: Message) => {
+      setMessages(prev => {
+        // Skip if already in list (dedup by id)
+        if (prev.some(m => m.id === msg.id)) return prev
+        // Replace any optimistic temp that matches this message (by content + sender)
+        const tempIdx = prev.findIndex(
+          m => m.id.startsWith('temp-') && m.content === msg.content && m.sender_type === msg.sender_type
+        )
+        if (tempIdx >= 0) {
+          const next = [...prev]
+          next[tempIdx] = msg
+          return next
+        }
+        return [...prev, msg]
+      })
+      debouncedMarkRead()
+    })
+
+    return unsubscribe
+  }, [id, debouncedMarkRead])
 
   return { conversation, messages, loading, refresh: load, setMessages }
 }
@@ -74,7 +146,7 @@ export function useSendMessage() {
   const send = useCallback(async (conversationId: string, content: string): Promise<Message> => {
     setLoading(true)
     try {
-      return await api.post<Message>(`/messages/conversations/${conversationId}/messages`, content ? { content } : undefined)
+      return await api.post<Message>(`/messages/conversations/${conversationId}/messages`, { content, sender_type: 'notary' })
     } finally {
       setLoading(false)
     }
@@ -100,55 +172,4 @@ export function useUnreadMessageCount() {
   }, [load])
 
   return { count, refresh: load }
-}
-
-// ── Real-time Socket.IO hook for a conversation ────────────────────────
-
-export function useRealtimeMessages(conversationId: string | undefined, onNewMessage: (msg: Message) => void) {
-  const socketRef = useRef<Socket | null>(null)
-
-  useEffect(() => {
-    if (!conversationId) return
-
-    const socket = connectSocket()
-    socketRef.current = socket
-
-    function handleConnect() {
-      socket.emit('join_conversation', conversationId)
-    }
-
-    function handleNewMessage(msg: Message) {
-      onNewMessage(msg)
-    }
-
-    function handleError(err: { error: string }) {
-      console.error('[socket] message_error:', err.error)
-    }
-
-    // If already connected, join immediately
-    if (socket.connected) {
-      socket.emit('join_conversation', conversationId)
-    }
-
-    socket.on('connect', handleConnect)
-    socket.on('new_message', handleNewMessage)
-    socket.on('message_error', handleError)
-
-    return () => {
-      socket.emit('leave_conversation', conversationId)
-      socket.off('connect', handleConnect)
-      socket.off('new_message', handleNewMessage)
-      socket.off('message_error', handleError)
-    }
-  }, [conversationId, onNewMessage])
-
-  // Send via socket instead of REST
-  const sendViaSocket = useCallback((content: string, opts?: { sender_type?: string; sender_name?: string }) => {
-    const socket = socketRef.current
-    if (!socket?.connected || !conversationId) return false
-    socket.emit('send_message', { conversation_id: conversationId, content, ...opts })
-    return true
-  }, [conversationId])
-
-  return { sendViaSocket }
 }

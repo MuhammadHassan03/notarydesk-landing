@@ -12,6 +12,10 @@ import { FilterOption, FilterPills } from '@/components/ui/FilterPills'
 
 type Filter = 'all' | 'unread'
 
+function copyToClipboard(text: string) {
+  navigator.clipboard.writeText(text).catch(() => {})
+}
+
 function timeAgo(dateStr: string | null): string {
   if (!dateStr) return ''
   const now = Date.now()
@@ -29,15 +33,24 @@ export default function MessagesPage() {
   const { conversations, loading, refresh } = useConversations()
   const { create, loading: creating } = useCreateConversation()
   const [filter, setFilter] = useState<Filter>('all')
+  const [search, setSearch] = useState('')
   const [showNew, setShowNew] = useState(false)
   const [newName, setNewName] = useState('')
   const [newEmail, setNewEmail] = useState('')
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null)
 
   const filtered = useMemo(() => {
-    if (filter === 'unread') return conversations.filter(c => c.unread_count > 0)
-    return conversations
-  }, [conversations, filter])
+    let result = conversations
+    if (filter === 'unread') result = result.filter(c => c.unread_count > 0)
+    if (search.trim()) {
+      const q = search.trim().toLowerCase()
+      result = result.filter(c =>
+        c.client_name.toLowerCase().includes(q) ||
+        (c.client_email && c.client_email.toLowerCase().includes(q))
+      )
+    }
+    return result
+  }, [conversations, filter, search])
 
   const totalUnread = useMemo(() => conversations.reduce((s, c) => s + c.unread_count, 0), [conversations])
 
@@ -71,8 +84,20 @@ export default function MessagesPage() {
           </Button>
         } />
 
-      <div className="mb-5">
+      <div className="flex items-center gap-3 mb-5">
         <FilterPills options={filterOpts} value={filter} onChange={setFilter} />
+        <div className="flex-1" />
+        <div className="relative">
+          <Icon name="search" size={15} style={{ color: 'var(--text-tertiary)', position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)' }} />
+          <input
+            type="text"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search conversations..."
+            className="text-[13px] pl-8 pr-3 py-2 rounded-lg border outline-none"
+            style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text)', width: 220 }}
+          />
+        </div>
       </div>
 
       {loading ? (
@@ -108,19 +133,40 @@ export default function MessagesPage() {
               {/* Content */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
-                  <span className="text-[14px] font-semibold truncate" style={{ color: 'var(--text)' }}>{conv.client_name}</span>
+                  <div className="truncate">
+                    <span className="text-[14px] font-semibold" style={{ color: 'var(--text)' }}>{conv.client_name}</span>
+                    {conv.client_email && (
+                      <span className="text-[11px] ml-2" style={{ color: 'var(--text-tertiary)' }}>{conv.client_email}</span>
+                    )}
+                  </div>
                   <span className="text-[11px] shrink-0 ml-2" style={{ color: 'var(--text-tertiary)' }}>{timeAgo(conv.last_message_at)}</span>
                 </div>
                 <div className="flex items-center justify-between mt-0.5">
                   <span className="text-[12px] truncate" style={{ color: conv.unread_count > 0 ? 'var(--text)' : 'var(--text-tertiary)', fontWeight: conv.unread_count > 0 ? 600 : 400 }}>
                     {conv.last_message_preview || 'No messages yet'}
                   </span>
-                  {conv.unread_count > 0 && (
-                    <span className="min-w-[20px] h-5 rounded-full flex items-center justify-center text-[10px] font-bold px-1.5 shrink-0 ml-2"
-                      style={{ background: 'var(--primary)', color: '#fff' }}>
-                      {conv.unread_count}
-                    </span>
-                  )}
+                  <div className="flex items-center gap-2 shrink-0 ml-2">
+                    {(conv as any).client_token && (
+                      <span
+                        role="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          copyToClipboard(`${window.location.origin}/chat/${(conv as any).client_token}`)
+                          setToast({ msg: 'Chat link copied!', type: 'success' })
+                        }}
+                        className="w-6 h-6 rounded-md flex items-center justify-center hover:bg-[var(--surface)] transition-colors cursor-pointer"
+                        title="Copy chat link"
+                      >
+                        <Icon name="link" size={13} style={{ color: 'var(--text-tertiary)' }} />
+                      </span>
+                    )}
+                    {conv.unread_count > 0 && (
+                      <span className="min-w-[20px] h-5 rounded-full flex items-center justify-center text-[10px] font-bold px-1.5"
+                        style={{ background: 'var(--primary)', color: '#fff' }}>
+                        {conv.unread_count}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             </button>

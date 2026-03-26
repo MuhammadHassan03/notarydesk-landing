@@ -1,11 +1,16 @@
 'use client'
 
 import { useEffect, useRef, useCallback, useState } from 'react'
-import { useConversation, useRealtimeMessages } from '@/hooks/use-messages'
+import { useConversation, useSendMessage } from '@/hooks/use-messages'
 import { ChatBubble } from './ChatBubble'
 import { ChatInput } from './ChatInput'
 import { Icon } from '@/components/ui/icons'
 import type { Message } from '@/lib/types'
+
+// Generate a temporary ID for optimistic messages
+function tempId() {
+  return `temp-${Date.now()}-${Math.random().toString(36).slice(2)}`
+}
 
 interface Props {
   conversationId: string
@@ -30,38 +35,54 @@ function DateSeparator({ date }: { date: string }) {
 
 export function ChatPanel({ conversationId }: Props) {
   const { conversation, messages, loading, setMessages } = useConversation(conversationId)
+  const { send: apiSend, loading: sendLoading } = useSendMessage()
   const scrollRef = useRef<HTMLDivElement>(null)
-  const [sending, setSending] = useState(false)
+  const isAtBottomRef = useRef(true)
+  const [copied, setCopied] = useState(false)
 
-  const handleNewMessage = useCallback((msg: Message) => {
-    setMessages(prev => {
-      if (prev.some(m => m.id === msg.id)) return prev
-      return [...prev, msg]
-    })
-  }, [setMessages])
+  // Track if user is at bottom of scroll
+  const handleScroll = useCallback(() => {
+    if (!scrollRef.current) return
+    const { scrollTop, scrollHeight, clientHeight } = scrollRef.current
+    isAtBottomRef.current = scrollHeight - scrollTop - clientHeight < 60
+  }, [])
 
-  const { sendViaSocket } = useRealtimeMessages(conversationId, handleNewMessage)
-
-  // Auto-scroll on new messages
+  // Auto-scroll only if user is at the bottom
   useEffect(() => {
-    if (scrollRef.current) {
+    if (isAtBottomRef.current && scrollRef.current) {
       scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' })
     }
   }, [messages.length])
 
   async function handleSend(content: string) {
-    setSending(true)
-    const sent = sendViaSocket(content)
-    if (!sent) {
-      const { api } = await import('@/lib/api/client')
-      try {
-        const newMsg = await api.post<Message>(`/messages/conversations/${conversationId}/messages`, { content })
-        if (newMsg) handleNewMessage(newMsg)
-      } catch (e) {
-        console.error('Failed to send message:', e)
-      }
+    // Optimistic bubble — show instantly before API call
+    const tid = tempId()
+    const optimistic: Message = {
+      id: tid,
+      conversation_id: conversationId,
+      sender_type: 'notary',
+      sender_name: conversation?.client_name ? 'You' : 'You',
+      content,
+      is_read: false,
+      created_at: new Date().toISOString(),
+      attachment_url: null,
+      attachment_name: null,
     }
-    setSending(false)
+    setMessages(prev => [...prev, optimistic])
+
+    try {
+      const saved = await apiSend(conversationId, content)
+      // Replace optimistic with real message (dedup if Realtime already added it)
+      setMessages(prev => {
+        const withoutTemp = prev.filter(m => m.id !== tid)
+        if (withoutTemp.some(m => m.id === saved.id)) return withoutTemp
+        return [...withoutTemp, saved]
+      })
+    } catch (e) {
+      // Remove optimistic bubble on failure
+      setMessages(prev => prev.filter(m => m.id !== tid))
+      console.error('Failed to send message:', e)
+    }
   }
 
   // Group messages by date for separators
@@ -82,7 +103,7 @@ export function ChatPanel({ conversationId }: Props) {
 
   return (
     <div className="flex flex-col h-full min-h-0">
-      {/* ── Header ──────────────────────────────────────────── */}
+      {/* Header */}
       {conversation && (
         <div className="flex items-center gap-3 px-5 py-4 shrink-0"
           style={{ borderBottom: '1px solid var(--divider)', background: 'var(--card)' }}>
@@ -100,16 +121,29 @@ export function ChatPanel({ conversationId }: Props) {
               </div>
             )}
           </div>
-          <div className="flex items-center gap-1.5 text-[11px] font-medium"
-            style={{ color: 'var(--success)' }}>
-            <div className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--success)' }} />
-            Active
-          </div>
+          {/* Share chat link */}
+          {(conversation as any).client_token && (
+            <button
+              onClick={() => {
+                const url = `${window.location.origin}/chat/${(conversation as any).client_token}`
+                navigator.clipboard.writeText(url)
+                setCopied(true)
+                setTimeout(() => setCopied(false), 2000)
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold border-none cursor-pointer transition-colors"
+              style={{ background: copied ? 'var(--success-bg)' : 'var(--surface)', color: copied ? 'var(--success)' : 'var(--text-secondary)', border: `1px solid ${copied ? 'var(--success)' : 'var(--border)'}` }}
+              title="Copy chat link for client"
+            >
+              <Icon name={copied ? 'check' : 'link'} size={13} style={{ color: 'inherit' }} />
+              {copied ? 'Copied!' : 'Copy link'}
+            </button>
+          )}
         </div>
       )}
 
-      {/* ── Messages ────────────────────────────────────────── */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-5 py-4 min-h-0"
+      {/* Messages */}
+      <div ref={scrollRef} onScroll={handleScroll}
+        className="flex-1 overflow-y-auto px-5 py-4 min-h-0"
         style={{ background: 'var(--bg-page)' }}>
         {grouped.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full gap-3 py-12">
@@ -122,7 +156,7 @@ export function ChatPanel({ conversationId }: Props) {
                 No messages yet
               </div>
               <div className="text-[12px]" style={{ color: 'var(--text-tertiary)' }}>
-                Send a message to start the conversation
+                Send a message to {conversation?.client_name || 'your client'} to start the conversation
               </div>
             </div>
           </div>
@@ -138,6 +172,8 @@ export function ChatPanel({ conversationId }: Props) {
                   senderName={m.sender_name}
                   timestamp={m.created_at}
                   isRead={m.is_read}
+                  attachmentUrl={m.attachment_url}
+                  attachmentName={m.attachment_name}
                 />
               ))}
             </div>
@@ -145,9 +181,9 @@ export function ChatPanel({ conversationId }: Props) {
         )}
       </div>
 
-      {/* ── Input ───────────────────────────────────────────── */}
+      {/* Input */}
       <div className="px-4 py-3 shrink-0" style={{ borderTop: '1px solid var(--divider)', background: 'var(--card)' }}>
-        <ChatInput onSend={handleSend} loading={sending} />
+        <ChatInput onSend={handleSend} loading={sendLoading} />
       </div>
     </div>
   )
