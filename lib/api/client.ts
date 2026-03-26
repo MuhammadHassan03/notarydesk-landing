@@ -1,8 +1,8 @@
 import axios, { AxiosError, type AxiosRequestConfig } from 'axios'
 import { getStoredTokens, storeTokens, clearTokens } from './tokens'
 
-// export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'
-export const API_URL = 'http://localhost:8000/api/v1'
+export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'
+// export const API_URL = 'http://localhost:8000/api/v1'
 
 // ── Axios instance ───────────────────────────────────────────────────────
 
