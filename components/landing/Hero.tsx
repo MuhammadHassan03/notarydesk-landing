@@ -61,7 +61,7 @@ export default function Hero() {
                   Start Free No Credit Card
                   <Icon name="arrow_forward" size={18} className="transition-transform group-hover:translate-x-0.5" />
                 </Link>
-                <a href="#features" className="flex items-center gap-2 px-7 py-4 rounded-2xl font-bold text-[15px] no-underline transition-all duration-200 hover:shadow-md" style={{ color: 'var(--primary)', background: 'var(--card)', border: '1.5px solid var(--border)' }}>
+                <a href="#how" className="flex items-center gap-2 px-7 py-4 rounded-2xl font-bold text-[15px] no-underline transition-all duration-200 hover:shadow-md" style={{ color: 'var(--primary)', background: 'var(--card)', border: '1.5px solid var(--border)' }}>
                   <Icon name="play_circle" size={20} />
                   See How It Works
                 </a>
@@ -79,8 +79,8 @@ export default function Hero() {
             {/* ── Right: Mockups (1.5×) ───────────────────────── */}
             <div className={`relative transition-all duration-1000 delay-300 ${vis ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
 
-              {/* ═══ Browser (720px) ═══ */}
-              <div className="w-[720px] max-lg:w-[560px] max-md:w-[400px] rounded-2xl overflow-hidden shadow-2xl" style={{ border: '1px solid var(--border)' }}>
+              {/* ═══ Browser (720px) — hidden on small mobile ═══ */}
+              <div className="hidden sm:block w-[720px] max-lg:w-[560px] max-md:w-[400px] rounded-2xl overflow-hidden shadow-2xl" style={{ border: '1px solid var(--border)' }}>
                 <div className="flex items-center gap-3 px-5 py-3" style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)' }}>
                   <div className="flex gap-2"><span className="w-3 h-3 rounded-full bg-[#FF5F57]" /><span className="w-3 h-3 rounded-full bg-[#FEBC2E]" /><span className="w-3 h-3 rounded-full bg-[#28C840]" /></div>
                   <div className="flex-1 mx-6 flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-medium truncate" style={{ background: 'var(--card)', color: 'var(--text-tertiary)', border: '1px solid var(--border)' }}>
@@ -167,14 +167,14 @@ export default function Hero() {
               </div>
 
               {/* ═══ iPhone (285px) ═══ */}
-              <div className={`absolute -bottom-14 -right-6 lg:-right-14 z-20 transition-all duration-700 delay-700 ${vis ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-                <div className="relative w-[285px]">
+              <div className={`max-sm:relative max-sm:mx-auto max-sm:mt-4 sm:absolute sm:-bottom-14 sm:-right-6 lg:-right-14 z-20 transition-all duration-700 delay-700 ${vis ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+                <div className="relative w-[285px] max-sm:w-[260px] max-sm:mx-auto">
                   {/* Hardware buttons */}
-                  <div className="absolute -right-[4px] top-[108px] w-[4px] h-[42px] rounded-r-sm bg-[#1a1f2e]" />
-                  <div className="absolute -left-[4px] top-[87px] w-[4px] h-[27px] rounded-l-sm bg-[#1a1f2e]" />
-                  <div className="absolute -left-[4px] top-[126px] w-[4px] h-[27px] rounded-l-sm bg-[#1a1f2e]" />
+                  <div className="absolute -right-[4px] top-[108px] w-[4px] h-[42px] rounded-r-sm" style={{ background: 'var(--phone-btn)' }} />
+                  <div className="absolute -left-[4px] top-[87px] w-[4px] h-[27px] rounded-l-sm" style={{ background: 'var(--phone-btn)' }} />
+                  <div className="absolute -left-[4px] top-[126px] w-[4px] h-[27px] rounded-l-sm" style={{ background: 'var(--phone-btn)' }} />
 
-                  <div className="rounded-[48px] p-[8px] shadow-2xl" style={{ background: '#0F172A' }}>
+                  <div className="rounded-[48px] p-[8px] shadow-2xl" style={{ background: 'var(--phone-shell)', border: 'var(--phone-border)' }}>
                     <div className="rounded-[40px] overflow-hidden relative" style={{ background: 'var(--card)' }}>
 
                       {/* Dynamic Island */}
@@ -230,10 +230,10 @@ export default function Hero() {
                         {/* Quick actions Material Icons */}
                         <div className="flex justify-between mb-3">
                           {[
-                            { icon: 'add_circle', l: 'New Job', bg: 'rgba(27,58,92,0.06)', c: 'var(--primary)' },
-                            { icon: 'menu_book', l: 'Journal', bg: '#EDE9FE', c: '#5B21B6' },
-                            { icon: 'route', l: 'Trip', bg: '#DBEAFE', c: '#1D4ED8' },
-                            { icon: 'receipt_long', l: 'Invoice', bg: '#FEF3C7', c: '#92400E' },
+                            { icon: 'add_circle', l: 'New Job', bg: 'var(--primary-light)', c: 'var(--primary)' },
+                            { icon: 'menu_book', l: 'Journal', bg: 'var(--pastel-purple)', c: 'var(--pastel-purple-text)' },
+                            { icon: 'route', l: 'Trip', bg: 'var(--pastel-blue)', c: 'var(--pastel-blue-text)' },
+                            { icon: 'receipt_long', l: 'Invoice', bg: 'var(--pastel-yellow)', c: 'var(--pastel-yellow-text)' },
                           ].map(a => (
                             <div key={a.l} className="flex flex-col items-center gap-1">
                               <div className="w-[40px] h-[40px] rounded-xl flex items-center justify-center" style={{ background: a.bg }}>
@@ -291,8 +291,8 @@ export default function Hero() {
                 </div>
               </div>
 
-              {/* Synced badge */}
-              <div className={`absolute -bottom-6 right-[260px] lg:right-[280px] z-30 transition-all duration-500 delay-1000 ${vis ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}>
+              {/* Synced badge — hidden on small mobile */}
+              <div className={`hidden sm:block absolute -bottom-6 right-[260px] lg:right-[280px] z-30 transition-all duration-500 delay-1000 ${vis ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}>
                 <div className="flex items-center gap-2 px-4 py-2 rounded-full shadow-lg text-[11px] font-bold" style={{ background: 'var(--primary)', color: 'white' }}>
                   <Icon name="sync" size={14} style={{ color: 'var(--accent)' }} />
                   Synced in real-time

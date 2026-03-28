@@ -93,11 +93,11 @@ function HBar({ label, value, max, color, subtitle }: {
 
 // ── Section card ───────────────────────────────────────────────────────────
 
-function ChartCard({ title, icon, children }: { title: string; icon: string; children: React.ReactNode }) {
+function ChartCard({ title, icon, children }: { title: string; icon?: string; children: React.ReactNode }) {
   return (
     <div className="rounded-2xl p-5" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
       <div className="flex items-center gap-2 mb-4">
-        <Icon name={icon as any} size={17} style={{ color: 'var(--primary)' }} />
+        {icon && <Icon name={icon} size={17} style={{ color: 'var(--primary)' }} />}
         <span className="text-[14px] font-bold" style={{ color: 'var(--text)' }}>{title}</span>
       </div>
       {children}
@@ -249,8 +249,32 @@ export default function AnalyticsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-3">
         <div className="w-9 h-9 border-[3px] rounded-full animate-spin-slow" style={{ borderColor: 'var(--border)', borderTopColor: 'var(--primary)' }} />
+        <span className="text-[13px]" style={{ color: 'var(--text-tertiary)' }}>Loading analytics…</span>
+      </div>
+    )
+  }
+
+  const hasData = jobs.length > 0
+
+  if (!hasData) {
+    return (
+      <div>
+        <PageHeader title="Analytics" subtitle="Revenue trends, job performance, and business insights" />
+        <div className="text-center py-20">
+          <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4"
+            style={{ background: 'var(--surface)' }}>
+            <Icon name="bar_chart" size={32} style={{ color: 'var(--text-tertiary)' }} />
+          </div>
+          <div className="text-[17px] font-bold mb-1" style={{ color: 'var(--text)' }}>No data yet</div>
+          <div className="text-[13px] mb-5 max-w-xs mx-auto" style={{ color: 'var(--text-secondary)' }}>
+            Complete your first signing job to see revenue trends, performance metrics, and business insights.
+          </div>
+          <Button variant="gold" href="/dashboard/jobs/new">
+            <Icon name="add" size={16} style={{ color: 'inherit' }} /> Create your first job
+          </Button>
+        </div>
       </div>
     )
   }

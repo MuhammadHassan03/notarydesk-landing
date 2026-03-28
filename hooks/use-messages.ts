@@ -7,20 +7,26 @@ import type { Conversation, Message } from '@/lib/types'
 
 function useDebouncedCallback<T extends (...args: any[]) => void>(fn: T, delay: number): T {
   const timer = useRef<ReturnType<typeof setTimeout>>()
+  const fnRef = useRef(fn)
+  fnRef.current = fn
+  // Stable identity — does NOT change when fn changes, so callers' useEffect
+  // dependency arrays do not re-trigger on every render.
   return useCallback((...args: any[]) => {
     clearTimeout(timer.current)
-    timer.current = setTimeout(() => fn(...args), delay)
-  }, [fn, delay]) as unknown as T
+    timer.current = setTimeout(() => fnRef.current(...args), delay)
+  }, [delay]) as unknown as T
 }
 
 export function useConversations() {
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   // Track cleanup functions for per-conversation channel subscriptions
   const channelCleanups = useRef<(() => void)[]>([])
 
   const load = useCallback(async () => {
     setLoading(true)
+    setError(null)
     try {
       const data = await api.get<Conversation[]>('/messages/conversations')
       const list: Conversation[] = Array.isArray(data) ? data : []
@@ -49,8 +55,8 @@ export function useConversations() {
         })
         channelCleanups.current.push(unsub)
       })
-    } catch {
-      // endpoint may not exist yet
+    } catch (e: any) {
+      setError(e.message || 'Failed to load conversations')
     }
     setLoading(false)
   }, [])
@@ -62,7 +68,7 @@ export function useConversations() {
     }
   }, [load])
 
-  return { conversations, loading, refresh: load }
+  return { conversations, loading, error, refresh: load }
 }
 
 export function useConversation(id: string | undefined) {

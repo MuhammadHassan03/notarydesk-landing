@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useConversations, useCreateConversation } from '@/hooks/use-messages'
 import { Icon } from '@/components/ui/icons'
 import { PageHeader } from '@/components/layout'
+import { ErrorBanner } from '@/components/ui/ErrorBanner'
 import { Button, Toast, Modal } from '@/components/ui'
 import { FormField } from '@/components/forms/FormField'
 import { IconInput } from '@/components/forms/IconInput'
@@ -30,7 +31,7 @@ function timeAgo(dateStr: string | null): string {
 
 export default function MessagesPage() {
   const router = useRouter()
-  const { conversations, loading, refresh } = useConversations()
+  const { conversations, loading, error, refresh } = useConversations()
   const { create, loading: creating } = useCreateConversation()
   const [filter, setFilter] = useState<Filter>('all')
   const [search, setSearch] = useState('')
@@ -74,6 +75,8 @@ export default function MessagesPage() {
       setToast({ msg: e.message || 'Failed to create.', type: 'error' })
     }
   }
+
+  if (error) return <ErrorBanner message={error} onRetry={refresh} />
 
   return (
     <div>
@@ -146,19 +149,19 @@ export default function MessagesPage() {
                     {conv.last_message_preview || 'No messages yet'}
                   </span>
                   <div className="flex items-center gap-2 shrink-0 ml-2">
-                    {(conv as any).client_token && (
-                      <span
-                        role="button"
+                    {conv.client_token && (
+                      <button
+                        type="button"
                         onClick={(e) => {
                           e.stopPropagation()
-                          copyToClipboard(`${window.location.origin}/chat/${(conv as any).client_token}`)
+                          copyToClipboard(`${window.location.origin}/chat/${conv.client_token}`)
                           setToast({ msg: 'Chat link copied!', type: 'success' })
                         }}
-                        className="w-6 h-6 rounded-md flex items-center justify-center hover:bg-[var(--surface)] transition-colors cursor-pointer"
-                        title="Copy chat link"
+                        className="w-6 h-6 rounded-md flex items-center justify-center hover:bg-[var(--surface)] transition-colors cursor-pointer border-none bg-transparent"
+                        aria-label="Copy chat link"
                       >
                         <Icon name="link" size={13} style={{ color: 'var(--text-tertiary)' }} />
-                      </span>
+                      </button>
                     )}
                     {conv.unread_count > 0 && (
                       <span className="min-w-[20px] h-5 rounded-full flex items-center justify-center text-[10px] font-bold px-1.5"

@@ -74,7 +74,7 @@ export function NotificationPanel({ onClose, onRead }: Props) {
                 style={{ borderBottom: '1px solid var(--divider)', background: n.is_read ? 'transparent' : 'var(--surface)' }}>
                 <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
                   style={{ background: config.color + '12' }}>
-                  <Icon name={config.icon as any} size={18} style={{ color: config.color }} />
+                  <Icon name={config.icon} size={18} style={{ color: config.color }} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">

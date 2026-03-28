@@ -125,7 +125,7 @@ export default function BookingPage() {
           style={{ background: '#1B3A5C' }}>
           {notary.logo_url && (
             <div className="px-8 pt-8">
-              <img src={notary.logo_url} alt="Logo"
+              <img src={notary.logo_url} alt="Logo" loading="lazy" width={200} height={48}
                 className="h-12 object-contain" style={{ maxWidth: 200 }} />
             </div>
           )}

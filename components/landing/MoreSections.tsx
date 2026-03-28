@@ -90,7 +90,7 @@ export function CompetitorSection() {
                   { n: 'Spreadsheet', icon: 'table_chart', highlight: false },
                 ].map(col => (
                   <th key={col.n} className="px-4 py-3.5 text-center" style={{
-                    background: col.highlight ? 'var(--primary-light, rgba(27,58,92,0.06))' : 'var(--surface)',
+                    background: col.highlight ? 'var(--primary-light)' : 'var(--surface)',
                   }}>
                     <div className="flex flex-col items-center gap-1">
                       <Icon name={col.icon} size={14} style={{ color: col.highlight ? 'var(--primary)' : 'var(--text-tertiary)', opacity: col.highlight ? 1 : 0.5 }} />
@@ -107,7 +107,7 @@ export function CompetitorSection() {
                 <tr key={f} style={i % 2 === 0 ? { background: 'var(--surface)' } : { background: 'var(--card)' }}>
                   <td className="px-5 py-3 text-[13px] font-medium" style={{ color: 'var(--text-secondary)' }}>{f}</td>
                   {['NotaryDesk', 'Legacy', 'General', 'Spreadsheet'].map(n => (
-                    <td key={n} className="px-4 py-3 text-center" style={n === 'NotaryDesk' ? { background: 'rgba(27,58,92,0.03)' } : {}}>
+                    <td key={n} className="px-4 py-3 text-center" style={n === 'NotaryDesk' ? { background: 'var(--primary-light)' } : {}}>
                       {COMPARISON_MATRIX[n]?.[i]
                         ? <Icon name="check_circle" size={18} style={{ color: 'var(--success)' }} />
                         : <Icon name="cancel" size={18} style={{ color: 'var(--text-tertiary)', opacity: 0.3 }} />

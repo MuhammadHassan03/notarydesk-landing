@@ -9,6 +9,7 @@ import { Icon } from '@/components/ui/icons'
 import type { SigningJob } from '@/lib/types'
 
 import { PageHeader } from '@/components/layout'
+import { ErrorBanner } from '@/components/ui/ErrorBanner'
 import { Button, DataTable, StatusBadge } from '@/components/ui'
 import { Column } from '@/components/ui/DataTable'
 import { FilterOption, FilterPills } from '@/components/ui/FilterPills'
@@ -32,7 +33,7 @@ const COLUMNS: Column<SigningJob>[] = [
 
 export default function JobsListPage() {
   const router = useRouter()
-  const { jobs, loading } = useJobs()
+  const { jobs, loading, error, refresh } = useJobs()
   const [filter, setFilter] = useState<Filter>('all')
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
@@ -80,6 +81,8 @@ export default function JobsListPage() {
     { key: 'cancelled', label: 'Cancelled', count: counts.cancelled },
   ]
 
+  if (error) return <ErrorBanner message={error} onRetry={refresh} />
+
   return (
     <div>
       <PageHeader title="Signing Jobs" subtitle={`${filtered.length} jobs · ${currency(total)} total`}
@@ -100,7 +103,7 @@ export default function JobsListPage() {
             value={search}
             onChange={e => setSearch(e.target.value)}
             className="pl-8 pr-3 py-2 rounded-lg text-[13px] outline-none"
-            style={{ background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border)', width: 180 }}
+            style={{ background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border)', width: 180, minWidth: 0 }}
           />
         </div>
       </div>

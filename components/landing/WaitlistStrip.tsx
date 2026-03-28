@@ -126,11 +126,17 @@ export default function WaitlistStrip() {
                 </div>
               )}
 
-              {/* Privacy note */}
-              <p className="text-[10px] text-white/25 flex items-center gap-1">
-                <Icon name="lock" size={10} style={{ opacity: 0.5 }} />
-                No spam, ever. Unsubscribe anytime.
-              </p>
+              {/* Privacy + urgency note */}
+              <div className="flex flex-wrap items-center gap-3">
+                <p className="text-[10px] text-white/25 flex items-center gap-1">
+                  <Icon name="lock" size={10} style={{ opacity: 0.5 }} />
+                  No spam, ever. Unsubscribe anytime.
+                </p>
+                <p className="text-[10px] font-bold flex items-center gap-1" style={{ color: 'var(--accent)', opacity: 0.7 }}>
+                  <Icon name="group" size={10} />
+                  500+ notaries already signed up
+                </p>
+              </div>
             </form>
           )}
         </div>

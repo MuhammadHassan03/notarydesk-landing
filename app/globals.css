@@ -67,6 +67,28 @@
   --radius:         10px;
   --radius-lg:      14px;
   --radius-xl:      20px;
+
+  /* Pastel feature colors (light) */
+  --pastel-purple:  #EDE9FE;
+  --pastel-blue:    #DBEAFE;
+  --pastel-yellow:  #FEF3C7;
+  --pastel-green:   #DCFCE7;
+  --pastel-purple-text: #5B21B6;
+  --pastel-blue-text:   #1D4ED8;
+  --pastel-yellow-text: #92400E;
+  --pastel-green-text:  #15803D;
+
+  /* Nav glass */
+  --nav-glass:      rgba(255,255,255,0.85);
+  --nav-hover:      rgba(241,245,249,1);
+
+  /* Footer */
+  --footer-bg:      #0F172A;
+
+  /* Phone mockup */
+  --phone-shell:    #0F172A;
+  --phone-btn:      #1a1f2e;
+  --phone-border:   transparent;
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -125,6 +147,28 @@
   --shadow-sm:      0 1px 2px rgba(0,0,0,0.3);
   --shadow-md:      0 4px 12px rgba(0,0,0,0.4);
   --shadow-lg:      0 8px 24px rgba(0,0,0,0.5);
+
+  /* Pastel feature colors (dark — muted/lower opacity) */
+  --pastel-purple:  rgba(91,33,182,0.15);
+  --pastel-blue:    rgba(29,78,216,0.15);
+  --pastel-yellow:  rgba(146,64,14,0.15);
+  --pastel-green:   rgba(21,128,61,0.15);
+  --pastel-purple-text: #A78BFA;
+  --pastel-blue-text:   #60A5FA;
+  --pastel-yellow-text: #FCD34D;
+  --pastel-green-text:  #6EE7A0;
+
+  /* Nav glass */
+  --nav-glass:      rgba(15,20,25,0.85);
+  --nav-hover:      rgba(26,32,40,1);
+
+  /* Footer */
+  --footer-bg:      #060A0E;
+
+  /* Phone mockup */
+  --phone-shell:    #2A3140;
+  --phone-btn:      #3A4555;
+  --phone-border:   1px solid rgba(255,255,255,0.08);
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -217,6 +261,19 @@ body {
 /* ══════════════════════════════════════════════════════════════════════════
    MATERIAL SYMBOLS — fallback rule to ensure font + ligatures load
    ══════════════════════════════════════════════════════════════════════════ */
+
+/* ══════════════════════════════════════════════════════════════════════════
+   REDUCED MOTION — respect user preference
+   ══════════════════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
 
 .material-symbols-rounded {
   font-family: 'Material Symbols Rounded';

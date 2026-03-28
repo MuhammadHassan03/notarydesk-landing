@@ -56,7 +56,7 @@ const US_STATES = [
 // ── Settings row (specific to this page) ──────────────────────────────────
 
 function SettingsRow({ icon, iconBg, iconColor, label, description, value, onClick }: {
-  icon: IconName; iconBg?: string; iconColor?: string
+  icon?: IconName; iconBg?: string; iconColor?: string
   label: string; description?: string; value?: string; onClick?: () => void
 }) {
   const Tag = onClick ? 'button' : 'div'
@@ -64,10 +64,12 @@ function SettingsRow({ icon, iconBg, iconColor, label, description, value, onCli
     <Tag onClick={onClick}
       className={`flex items-center gap-3 py-3.5 w-full text-left bg-transparent border-none ${onClick ? 'cursor-pointer hover:opacity-80' : ''}`}
       style={{ borderBottom: '1px solid var(--divider)' }}>
-      <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-        style={{ background: iconBg || 'var(--primary-light)' }}>
-        <Icon name={icon} size={17} style={{ color: iconColor || 'var(--primary)' }} />
-      </div>
+      {icon && (
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+          style={{ background: iconBg || 'var(--primary-light)' }}>
+          <Icon name={icon} size={17} style={{ color: iconColor || 'var(--primary)' }} />
+        </div>
+      )}
       <div className="flex-1 min-w-0">
         <div className="text-[13px] font-semibold" style={{ color: 'var(--text)' }}>{label}</div>
         {description && <div className="text-[12px] mt-0.5" style={{ color: 'var(--text-tertiary)' }}>{description}</div>}
@@ -164,8 +166,8 @@ export default function SettingsPage() {
 
   const saveProfile = useCallback(async () => {
     try {
-      await updateProfile({ full_name: fullName.trim(), phone: phone.trim() || null, commission_number: commission.trim() || null, state: state.trim() || null, years_experience: yearsExp.trim() || null } as any)
-      setDirty(false); await refreshProfile(); setToast({ msg: 'Profile updated!', type: 'success' })
+      await updateProfile({ full_name: fullName.trim(), phone: phone.trim() || null, commission_number: commission.trim() || null, state: state.trim() || null, years_experience: yearsExp.trim() || null })
+      await refreshProfile(); setDirty(false); setToast({ msg: 'Profile updated!', type: 'success' })
     } catch (e: any) { setToast({ msg: e.message, type: 'error' }) }
   }, [fullName, phone, commission, state, yearsExp, updateProfile, refreshProfile])
 
@@ -183,7 +185,7 @@ export default function SettingsPage() {
 
   const saveBiz = useCallback(async () => {
     try {
-      await updateProfile({ business_name: bizName.trim() || null, business_address: bizAddr.trim() || null, default_fee: defaultFee ? parseFloat(defaultFee) : null } as any)
+      await updateProfile({ business_name: bizName.trim() || null, business_address: bizAddr.trim() || null, default_fee: defaultFee ? parseFloat(defaultFee) : null })
       setBizDirty(false); await refreshProfile(); setToast({ msg: 'Business settings saved!', type: 'success' })
     } catch (e: any) { setToast({ msg: e.message, type: 'error' }) }
   }, [bizName, bizAddr, defaultFee, updateProfile, refreshProfile])
@@ -195,7 +197,7 @@ export default function SettingsPage() {
         nna_cert_expiry: nnaCert || null,
         background_check_expiry: bgCheck || null,
         commission_expiry: commExpiry || null,
-      } as any)
+      })
       setCompDirty(false); await refreshProfile()
       setToast({ msg: 'Compliance dates saved!', type: 'success' })
     } catch (e: any) { setToast({ msg: e.message, type: 'error' }) }
@@ -259,9 +261,10 @@ export default function SettingsPage() {
           disabled={avatarUploading}
           className="relative w-14 h-14 rounded-2xl shrink-0 border-none cursor-pointer group"
           title="Click to change photo"
+          aria-label="Upload profile photo"
           style={{ background: 'var(--accent)' }}>
           {profile?.avatar_url
-            ? <img src={profile.avatar_url} alt="Avatar" className="w-full h-full rounded-2xl object-cover" />
+            ? <img src={profile.avatar_url} alt="Avatar" loading="lazy" width={56} height={56} className="w-full h-full rounded-2xl object-cover" />
             : <span className="w-full h-full flex items-center justify-center font-bold text-xl" style={{ color: 'var(--primary)' }}>{initials(profile?.full_name)}</span>
           }
           <div className="absolute inset-0 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
@@ -338,7 +341,13 @@ export default function SettingsPage() {
                 <div className="flex gap-2">
                   <div className="flex-1">
                     <IconInput value={username}
-                      onChange={e => { setUsername(e.target.value.toLowerCase()); setUsernameError('') }}
+                      onChange={e => {
+                        const val = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '')
+                        setUsername(val)
+                        if (val && val.length < 3) setUsernameError('Must be at least 3 characters.')
+                        else if (val.length > 30) setUsernameError('Maximum 30 characters.')
+                        else setUsernameError('')
+                      }}
                       placeholder="sarah-johnson-notary" />
                   </div>
                   <Button variant="primary" size="sm" loading={usernameSaving}
@@ -377,12 +386,12 @@ export default function SettingsPage() {
               <FormField label="Default signing fee" hint="Auto-fills when creating new jobs and invoices">
                 <IconInput type="number" step="0.01" value={defaultFee} onChange={e => mark(setDefaultFee, true)(e.target.value)} placeholder="150.00" />
               </FormField>
-              <SettingsRow iconBg="var(--accent-pale)" iconColor="var(--accent)" label="IRS mileage rate" description="Used for all deduction calculations" value="$0.70/mi" />
+              <SettingsRow iconBg="var(--accent-pale)" iconColor="var(--accent)" label="IRS mileage rate" description="Used for all deduction calculations" value={`$${(0.70).toFixed(2)}/mi`} />
             </FormSection>
             <FormSection title="Invoice logo">
               <div className="flex items-center gap-4 py-2">
                 {profile?.logo_url ? (
-                  <img src={profile.logo_url} alt="Business logo"
+                  <img src={profile.logo_url} alt="Business logo" loading="lazy" width={80} height={80}
                     className="w-20 h-20 rounded-xl object-contain"
                     style={{ border: '1px solid var(--border)', background: 'var(--surface)', padding: 4 }} />
                 ) : (

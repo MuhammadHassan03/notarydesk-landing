@@ -98,7 +98,7 @@ function FilterPopover<T extends { id: string }>({
     if (col.filterOptions) return col.filterOptions
     const getter = col.filterValue ?? col.sortValue
     if (!getter) return []
-    return [...new Set(data.map(r => String(getter(r) ?? '')).filter(Boolean))].sort()
+    return Array.from(new Set(data.map(r => String(getter(r) ?? '')).filter(Boolean))).sort()
   }, [type, col, data])
 
   const tf: TextFilter   = filter?.kind === 'text'   ? filter : { kind: 'text',   op: 'contains', value: '' }

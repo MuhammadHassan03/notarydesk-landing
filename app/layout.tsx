@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import { ThemeProvider } from '@/context/themecontext'
 
 export const metadata: Metadata = {
   title: 'NotaryDesk — Notary Business Management',
@@ -7,8 +8,6 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: '/favicon.ico', sizes: 'any' },
-      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
-      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
     ],
     apple: '/apple-touch-icon.png',
   },
@@ -16,8 +15,12 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'NotaryDesk — Notary Business Management',
     description: 'Track signings, mileage, invoices, expenses and stay compliant.',
-    images: [{ url: '/og-image.png', width: 1200, height: 630 }],
     type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'NotaryDesk — Notary Business Management',
+    description: 'Track signings, mileage, invoices, expenses and stay compliant.',
   },
   themeColor: '#1B3A5C',
 }
@@ -39,7 +42,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <ThemeProvider>{children}</ThemeProvider>
+      </body>
     </html>
   )
 }

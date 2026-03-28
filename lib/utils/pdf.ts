@@ -1,5 +1,4 @@
 import type { Profile } from '@/lib/types'
-import { api } from '@/lib/api/client'
 
 interface InvoiceData {
   id: string
@@ -259,10 +258,20 @@ export function downloadInvoiceHTML(html: string, filename: string) {
 
 /**
  * Download a PDF from the API.
+ * Uses raw axios to bypass JSON unwrap interceptor for blob responses.
  */
 export async function downloadPdf(endpoint: string, filename: string) {
-  const data = await api.get(endpoint, { responseType: 'blob' })
-  const blob = new Blob([data as BlobPart], { type: 'application/pdf' })
+  const { getStoredTokens } = await import('@/lib/api/tokens')
+  const { API_URL } = await import('@/lib/api/client')
+  const axios = (await import('axios')).default
+  const { access } = getStoredTokens()
+  const res = await axios.get(`${API_URL}${endpoint}`, {
+    responseType: 'blob',
+    headers: {
+      Authorization: access ? `Bearer ${access}` : '',
+    },
+  })
+  const blob = new Blob([res.data], { type: 'application/pdf' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url

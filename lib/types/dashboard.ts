@@ -5,6 +5,7 @@ export interface DashboardStats {
   unpaid_count: number
   unpaid_total: number
   ytd_notarial_acts: number
+  ytd_notarial_acts_deduction: number
   ytd_miles: number
   ytd_mileage_deduction: number
   ytd_expenses: number

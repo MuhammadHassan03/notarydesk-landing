@@ -8,6 +8,7 @@ import { currency, formatDate } from '@/lib/utils'
 import { downloadPdf } from '@/lib/utils/pdf'
 import { Icon } from '@/components/ui/icons'
 import { Button, Toast } from '@/components/ui'
+import { ErrorBanner } from '@/components/ui/ErrorBanner'
 import { FilterPills, FilterOption } from '@/components/ui/FilterPills'
 import { PageHeader } from '@/components/layout'
 import { Pagination } from '@/components/ui/Pagination'
@@ -18,10 +19,11 @@ type JournalFilter = 'all' | 'finalized' | 'draft'
 
 export default function JournalListPage() {
   const router = useRouter()
-  const { entries, loading } = useJournalEntries()
+  const { entries, loading, error, refresh } = useJournalEntries()
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<JournalFilter>('all')
   const [exporting, setExporting] = useState(false)
+  const [toast, setToast] = useState<{ msg: string; type: 'error' } | null>(null)
   const [page, setPage] = useState(1)
 
   useEffect(() => setPage(1), [statusFilter, search])
@@ -30,7 +32,9 @@ export default function JournalListPage() {
     setExporting(true)
     try {
       await downloadPdf('/journal/export-pdf', 'notarydesk-journal.pdf')
-    } catch { /* toast/ignore */ }
+    } catch {
+      setToast({ msg: 'Failed to export journal PDF. Please try again.', type: 'error' })
+    }
     setExporting(false)
   }
 
@@ -61,6 +65,8 @@ export default function JournalListPage() {
   // Stats
   const totalFees = useMemo(() => entries.reduce((s, e) => s + (e.fee || 0), 0), [entries])
   const finalized = useMemo(() => entries.filter(e => e.is_finalized).length, [entries])
+
+  if (error) return <ErrorBanner message={error} onRetry={refresh} />
 
   return (
     <div>
@@ -107,7 +113,7 @@ export default function JournalListPage() {
           </span>
           <input className="pl-8 pr-3 py-2 rounded-lg text-[13px] outline-none" placeholder="Search entries…"
             value={search} onChange={e => setSearch(e.target.value)}
-            style={{ background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border)', width: 200 }} />
+            style={{ background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border)', width: 200, minWidth: 0 }} />
         </div>
       </div>
 
@@ -175,9 +181,13 @@ export default function JournalListPage() {
                     {currency(entry.fee)}
                   </div>
                   <div className="flex items-center gap-1.5 justify-end mt-0.5">
-                    {entry.is_finalized && (
-                      <Icon name="lock" size={11} style={{ color: 'var(--success)' }} />
-                    )}
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded"
+                      style={{
+                        background: entry.is_finalized ? 'var(--success-bg, rgba(22,163,74,0.1))' : 'var(--surface)',
+                        color: entry.is_finalized ? 'var(--success, #16A34A)' : 'var(--text-tertiary)',
+                      }}>
+                      {entry.is_finalized ? 'Finalized' : 'Draft'}
+                    </span>
                     <span className="text-[11px]" style={{ color: 'var(--text-tertiary)' }}>
                       {formatDate(entry.signing_date)}
                     </span>
@@ -192,6 +202,7 @@ export default function JournalListPage() {
         <Pagination page={page} totalPages={totalPages} totalItems={filtered.length} pageSize={PAGE_SIZE} onPage={setPage} />
         </>
       )}
+      {toast && <Toast message={toast.msg} type={toast.type} visible={!!toast} onHide={() => setToast(null)} />}
     </div>
   )
 }

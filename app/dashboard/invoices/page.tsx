@@ -7,6 +7,7 @@ import { INVOICE_STATUS_CONFIG, invoiceNumber } from '@/lib/constants'
 import { currency, formatDate } from '@/lib/utils'
 import { Icon } from '@/components/ui/icons'
 import { Button } from '@/components/ui'
+import { ErrorBanner } from '@/components/ui/ErrorBanner'
 import { PageHeader } from '@/components/layout'
 import { Pagination } from '@/components/ui/Pagination'
 
@@ -16,7 +17,7 @@ const STATUS_ORDER: InvoiceStatus[] = ['draft', 'sent', 'overdue', 'paid', 'canc
 
 export default function InvoicesListPage() {
   const router = useRouter()
-  const { invoices, loading } = useInvoices()
+  const { invoices, loading, error, refresh } = useInvoices()
   const [filter, setFilter] = useState<InvoiceStatus | null>(null)
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
@@ -49,19 +50,26 @@ export default function InvoicesListPage() {
   const unpaidTotal = useMemo(() => invoices.filter(i => i.status === 'sent' || i.status === 'overdue').reduce((s, i) => s + i.amount, 0), [invoices])
 
   // AR Aging — days since invoice was created (for sent/overdue only)
+  const AR_AGING_BUCKETS = [
+    { label: '0–30 days', max: 30 },
+    { label: '31–60 days', max: 60 },
+    { label: '60+ days', max: Infinity },
+  ] as const
+
   const arAging = useMemo(() => {
     const now = Date.now()
+    const MS_PER_DAY = 86400000
     const open = invoices.filter(i => i.status === 'sent' || i.status === 'overdue')
     const bucket = (inv: typeof open[0]) => {
-      const days = Math.floor((now - new Date(inv.created_at).getTime()) / 86400000)
-      if (days <= 30) return '0–30 days'
-      if (days <= 60) return '31–60 days'
-      return '60+ days'
+      const days = Math.floor((now - new Date(inv.created_at).getTime()) / MS_PER_DAY)
+      return (AR_AGING_BUCKETS.find(b => days <= b.max) || AR_AGING_BUCKETS[2]).label
     }
-    const buckets: Record<string, number> = { '0–30 days': 0, '31–60 days': 0, '60+ days': 0 }
+    const buckets: Record<string, number> = Object.fromEntries(AR_AGING_BUCKETS.map(b => [b.label, 0]))
     open.forEach(inv => { buckets[bucket(inv)] += inv.amount })
     return buckets
   }, [invoices])
+
+  if (error) return <ErrorBanner message={error} onRetry={refresh} />
 
   return (
     <div>
@@ -126,7 +134,7 @@ export default function InvoicesListPage() {
             value={search}
             onChange={e => setSearch(e.target.value)}
             className="pl-8 pr-3 py-2 rounded-lg text-[13px] outline-none"
-            style={{ background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border)', width: 180 }}
+            style={{ background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border)', width: 180, minWidth: 0 }}
           />
         </div>
       </div>

@@ -42,6 +42,7 @@ export default function RegisterPage() {
 
     if (!fullName.trim()) { setError('Full name is required.'); return }
     if (password.length < 8) { setError('Password must be at least 8 characters.'); return }
+    if (pwStrength < 2) { setError('Password is too weak. Use at least 8 characters with a mix of letters and numbers.'); return }
     if (password !== confirm) { setError('Passwords do not match.'); return }
 
     setLoading(true)

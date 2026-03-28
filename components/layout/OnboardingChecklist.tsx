@@ -24,7 +24,7 @@ const ITEMS: { key: keyof ChecklistState; label: string; href: string; icon: str
 
 const DISMISS_KEY = 'notarydesk:onboarding_dismissed'
 
-export default function OnboardingChecklist({ checklist }: { checklist?: ChecklistState | null }) {
+export default function OnboardingChecklist({ checklist }: { checklist?: ChecklistState | Record<string, boolean> | null }) {
   const [dismissed, setDismissed] = useState(false)
 
   useEffect(() => {
@@ -38,10 +38,10 @@ export default function OnboardingChecklist({ checklist }: { checklist?: Checkli
     localStorage.setItem(DISMISS_KEY, 'true')
   }, [])
 
-  const state: ChecklistState = checklist ?? {
+  const state = (checklist ?? {
     commission: false, fee: false, first_client: false,
     first_job: false, first_mileage: false, first_journal: false,
-  }
+  }) as ChecklistState
 
   const completed = Object.values(state).filter(Boolean).length
   const total = ITEMS.length
@@ -91,7 +91,7 @@ export default function OnboardingChecklist({ checklist }: { checklist?: Checkli
                 }}>
                 {done && <Icon name="check" size={13} style={{ color: '#fff' }} />}
               </div>
-              <Icon name={item.icon as any} size={15} style={{ color: done ? 'var(--text-tertiary)' : 'var(--primary)' }} />
+              <Icon name={item.icon} size={15} style={{ color: done ? 'var(--text-tertiary)' : 'var(--primary)' }} />
               <span className="text-[13px] font-medium flex-1"
                 style={{
                   color: done ? 'var(--text-tertiary)' : 'var(--text)',

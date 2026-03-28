@@ -13,6 +13,7 @@ export const PROBLEMS = [
   { emoji: '💸', before: 'Unprofessional Invoicing', pain: 'Chasing payments via casual apps looks unprofessional. Easy to forget follow-ups.', after: 'Professional invoices sent via email or SMS in seconds. Clients receive a branded link to pay instantly.' },
   { emoji: '📱', before: 'Scattered Scheduling', pain: 'Bookings from different platforms, emails, and texts. Easy to double-book.', after: 'Unified appointment board. One tap converts a booking into a journal entry and starts mileage.' },
   { emoji: '😰', before: 'Tax Season Chaos', pain: 'A year of crumpled receipts and partial logs leads to a panic-filled week of bookkeeping.', after: 'Year-round organized records. Export your IRS mileage log and income summary as one clean PDF.' },
+  { emoji: '🔓', before: 'No Data Security', pain: 'Client info stored in unsecured phone notes, texts, and paper files anyone could access.', after: 'Bank-grade encryption protects every record. Your data is isolated, private, and accessible only to you.' },
 ]
 
 export const FEATURES = [

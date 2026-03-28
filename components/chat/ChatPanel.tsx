@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useCallback, useState } from 'react'
 import { useConversation, useSendMessage } from '@/hooks/use-messages'
+import { subscribeToTyping, sendTypingEvent } from '@/lib/realtime'
+import { useAuth, useProfile } from '@/context/auth'
 import { ChatBubble } from './ChatBubble'
 import { ChatInput } from './ChatInput'
 import { Icon } from '@/components/ui/icons'
@@ -36,9 +38,12 @@ function DateSeparator({ date }: { date: string }) {
 export function ChatPanel({ conversationId }: Props) {
   const { conversation, messages, loading, setMessages } = useConversation(conversationId)
   const { send: apiSend, loading: sendLoading } = useSendMessage()
+  const { profile } = useProfile()
   const scrollRef = useRef<HTMLDivElement>(null)
   const isAtBottomRef = useRef(true)
   const [copied, setCopied] = useState(false)
+  const [clientTyping, setClientTyping] = useState(false)
+  const clientTypingTimer = useRef<ReturnType<typeof setTimeout>>()
 
   // Track if user is at bottom of scroll
   const handleScroll = useCallback(() => {
@@ -52,7 +57,29 @@ export function ChatPanel({ conversationId }: Props) {
     if (isAtBottomRef.current && scrollRef.current) {
       scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' })
     }
-  }, [messages.length])
+  }, [messages.length, clientTyping])
+
+  // Subscribe to client typing events
+  useEffect(() => {
+    const unsub = subscribeToTyping(conversationId, (data) => {
+      if (data.user_id === 'client') {
+        setClientTyping(data.typing)
+        if (data.typing) {
+          clearTimeout(clientTypingTimer.current)
+          // Auto-clear after 4s in case the "stopped" event is missed
+          clientTypingTimer.current = setTimeout(() => setClientTyping(false), 4000)
+        } else {
+          clearTimeout(clientTypingTimer.current)
+        }
+      }
+    })
+    return () => { unsub(); clearTimeout(clientTypingTimer.current) }
+  }, [conversationId])
+
+  // Emit notary-side typing event to the broadcast channel
+  const handleTyping = useCallback((typing: boolean) => {
+    sendTypingEvent(conversationId, profile?.id ?? 'notary', 'Notary', typing)
+  }, [conversationId, profile?.id])
 
   async function handleSend(content: string) {
     // Optimistic bubble — show instantly before API call
@@ -72,7 +99,8 @@ export function ChatPanel({ conversationId }: Props) {
 
     try {
       const saved = await apiSend(conversationId, content)
-      // Replace optimistic with real message (dedup if Realtime already added it)
+      // Backend already broadcasts via Supabase Realtime HTTP API — no client-side emit needed.
+      // Replace optimistic with real message (dedup if broadcast already added it)
       setMessages(prev => {
         const withoutTemp = prev.filter(m => m.id !== tid)
         if (withoutTemp.some(m => m.id === saved.id)) return withoutTemp
@@ -122,10 +150,10 @@ export function ChatPanel({ conversationId }: Props) {
             )}
           </div>
           {/* Share chat link */}
-          {(conversation as any).client_token && (
+          {conversation.client_token && (
             <button
               onClick={() => {
-                const url = `${window.location.origin}/chat/${(conversation as any).client_token}`
+                const url = `${window.location.origin}/chat/${conversation.client_token}`
                 navigator.clipboard.writeText(url)
                 setCopied(true)
                 setTimeout(() => setCopied(false), 2000)
@@ -145,7 +173,7 @@ export function ChatPanel({ conversationId }: Props) {
       <div ref={scrollRef} onScroll={handleScroll}
         className="flex-1 overflow-y-auto px-5 py-4 min-h-0"
         style={{ background: 'var(--bg-page)' }}>
-        {grouped.length === 0 ? (
+        {grouped.length === 0 && !clientTyping ? (
           <div className="flex flex-col items-center justify-center h-full gap-3 py-12">
             <div className="w-16 h-16 rounded-2xl flex items-center justify-center"
               style={{ background: 'var(--primary-light)' }}>
@@ -161,29 +189,47 @@ export function ChatPanel({ conversationId }: Props) {
             </div>
           </div>
         ) : (
-          grouped.map(group => (
-            <div key={group.date}>
-              <DateSeparator date={group.date} />
-              {group.messages.map(m => (
-                <ChatBubble
-                  key={m.id}
-                  content={m.content}
-                  senderType={m.sender_type}
-                  senderName={m.sender_name}
-                  timestamp={m.created_at}
-                  isRead={m.is_read}
-                  attachmentUrl={m.attachment_url}
-                  attachmentName={m.attachment_name}
-                />
-              ))}
-            </div>
-          ))
+          <>
+            {grouped.map(group => (
+              <div key={group.date}>
+                <DateSeparator date={group.date} />
+                {group.messages.map(m => (
+                  <ChatBubble
+                    key={m.id}
+                    content={m.content}
+                    senderType={m.sender_type}
+                    senderName={m.sender_name}
+                    timestamp={m.created_at}
+                    isRead={m.is_read}
+                    attachmentUrl={m.attachment_url}
+                    attachmentName={m.attachment_name}
+                  />
+                ))}
+              </div>
+            ))}
+            {/* Typing indicator bubble */}
+            {clientTyping && (
+              <div className="flex justify-start mb-3">
+                <div className="max-w-[70%]">
+                  <div className="text-[10px] font-semibold mb-1" style={{ color: 'var(--text-tertiary)' }}>
+                    {conversation?.client_name || 'Client'}
+                  </div>
+                  <div className="px-4 py-3 rounded-2xl flex items-center gap-1"
+                    style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderBottomLeftRadius: '4px' }}>
+                    <span className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: 'var(--text-tertiary)', animationDelay: '0ms' }} />
+                    <span className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: 'var(--text-tertiary)', animationDelay: '150ms' }} />
+                    <span className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: 'var(--text-tertiary)', animationDelay: '300ms' }} />
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
 
       {/* Input */}
       <div className="px-4 py-3 shrink-0" style={{ borderTop: '1px solid var(--divider)', background: 'var(--card)' }}>
-        <ChatInput onSend={handleSend} loading={sendLoading} />
+        <ChatInput onSend={handleSend} loading={sendLoading} onTyping={handleTyping} />
       </div>
     </div>
   )

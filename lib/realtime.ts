@@ -45,17 +45,16 @@ export function subscribeToMessages(
 
   const channel = supabase
     .channel(key)
-    .on(
-      'postgres_changes',
-      {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'messages',
-        filter: `conversation_id=eq.${conversationId}`,
-      },
-      (payload) => callbacks.forEach(cb => cb(payload.new))
-    )
-    .subscribe()
+    // Backend broadcasts via Supabase Realtime HTTP API (service role key) after every
+    // INSERT — bypasses RLS which would block the unauthenticated anon client.
+    .on('broadcast', { event: 'new_message' }, (payload) => {
+      callbacks.forEach(cb => cb(payload.payload))
+    })
+    .subscribe((status) => {
+      if (status === 'CHANNEL_ERROR') {
+        console.warn(`[Realtime] Channel error for ${key}`)
+      }
+    })
 
   channels.set(key, { channel, callbacks })
 
@@ -63,6 +62,27 @@ export function subscribeToMessages(
     callbacks.delete(onMessage)
     if (callbacks.size === 0) unsubscribe(key)
   }
+}
+
+/** Broadcast a new message to all subscribers of this conversation.
+ *  Call this after the REST save returns the persisted message object. */
+export function broadcastMessage(conversationId: string, message: any) {
+  const key = `msgs:${conversationId}`
+  const entry = channels.get(key)
+  if (entry) {
+    entry.channel.send({ type: 'broadcast', event: 'new_message', payload: message })
+    return
+  }
+  // No active subscriber yet — open an ephemeral channel just to broadcast
+  const channel = supabase.channel(key)
+  channel.subscribe((status) => {
+    if (status === 'SUBSCRIBED') {
+      channel.send({ type: 'broadcast', event: 'new_message', payload: message })
+    }
+  })
+  setTimeout(() => {
+    if (!channels.has(key)) supabase.removeChannel(channel)
+  }, 2000)
 }
 
 /** Subscribe to typing events for a conversation (broadcast, no DB). */
@@ -98,13 +118,27 @@ export function subscribeToTyping(
   }
 }
 
-/** Broadcast a typing event. */
+/** Broadcast a typing event.
+ *  If the typing channel isn't open yet (no active subscribeToTyping caller),
+ *  we create a short-lived channel just to broadcast, then clean it up. */
 export function sendTypingEvent(conversationId: string, userId: string, name: string, typing: boolean) {
   const key = `typing:${conversationId}`
   const entry = channels.get(key)
   if (entry) {
     entry.channel.send({ type: 'broadcast', event: 'typing', payload: { user_id: userId, name, typing } })
+    return
   }
+  // No subscriber yet — open an ephemeral channel for this single broadcast
+  const channel = supabase.channel(key)
+  channel.subscribe((status) => {
+    if (status === 'SUBSCRIBED') {
+      channel.send({ type: 'broadcast', event: 'typing', payload: { user_id: userId, name, typing } })
+    }
+  })
+  // Clean up after 2 seconds (enough time for the broadcast to go out)
+  setTimeout(() => {
+    if (!channels.has(key)) supabase.removeChannel(channel)
+  }, 2000)
 }
 
 /** Clean up a channel subscription. */
@@ -118,7 +152,7 @@ function unsubscribe(key: string) {
 
 /** Clean up all channels (call on logout or page unload). */
 export function disconnectAll() {
-  for (const [key] of channels) {
+  Array.from(channels.keys()).forEach(key => {
     unsubscribe(key)
-  }
+  })
 }

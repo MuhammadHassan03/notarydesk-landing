@@ -21,8 +21,8 @@ export default function ThemeToggle({ size = 'md', showLabel = false, className 
         ${className}
       `}
       style={{
-        background: isDark ? 'rgba(255,255,255,0.08)' : 'var(--sidebar-hover)',
-        color: isDark ? '#FBBF24' : 'var(--sidebar-text)',
+        background: isDark ? 'rgba(255,255,255,0.08)' : 'var(--surface)',
+        color: isDark ? '#FBBF24' : 'var(--text-secondary)',
       }}
       title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
       aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}

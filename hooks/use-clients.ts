@@ -15,9 +15,8 @@ export function useClients() {
     setLoading(true)
     setError(null)
     try {
-      const res = await api.get<any>('/clients/')
-      const data = res?.data && Array.isArray(res.data) ? res.data : Array.isArray(res) ? res : []
-      setClients(data)
+      const data = await api.get<Client[]>('/clients/')
+      setClients(Array.isArray(data) ? data : [])
     } catch (e: any) {
       setError(e.message)
     }
@@ -36,11 +35,8 @@ export function useClient(id: string | undefined) {
   useEffect(() => {
     if (!id) return
     setLoading(true)
-    api.get<any>(`/clients/${id}`)
-      .then(res => {
-        const data = res?.ok !== undefined ? res.data : res
-        setClient(data)
-      })
+    api.get<Client>(`/clients/${id}`)
+      .then(data => setClient(data))
       .catch(() => setClient(null))
       .finally(() => setLoading(false))
   }, [id])
@@ -54,8 +50,7 @@ export function useCreateClient() {
   const create = useCallback(async (input: CreateClientInput): Promise<Client> => {
     setLoading(true)
     try {
-      const res = await api.post<any>('/clients/', input)
-      return res?.ok !== undefined ? res.data : res
+      return await api.post<Client>('/clients/', input)
     } finally {
       setLoading(false)
     }
@@ -70,8 +65,7 @@ export function useUpdateClient() {
   const update = useCallback(async (id: string, input: UpdateClientInput): Promise<Client> => {
     setLoading(true)
     try {
-      const res = await api.patch<any>(`/clients/${id}`, input)
-      return res?.ok !== undefined ? res.data : res
+      return await api.patch<Client>(`/clients/${id}`, input)
     } finally {
       setLoading(false)
     }

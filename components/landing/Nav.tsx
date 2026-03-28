@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Icon } from '@/components/ui/icons'
+import { useTheme } from '@/context/themecontext'
 
 const NAV_LINKS = [
   { href: '#features', label: 'Features', icon: 'widgets' },
@@ -16,6 +17,7 @@ export default function Nav() {
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
   const [active, setActive] = useState('')
+  const { isDark, toggleTheme } = useTheme()
 
   useEffect(() => {
     const onScroll = () => {
@@ -42,7 +44,7 @@ export default function Nav() {
     <header
       className="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
       style={{
-        background: scrolled ? 'rgba(255,255,255,0.85)' : 'transparent',
+        background: scrolled ? 'var(--nav-glass)' : 'transparent',
         backdropFilter: scrolled ? 'blur(16px) saturate(180%)' : 'none',
         WebkitBackdropFilter: scrolled ? 'blur(16px) saturate(180%)' : 'none',
         boxShadow: scrolled ? '0 1px 0 var(--border)' : 'none',
@@ -81,9 +83,19 @@ export default function Nav() {
 
         {/* Desktop CTAs */}
         <div className="hidden lg:flex items-center gap-2">
+          <button
+            onClick={toggleTheme}
+            className="w-9 h-9 rounded-xl flex items-center justify-center transition-colors border-none cursor-pointer"
+            style={{ background: 'var(--surface)', color: 'var(--text-secondary)' }}
+            aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            <Icon name={isDark ? 'light_mode' : 'dark_mode'} size={18} />
+          </button>
           <Link href="/dashboard/login"
-            className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-[13px] font-semibold no-underline transition-all hover:bg-slate-50"
-            style={{ color: 'var(--primary)' }}>
+            className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-[13px] font-semibold no-underline transition-all"
+            style={{ color: 'var(--primary)' }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--nav-hover)' }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}>
             <Icon name="login" size={16} />
             Sign In
           </Link>
@@ -95,9 +107,18 @@ export default function Nav() {
           </Link>
         </div>
 
-        {/* Mobile burger */}
+        {/* Mobile: theme toggle + burger */}
+        <div className="lg:hidden flex items-center gap-1.5">
+          <button
+            onClick={toggleTheme}
+            className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors border-none cursor-pointer"
+            style={{ background: 'var(--surface)', color: 'var(--text-secondary)' }}
+            aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            <Icon name={isDark ? 'light_mode' : 'dark_mode'} size={18} />
+          </button>
         <button
-          className="lg:hidden w-10 h-10 rounded-xl flex items-center justify-center transition-colors border-none cursor-pointer"
+          className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors border-none cursor-pointer"
           style={{ background: open ? 'var(--primary-light, rgba(27,58,92,0.06))' : 'transparent' }}
           onClick={() => setOpen(o => !o)}
           aria-label="Menu"
@@ -105,6 +126,7 @@ export default function Nav() {
         >
           <Icon name={open ? 'close' : 'menu'} size={22} style={{ color: 'var(--primary)' }} />
         </button>
+        </div>
       </div>
 
       {/* ── Mobile menu ──────────────────────────────────────── */}
@@ -130,7 +152,7 @@ export default function Nav() {
                     color: isActive ? 'var(--primary)' : 'var(--text)',
                     background: isActive ? 'var(--primary-light, rgba(27,58,92,0.06))' : 'transparent',
                   }}>
-                  <Icon name={l.icon as any} size={20} style={{ color: isActive ? 'var(--primary)' : 'var(--text-tertiary)' }} />
+                  <Icon name={l.icon} size={20} style={{ color: isActive ? 'var(--primary)' : 'var(--text-tertiary)' }} />
                   {l.label}
                 </a>
               )

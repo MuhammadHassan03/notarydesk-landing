@@ -6,7 +6,8 @@ import { useMileageTrips, useMileageSummary } from '@/hooks/use-mileage'
 import { currency, formatDate, monthLabel } from '@/lib/utils'
 import { downloadPdf } from '@/lib/utils/pdf'
 import { Icon } from '@/components/ui/icons'
-import { Button } from '@/components/ui'
+import { Button, Toast } from '@/components/ui'
+import { ErrorBanner } from '@/components/ui/ErrorBanner'
 import { FilterPills, FilterOption } from '@/components/ui/FilterPills'
 import { PageHeader } from '@/components/layout'
 import { Pagination } from '@/components/ui/Pagination'
@@ -15,13 +16,21 @@ const PAGE_SIZE = 20
 
 type PeriodFilter = 'all' | 'this_month' | 'last_month' | 'this_year'
 
+const PERIOD_FILTER_OPTIONS: FilterOption<PeriodFilter>[] = [
+  { key: 'all',        label: 'All time' },
+  { key: 'this_month', label: 'This month' },
+  { key: 'last_month', label: 'Last month' },
+  { key: 'this_year',  label: 'This year' },
+]
+
 export default function MileageListPage() {
   const router = useRouter()
-  const { trips, loading } = useMileageTrips()
+  const { trips, loading, error, refresh } = useMileageTrips()
   const { summary } = useMileageSummary()
   const [search, setSearch]   = useState('')
   const [period, setPeriod]   = useState<PeriodFilter>('all')
   const [exporting, setExporting] = useState(false)
+  const [toast, setToast] = useState<{ msg: string; type: 'error' } | null>(null)
   const [page, setPage] = useState(1)
 
   useEffect(() => setPage(1), [period, search])
@@ -30,7 +39,9 @@ export default function MileageListPage() {
     setExporting(true)
     try {
       await downloadPdf('/mileage/export-pdf', 'notarydesk-mileage.pdf')
-    } catch { /* toast/ignore */ }
+    } catch {
+      setToast({ msg: 'Failed to export mileage PDF. Please try again.', type: 'error' })
+    }
     setExporting(false)
   }
 
@@ -69,6 +80,8 @@ export default function MileageListPage() {
     }), [trips])
   const monthMiles = useMemo(() => monthTrips.reduce((s, t) => s + t.distance_miles, 0), [monthTrips])
   const monthDeduction = useMemo(() => monthTrips.reduce((s, t) => s + t.irs_deduction, 0), [monthTrips])
+
+  if (error) return <ErrorBanner message={error} onRetry={refresh} />
 
   return (
     <div>
@@ -128,12 +141,7 @@ export default function MileageListPage() {
       {/* ── Period filter + search ────────────────────────────── */}
       <div className="flex flex-wrap items-center gap-3 mb-5">
         <FilterPills<PeriodFilter>
-          options={[
-            { key: 'all',        label: 'All time' },
-            { key: 'this_month', label: 'This month' },
-            { key: 'last_month', label: 'Last month' },
-            { key: 'this_year',  label: 'This year' },
-          ]}
+          options={PERIOD_FILTER_OPTIONS}
           value={period}
           onChange={setPeriod}
         />
@@ -146,7 +154,7 @@ export default function MileageListPage() {
             placeholder="Search trips…"
             value={search}
             onChange={e => setSearch(e.target.value)}
-            style={{ background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border)', width: 180 }}
+            style={{ background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border)', width: 180, minWidth: 0 }}
           />
         </div>
       </div>
@@ -238,6 +246,7 @@ export default function MileageListPage() {
         <Pagination page={page} totalPages={totalPages} totalItems={filtered.length} pageSize={PAGE_SIZE} onPage={setPage} />
         </>
       )}
+      {toast && <Toast message={toast.msg} type={toast.type} visible={!!toast} onHide={() => setToast(null)} />}
     </div>
   )
 }

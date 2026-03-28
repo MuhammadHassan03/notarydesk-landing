@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCalendarEvents, type CalendarEvent } from '@/hooks/use-calendar'
 import { JOB_STATUS_CONFIG } from '@/lib/constants'
@@ -49,23 +49,23 @@ export default function CalendarPage() {
   // Events for selected date
   const selectedEvents = selectedDate ? eventsByDate[selectedDate] || [] : []
 
-  function prevMonth() {
+  const prevMonth = useCallback(() => {
     if (month === 0) { setMonth(11); setYear(y => y - 1) }
     else setMonth(m => m - 1)
     setSelectedDate(null)
-  }
+  }, [month])
 
-  function nextMonth() {
+  const nextMonth = useCallback(() => {
     if (month === 11) { setMonth(0); setYear(y => y + 1) }
     else setMonth(m => m + 1)
     setSelectedDate(null)
-  }
+  }, [month])
 
-  function goToday() {
+  const goToday = useCallback(() => {
     setYear(today.getFullYear())
     setMonth(today.getMonth())
     setSelectedDate(formatDateStr(today.getFullYear(), today.getMonth(), today.getDate()))
-  }
+  }, [today])
 
   // Build calendar grid cells
   const cells: (number | null)[] = []
@@ -85,14 +85,14 @@ export default function CalendarPage() {
 
       {/* ── Month navigation ──────────────────────────────── */}
       <div className="flex items-center gap-3 mb-5">
-        <button onClick={prevMonth} className="w-9 h-9 rounded-lg flex items-center justify-center border-none cursor-pointer"
+        <button onClick={prevMonth} aria-label="Previous month" className="w-9 h-9 rounded-lg flex items-center justify-center border-none cursor-pointer"
           style={{ background: 'var(--surface)', color: 'var(--text-secondary)', border: '1px solid var(--border)' }}>
           <Icon name="chevron_left" size={20} />
         </button>
-        <h2 className="text-[18px] font-bold min-w-[200px] text-center" style={{ color: 'var(--text)' }}>
+        <h2 className="text-[18px] font-bold min-w-[200px] text-center" style={{ color: 'var(--text)' }} aria-live="polite">
           {monthLabel}
         </h2>
-        <button onClick={nextMonth} className="w-9 h-9 rounded-lg flex items-center justify-center border-none cursor-pointer"
+        <button onClick={nextMonth} aria-label="Next month" className="w-9 h-9 rounded-lg flex items-center justify-center border-none cursor-pointer"
           style={{ background: 'var(--surface)', color: 'var(--text-secondary)', border: '1px solid var(--border)' }}>
           <Icon name="chevron_right" size={20} />
         </button>
@@ -129,6 +129,9 @@ export default function CalendarPage() {
 
               return (
                 <button key={day} onClick={() => setSelectedDate(dateStr)}
+                  aria-label={`${new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}${dayEvents.length ? `, ${dayEvents.length} signing${dayEvents.length > 1 ? 's' : ''}` : ''}`}
+                  aria-current={isTodayCell ? 'date' : undefined}
+                  aria-pressed={isSelected}
                   className="min-h-[90px] p-1.5 text-left border-none cursor-pointer transition-colors bg-transparent"
                   style={{
                     borderBottom: '1px solid var(--divider)',

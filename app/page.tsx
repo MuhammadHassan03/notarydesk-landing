@@ -1,8 +1,8 @@
 import {
   Nav, Hero, SocialProof, ProblemSection,
   Features, HowItWorks, CompetitorSection,
-  Roadmap, Pricing, Testimonials, FinalCTA, Footer,
-  WaitlistStrip,
+  Pricing, Testimonials, FinalCTA, Footer,
+  WaitlistStrip, BackToTop,
 } from '@/components/landing'
 
 export default function Home() {
@@ -17,12 +17,12 @@ export default function Home() {
         <Features />
         <HowItWorks />
         <CompetitorSection />
-        {/* <Roadmap /> */}
         <Pricing />
         <Testimonials />
         <FinalCTA />
       </main>
       <Footer />
+      <BackToTop />
     </>
   )
 }

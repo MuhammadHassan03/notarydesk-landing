@@ -8,6 +8,7 @@ import { Icon } from '@/components/ui/icons'
 import type { Client } from '@/lib/types'
 
 import { PageHeader } from '@/components/layout'
+import { ErrorBanner } from '@/components/ui/ErrorBanner'
 import { Button, DataTable } from '@/components/ui'
 import { Column } from '@/components/ui/DataTable'
 import { FilterOption, FilterPills } from '@/components/ui/FilterPills'
@@ -33,21 +34,22 @@ const COLUMNS: Column<Client>[] = [
 
 export default function ClientsListPage() {
   const router = useRouter()
-  const { clients, loading } = useClients()
+  const { clients, loading, error, refresh } = useClients()
   const [filter, setFilter] = useState<Filter>('all')
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
 
   useEffect(() => setPage(1), [filter, search])
 
+  const ACTIVE_CLIENT_DAYS = 90
   const now = new Date()
-  const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000).toISOString()
+  const activeThreshold = new Date(now.getTime() - ACTIVE_CLIENT_DAYS * 24 * 60 * 60 * 1000).toISOString()
 
   const filtered = useMemo(() => {
     let list = clients
     switch (filter) {
-      case 'active':   list = list.filter(c => c.last_job_date && c.last_job_date >= ninetyDaysAgo); break
-      case 'inactive': list = list.filter(c => !c.last_job_date || c.last_job_date < ninetyDaysAgo); break
+      case 'active':   list = list.filter(c => c.last_job_date && c.last_job_date >= activeThreshold); break
+      case 'inactive': list = list.filter(c => !c.last_job_date || c.last_job_date < activeThreshold); break
     }
     if (search.trim()) {
       const q = search.toLowerCase()
@@ -59,13 +61,13 @@ export default function ClientsListPage() {
       )
     }
     return list
-  }, [clients, filter, search, ninetyDaysAgo])
+  }, [clients, filter, search, activeThreshold])
 
   const counts = useMemo(() => ({
     all: clients.length,
-    active: clients.filter(c => c.last_job_date && c.last_job_date >= ninetyDaysAgo).length,
-    inactive: clients.filter(c => !c.last_job_date || c.last_job_date < ninetyDaysAgo).length,
-  }), [clients, ninetyDaysAgo])
+    active: clients.filter(c => c.last_job_date && c.last_job_date >= activeThreshold).length,
+    inactive: clients.filter(c => !c.last_job_date || c.last_job_date < activeThreshold).length,
+  }), [clients, activeThreshold])
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
@@ -75,6 +77,8 @@ export default function ClientsListPage() {
     { key: 'active', label: 'Active', count: counts.active },
     { key: 'inactive', label: 'Inactive', count: counts.inactive },
   ]
+
+  if (error) return <ErrorBanner message={error} onRetry={refresh} />
 
   return (
     <div>
@@ -91,7 +95,7 @@ export default function ClientsListPage() {
           <Icon name="search" size={15} style={{ color: 'var(--text-tertiary)', position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
           <input type="text" placeholder="Search clients…" value={search} onChange={e => setSearch(e.target.value)}
             className="pl-8 pr-3 py-2 rounded-lg text-[13px] outline-none"
-            style={{ background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border)', width: 180 }} />
+            style={{ background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border)', width: 180, minWidth: 0 }} />
         </div>
       </div>
 

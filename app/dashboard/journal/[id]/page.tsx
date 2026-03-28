@@ -96,8 +96,9 @@ export default function JournalDetailPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-3">
         <div className="w-9 h-9 border-[3px] rounded-full animate-spin-slow" style={{ borderColor: 'var(--border)', borderTopColor: 'var(--primary)' }} />
+        <span className="text-[13px]" style={{ color: 'var(--text-tertiary)' }}>Loading journal entry…</span>
       </div>
     )
   }
@@ -269,10 +270,10 @@ export default function JournalDetailPage() {
 
 // ── Detail row ────────────────────────────────────────────────────────────
 
-function Row({ icon, label, value }: { icon: string; label: string; value: string }) {
+function Row({ icon, label, value }: { icon?: string; label: string; value: string }) {
   return (
     <div className="flex items-center gap-3 py-3" style={{ borderBottom: '1px solid var(--divider)' }}>
-      <Icon name={icon as any} size={16} style={{ color: 'var(--text-tertiary)' }} />
+      {icon && <Icon name={icon} size={16} style={{ color: 'var(--text-tertiary)' }} />}
       <span className="text-[13px] flex-1" style={{ color: 'var(--text-secondary)' }}>{label}</span>
       <span className="text-[13px] font-semibold text-right" style={{ color: 'var(--text)' }}>{value}</span>
     </div>

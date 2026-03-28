@@ -25,6 +25,8 @@ export function NotificationBell() {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(!open)}
+        aria-label={`Notifications${count > 0 ? ` (${count} unread)` : ''}`}
+        title="Notifications"
         className="w-10 h-10 rounded-xl flex items-center justify-center border-none cursor-pointer transition-all relative"
         style={{ background: open ? 'var(--surface)' : 'transparent', color: 'var(--text-secondary)' }}
       >

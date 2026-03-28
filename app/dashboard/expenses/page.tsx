@@ -7,6 +7,7 @@ import { EXPENSE_CATEGORIES, getCategoryByKey } from '@/lib/constants/expenses'
 import { currency, formatDate, monthLabel } from '@/lib/utils'
 import { Icon } from '@/components/ui/icons'
 import { Button, Toast } from '@/components/ui'
+import { ErrorBanner } from '@/components/ui/ErrorBanner'
 import { FilterPills } from '@/components/ui/FilterPills'
 import { PageHeader } from '@/components/layout'
 import { Pagination } from '@/components/ui/Pagination'
@@ -23,7 +24,7 @@ export default function ExpensesListPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null)
 
-  const { expenses, loading, refresh } = useExpenses(filter || undefined)
+  const { expenses, loading, error, refresh } = useExpenses(filter || undefined)
   const { summary, refresh: refreshSummary } = useExpenseSummary()
   const { remove, loading: deleting } = useDeleteExpense()
 
@@ -57,6 +58,8 @@ export default function ExpensesListPage() {
       refresh(); refreshSummary()
     } catch (e: any) { setToast({ msg: e.message, type: 'error' }) }
   }
+
+  if (error) return <ErrorBanner message={error} onRetry={refresh} />
 
   return (
     <div>

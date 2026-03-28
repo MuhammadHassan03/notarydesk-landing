@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCreateJob } from '@/hooks/use-jobs'
 import { JOB_TYPES, DOC_TYPES } from '@/lib/constants'
+import type { JobType } from '@/lib/types/jobs'
 import { Icon } from '@/components/ui/icons'
 import { Button, Toast } from '@/components/ui'
 import { PageHeader } from '@/components/layout'
@@ -46,7 +47,7 @@ export default function NewJobPage() {
   const router = useRouter()
   const { create, loading } = useCreateJob()
 
-  const [jobType, setJobType]         = useState('loan_signing')
+  const [jobType, setJobType]         = useState<JobType>('loan_signing')
   const [signerName, setSignerName]   = useState('')
   const [signerAddr, setSignerAddr]   = useState('')
   const [clientName, setClientName]   = useState('')
@@ -80,7 +81,7 @@ export default function NewJobPage() {
 
     try {
       const newJob = await create({
-        job_type: jobType as any,
+        job_type: jobType,
         signer_name: signerName.trim() || clientName.trim(),
         signer_address: signerAddr.trim() || undefined,
         client_name: clientName.trim() || signerName.trim(),
@@ -126,7 +127,7 @@ export default function NewJobPage() {
                 <button key={jt.value} type="button" onClick={() => setJobType(jt.value)}
                   className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-semibold border-none cursor-pointer transition-all"
                   style={{ background: active ? 'var(--primary)' : 'var(--surface)', color: active ? '#fff' : 'var(--text-secondary)', border: active ? 'none' : '1px solid var(--border)' }}>
-                  <Icon name={ic as any} size={16} style={{ color: active ? 'var(--accent)' : 'var(--text-tertiary)' }} />
+                  <Icon name={ic} size={16} style={{ color: active ? 'var(--accent)' : 'var(--text-tertiary)' }} />
                   {jt.label}
                 </button>
               )

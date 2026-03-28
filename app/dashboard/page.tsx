@@ -35,7 +35,7 @@ export default function DashboardPage() {
   const { stats, loading: statsLoading, refresh: refreshStats } = useDashboardStats()
   const { jobs, loading: jobsLoading, refresh: refreshJobs } = useJobs()
   const [exporting, setExporting] = useState(false)
-  const [toast, setToast] = useState<{ msg: string; type: 'success' | 'info' } | null>(null)
+  const [toast, setToast] = useState<{ msg: string; type: 'success' | 'info' | 'error' } | null>(null)
 
   // Re-fetch when tab becomes visible (user returns from another tab/window)
   useEffect(() => {
@@ -63,7 +63,9 @@ export default function DashboardPage() {
     try {
       const year = new Date().getFullYear()
       await downloadPdf(`/dashboard/tax-summary-pdf?year=${year}`, `notarydesk-tax-summary-${year}.pdf`)
-    } catch { /* ignore */ }
+    } catch {
+      setToast({ msg: 'Failed to export tax summary. Please try again.', type: 'error' })
+    }
     setExporting(false)
   }
 
@@ -71,12 +73,14 @@ export default function DashboardPage() {
 
   const taxSavings = useMemo(() => {
     if (!stats) return 0
+    const ESTIMATED_BOND_DEDUCTION = 100
+    const ESTIMATED_TAX_RATE = 0.3 // 30% self-employment estimate
     return (
       (stats.ytd_mileage_deduction || 0) +
       (stats.ytd_expenses || 0) +
       (stats.ytd_notarial_acts_deduction || 0) +
-      100
-    ) * 0.3
+      ESTIMATED_BOND_DEDUCTION
+    ) * ESTIMATED_TAX_RATE
   }, [stats])
 
   const taxChips = useMemo(() => {
@@ -111,7 +115,7 @@ export default function DashboardPage() {
   return (
     <div>
       {/* ── Onboarding Checklist ───────────────────────────────── */}
-      <OnboardingChecklist checklist={(profile as any)?.onboarding_checklist} />
+      <OnboardingChecklist checklist={profile?.onboarding_checklist} />
 
       {/* ── Hero Section ─────────────────────────────────────────── */}
       <div className="mb-7">

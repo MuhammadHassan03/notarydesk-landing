@@ -1,6 +1,9 @@
-// components/landing/Bottom.tsx — Testimonials + FAQ, FinalCTA, Footer
+// components/landing/Bottom.tsx — Testimonials + FAQ, FinalCTA, Footer, BackToTop
 // Material Symbols Rounded. Zero emojis.
 
+'use client'
+
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { TESTIMONIALS, FAQS } from '@/lib/content/landing'
 
@@ -54,7 +57,7 @@ export function Testimonials() {
 
                 {/* Author */}
                 <div className="flex items-center gap-3 pt-4" style={{ borderTop: '1px solid var(--divider)' }}>
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: t.color, color: t.textColor }}>
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: 'var(--surface)', color: 'var(--primary)' }}>
                     {t.initials}
                   </div>
                   <div>
@@ -103,7 +106,7 @@ export function Testimonials() {
             <p className="text-sm flex items-center justify-center gap-2" style={{ color: 'var(--text-tertiary)' }}>
               <MI name="mail" size={16} style={{ opacity: 0.5 }} />
               Still have questions?{' '}
-              <a href="mailto:engineermirzahassan@gmail.com" className="font-semibold no-underline" style={{ color: 'var(--primary)' }}>
+              <a href="mailto:support@notarydesk.com" className="font-semibold no-underline" style={{ color: 'var(--primary)' }}>
                 Reach out to us
               </a>
             </p>
@@ -199,7 +202,7 @@ const FOOTER_LINKS: { title: string; icon: string; links: { l: string; h?: strin
     icon: 'widgets',
     links: [
       { l: 'Features', h: '#features', icon: 'star' },
-      { l: 'Roadmap', h: '#roadmap', icon: 'timeline' },
+      { l: 'How It Works', h: '#how', icon: 'play_circle' },
       { l: 'Pricing', h: '#pricing', icon: 'sell' },
       { l: 'FAQ', h: '#faq', icon: 'help' },
     ],
@@ -230,14 +233,14 @@ const FOOTER_LINKS: { title: string; icon: string; links: { l: string; h?: strin
     links: [
       { l: 'Privacy Policy', h: '/privacy', icon: 'policy' },
       { l: 'Terms of Service', h: '/terms', icon: 'description' },
-      { l: 'Contact Support', h: 'mailto:engineermirzahassan@gmail.com', icon: 'mail' },
+      { l: 'Contact Support', h: 'mailto:support@notarydesk.com', icon: 'mail' },
     ],
   },
 ]
 
 export function Footer() {
   return (
-    <footer style={{ background: '#0F172A', color: 'rgba(255,255,255,0.45)' }}>
+    <footer style={{ background: 'var(--footer-bg)', color: 'rgba(255,255,255,0.45)' }}>
       <div className="max-w-[1200px] mx-auto px-6 py-16">
         <div className="flex flex-col lg:flex-row gap-14">
 
@@ -251,10 +254,25 @@ export function Footer() {
             <p className="text-xs leading-relaxed mb-5">The only modern, mobile-first platform built exclusively for professional mobile notaries.</p>
 
             {/* Contact */}
-            <a href="mailto:engineermirzahassan@gmail.com" className="inline-flex items-center gap-2 text-xs text-white/35 no-underline hover:text-white/60 transition-colors">
+            <a href="mailto:support@notarydesk.com" className="inline-flex items-center gap-2 text-xs text-white/35 no-underline hover:text-white/60 transition-colors">
               <MI name="mail" size={14} />
-              engineermirzahassan@gmail.com
+              support@notarydesk.com
             </a>
+
+            {/* Social links */}
+            <div className="flex items-center gap-3 mt-5">
+              {[
+                { icon: 'open_in_new', label: 'Twitter / X', h: '#' },
+                { icon: 'open_in_new', label: 'LinkedIn', h: '#' },
+                { icon: 'open_in_new', label: 'Facebook', h: '#' },
+              ].map(s => (
+                <a key={s.label} href={s.h} aria-label={s.label}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center no-underline hover:bg-white/10 transition-colors"
+                  style={{ color: 'rgba(255,255,255,0.4)' }}>
+                  <MI name={s.icon} size={16} />
+                </a>
+              ))}
+            </div>
 
             {/* Platform badges */}
             <div className="flex items-center gap-2 mt-5">
@@ -321,5 +339,32 @@ export function Footer() {
         </div>
       </div>
     </footer>
+  )
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// BackToTop
+// ═══════════════════════════════════════════════════════════════════════════
+
+export function BackToTop() {
+  const [show, setShow] = useState(false)
+
+  useEffect(() => {
+    const onScroll = () => setShow(window.scrollY > 600)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  if (!show) return null
+
+  return (
+    <button
+      onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+      className="fixed bottom-6 right-6 z-40 w-11 h-11 rounded-full flex items-center justify-center shadow-lg transition-all hover:shadow-xl hover:-translate-y-0.5 border-none cursor-pointer"
+      style={{ background: 'var(--primary)', color: 'white' }}
+      aria-label="Back to top"
+    >
+      <MI name="keyboard_arrow_up" size={22} />
+    </button>
   )
 }

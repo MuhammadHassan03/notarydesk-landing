@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import { API_URL } from '@/lib/api/client'
 import { supabase } from '@/lib/supabase'
+import type { RealtimeChannel } from '@supabase/supabase-js'
 
 interface Message {
   id: string
@@ -41,7 +42,14 @@ export default function ClientChatPage() {
   const [input, setInput]     = useState('')
   const [sending, setSending] = useState(false)
   const [error, setError]     = useState('')
+  const [notaryTyping, setNotaryTyping] = useState(false)
+  const [connected, setConnected] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
+  const typingChannelRef = useRef<RealtimeChannel | null>(null)
+  const msgChannelRef = useRef<RealtimeChannel | null>(null)
+  const notaryTypingTimer = useRef<ReturnType<typeof setTimeout>>()
+  const clientTypingTimer = useRef<ReturnType<typeof setTimeout>>()
+  const isClientTyping = useRef(false)
 
   const fetchMessages = useCallback(async () => {
     if (!token) return
@@ -68,38 +76,59 @@ export default function ClientChatPage() {
     fetchMessages().finally(() => setLoading(false))
   }, [fetchMessages])
 
-  // Subscribe to real-time messages via Supabase Realtime (replaces 4-second polling)
+  // Subscribe to real-time messages + typing events via Supabase Realtime
   useEffect(() => {
     if (!conv) return
 
-    const channel = supabase
-      .channel(`client-chat:${conv.id}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-          filter: `conversation_id=eq.${conv.id}`,
-        },
-        (payload) => {
-          const msg = payload.new as Message
-          setMessages(prev => {
-            if (prev.some(m => m.id === msg.id)) return prev
-            // Replace the matching temp message (by content), keep other temps intact
-            const tempIdx = prev.findIndex(m => m.id.startsWith('temp-') && m.content === msg.content)
-            if (tempIdx >= 0) {
-              const next = [...prev]
-              next[tempIdx] = msg
-              return next
-            }
-            return [...prev, msg]
-          })
+    // Use broadcast (same channel key as the notary side: "msgs:<id>")
+    // postgres_changes would require a Supabase JWT, but this page is unauthenticated.
+    const msgChannel = supabase
+      .channel(`msgs:${conv.id}`)
+      .on('broadcast', { event: 'new_message' }, (payload: any) => {
+        const msg = payload.payload as Message
+        setMessages(prev => {
+          if (prev.some(m => m.id === msg.id)) return prev
+          const tempIdx = prev.findIndex(m => m.id.startsWith('temp-') && m.content === msg.content)
+          if (tempIdx >= 0) {
+            const next = [...prev]
+            next[tempIdx] = msg
+            return next
+          }
+          return [...prev, msg]
+        })
+      })
+      .subscribe((status) => {
+        setConnected(status === 'SUBSCRIBED')
+      })
+
+    // Typing channel — subscribe to notary typing events + send client typing
+    const typingChannel = supabase
+      .channel(`typing:${conv.id}`)
+      .on('broadcast', { event: 'typing' }, (payload: any) => {
+        const data = payload.payload as { user_id: string; name: string; typing: boolean }
+        if (data.user_id !== 'client') {
+          setNotaryTyping(data.typing)
+          if (data.typing) {
+            clearTimeout(notaryTypingTimer.current)
+            notaryTypingTimer.current = setTimeout(() => setNotaryTyping(false), 4000)
+          } else {
+            clearTimeout(notaryTypingTimer.current)
+          }
         }
-      )
+      })
       .subscribe()
 
-    return () => { supabase.removeChannel(channel) }
+    typingChannelRef.current = typingChannel
+    msgChannelRef.current = msgChannel
+
+    return () => {
+      supabase.removeChannel(msgChannel)
+      supabase.removeChannel(typingChannel)
+      typingChannelRef.current = null
+      msgChannelRef.current = null
+      clearTimeout(notaryTypingTimer.current)
+      clearTimeout(clientTypingTimer.current)
+    }
   }, [conv?.id])
 
   // Scroll to bottom when messages change
@@ -134,6 +163,7 @@ export default function ClientChatPage() {
       if (!res.ok) throw new Error('Failed to send')
       const json = await res.json()
       const saved: Message = json.data ?? json
+      // Backend already broadcasts via Supabase Realtime HTTP API — no client-side emit needed.
       // Replace optimistic message with real one
       setMessages(prev => prev.map(m => m.id === tempId ? saved : m))
     } catch {
@@ -150,7 +180,7 @@ export default function ClientChatPage() {
   if (loading) return (
     <div style={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f1f5f9' }}>
       <div style={{ width: 36, height: 36, borderRadius: '50%', border: `3px solid #e2e8f0`, borderTopColor: NAVY, animation: 'spin 0.8s linear infinite' }} />
-      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+      <style>{`@keyframes spin { to { transform: rotate(360deg) } } @keyframes typingBounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-5px)} }`}</style>
     </div>
   )
 
@@ -196,8 +226,14 @@ export default function ClientChatPage() {
           )}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'rgba(255,255,255,0.35)' }} />
-          <span style={{ color: 'rgba(255,255,255,0.50)', fontSize: 12 }}>Chat</span>
+          <div style={{
+            width: 8, height: 8, borderRadius: '50%',
+            background: connected ? '#4ADE80' : 'rgba(255,255,255,0.35)',
+            transition: 'background 0.3s',
+          }} />
+          <span style={{ color: 'rgba(255,255,255,0.60)', fontSize: 12 }}>
+            {connected ? 'Live' : 'Connecting…'}
+          </span>
         </div>
       </div>
 
@@ -241,9 +277,32 @@ export default function ClientChatPage() {
           )
         })}
 
-        {messages.length === 0 && (
+        {messages.length === 0 && !notaryTyping && (
           <div style={{ textAlign: 'center', color: GRAY, fontSize: 13, padding: '20px 0' }}>
             No messages yet. Say hello to your notary!
+          </div>
+        )}
+
+        {/* Notary typing indicator */}
+        {notaryTyping && (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+            <div style={{ color: GRAY, fontSize: 11, marginBottom: 3, paddingLeft: 4 }}>
+              Your Notary
+            </div>
+            <div style={{
+              background: '#fff', border: '1px solid #e2e8f0', borderRadius: '18px 18px 18px 4px',
+              padding: '10px 16px', display: 'flex', gap: 4, alignItems: 'center',
+              boxShadow: '0 1px 2px rgba(0,0,0,0.06)',
+            }}>
+              {[0, 150, 300].map(delay => (
+                <span key={delay} style={{
+                  width: 7, height: 7, borderRadius: '50%', background: GRAY,
+                  display: 'inline-block',
+                  animation: 'typingBounce 1s infinite',
+                  animationDelay: `${delay}ms`,
+                }} />
+              ))}
+            </div>
           </div>
         )}
 
@@ -265,7 +324,31 @@ export default function ClientChatPage() {
       }}>
         <textarea
           value={input}
-          onChange={e => { setInput(e.target.value); setError('') }}
+          onChange={e => {
+            setInput(e.target.value)
+            setError('')
+            // Auto-resize
+            e.target.style.height = 'auto'
+            e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`
+            // Emit typing events
+            if (e.target.value.length > 0) {
+              if (!isClientTyping.current) {
+                isClientTyping.current = true
+                typingChannelRef.current?.send({ type: 'broadcast', event: 'typing', payload: { user_id: 'client', name: conv?.client_name ?? 'Client', typing: true } })
+              }
+              clearTimeout(clientTypingTimer.current)
+              clientTypingTimer.current = setTimeout(() => {
+                isClientTyping.current = false
+                typingChannelRef.current?.send({ type: 'broadcast', event: 'typing', payload: { user_id: 'client', name: conv?.client_name ?? 'Client', typing: false } })
+              }, 2000)
+            } else {
+              clearTimeout(clientTypingTimer.current)
+              if (isClientTyping.current) {
+                isClientTyping.current = false
+                typingChannelRef.current?.send({ type: 'broadcast', event: 'typing', payload: { user_id: 'client', name: conv?.client_name ?? 'Client', typing: false } })
+              }
+            }
+          }}
           onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(e as any) } }}
           placeholder="Type a message…"
           rows={1}
@@ -273,7 +356,7 @@ export default function ClientChatPage() {
             flex: 1, resize: 'none', border: '1.5px solid #e2e8f0', borderRadius: 12,
             padding: '10px 14px', fontSize: 14, outline: 'none', lineHeight: 1.5,
             background: '#f8fafc', color: '#0F172A', fontFamily: 'inherit',
-            maxHeight: 120, overflowY: 'auto',
+            height: 'auto', maxHeight: 120, overflowY: 'auto',
           }}
         />
         <button
@@ -298,6 +381,7 @@ export default function ClientChatPage() {
           <a href="/" style={{ color: NAVY, fontWeight: 700, textDecoration: 'none' }}>NotaryDesk</a>
         </span>
       </div>
+      <style>{`@keyframes typingBounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-5px)} }`}</style>
     </div>
   )
 }

@@ -4,6 +4,7 @@ import { useState, useMemo, useCallback, useEffect } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { useJob, useUpdateJob } from '@/hooks/use-jobs'
 import { api } from '@/lib/api/client'
+import type { Conversation } from '@/lib/types/messages'
 import { currency, formatDate, formatTime } from '@/lib/utils'
 import { JOB_STATUS_CONFIG, JOB_PIPELINE, PAYMENT_STATUS_CONFIG, PAYMENT_METHODS } from '@/lib/constants'
 import { Icon } from '@/components/ui/icons'
@@ -79,6 +80,25 @@ function getChecklist(docType: string | null | undefined): string[] | null {
   return key ? DOC_CHECKLISTS[key] : null
 }
 
+function EditField({ label, value, onChange, type = 'text', multiline = false }: {
+  label: string; value: string; onChange: (v: string) => void; type?: string; multiline?: boolean
+}) {
+  return (
+    <div>
+      <label className="text-[12px] font-semibold mb-1 block" style={{ color: 'var(--text-secondary)' }}>{label}</label>
+      {multiline ? (
+        <textarea value={value} onChange={e => onChange(e.target.value)} rows={2}
+          className="w-full px-3 py-2.5 rounded-xl text-[14px] outline-none resize-y"
+          style={{ border: '1.5px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }} />
+      ) : (
+        <input type={type} value={value} onChange={e => onChange(e.target.value)}
+          className="w-full px-3 py-2.5 rounded-xl text-[14px] outline-none"
+          style={{ border: '1.5px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }} />
+      )}
+    </div>
+  )
+}
+
 const STORAGE_KEY = (jobId: string) => `checklist:${jobId}`
 
 export default function JobDetailPage() {
@@ -86,7 +106,7 @@ export default function JobDetailPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { job, loading, refresh } = useJob(id)
-  const { advanceStatus, markPaid, cancelJob, deleteJob } = useUpdateJob()
+  const { update, advanceStatus, markPaid, cancelJob, deleteJob } = useUpdateJob()
   const [showPayment, setShowPayment]           = useState(false)
   const [showCancel, setShowCancel]             = useState(false)
   const [showDelete, setShowDelete]             = useState(false)
@@ -95,10 +115,59 @@ export default function JobDetailPage() {
   const [checked, setChecked] = useState<Record<string, boolean>>({})
   const [messagingClient, setMessagingClient] = useState(false)
 
+  // Edit mode
+  const [editing, setEditing] = useState(false)
+  const [editData, setEditData] = useState<Record<string, string>>({})
+  const [editSaving, setEditSaving] = useState(false)
+
+  useEffect(() => {
+    if (job && !editing) {
+      setEditData({
+        signer_name: job.signer_name || '',
+        client_name: job.client_name || '',
+        client_email: job.client_email || '',
+        client_phone: job.client_phone || '',
+        signer_address: job.signer_address || '',
+        document_type: job.document_type || '',
+        fee: String(job.fee || 0),
+        travel_fee: String(job.travel_fee || 0),
+        scheduled_date: job.scheduled_date || '',
+        scheduled_time: job.scheduled_time || '',
+        notes: job.notes || '',
+      })
+    }
+  }, [job, editing])
+
+  const handleSaveEdit = useCallback(async () => {
+    if (!job) return
+    setEditSaving(true)
+    try {
+      await update(job.id, {
+        signer_name: editData.signer_name.trim() || undefined,
+        client_name: editData.client_name.trim() || undefined,
+        client_email: editData.client_email.trim() || undefined,
+        client_phone: editData.client_phone.trim() || undefined,
+        signer_address: editData.signer_address.trim() || undefined,
+        document_type: editData.document_type.trim() || undefined,
+        fee: parseFloat(editData.fee) || undefined,
+        travel_fee: parseFloat(editData.travel_fee) || undefined,
+        scheduled_date: editData.scheduled_date || undefined,
+        scheduled_time: editData.scheduled_time || undefined,
+        notes: editData.notes.trim() || undefined,
+      })
+      setEditing(false)
+      setToast({ msg: 'Job updated!', type: 'success' })
+      refresh()
+    } catch (e: any) {
+      setToast({ msg: e.message || 'Failed to save.', type: 'error' })
+    }
+    setEditSaving(false)
+  }, [job, editData, update, refresh])
+
   useEffect(() => {
     if (!id) return
     try {
-      const stored = localStorage.getItem(STORAGE_KEY(id))
+      const stored = sessionStorage.getItem(STORAGE_KEY(id))
       if (stored) setChecked(JSON.parse(stored))
     } catch { /* ignore */ }
   }, [id])
@@ -106,7 +175,7 @@ export default function JobDetailPage() {
   const toggleCheck = useCallback((item: string) => {
     setChecked(prev => {
       const next = { ...prev, [item]: !prev[item] }
-      try { localStorage.setItem(STORAGE_KEY(id), JSON.stringify(next)) } catch { /* ignore */ }
+      try { sessionStorage.setItem(STORAGE_KEY(id), JSON.stringify(next)) } catch { /* ignore */ }
       return next
     })
   }, [id])
@@ -161,13 +230,13 @@ export default function JobDetailPage() {
     setMessagingClient(true)
     try {
       // Check if a conversation already exists for this job
-      const existing = await api.get<any>(`/messages/conversations/by-job/${job.id}`).catch(() => null)
+      const existing = await api.get<Conversation>(`/messages/conversations/by-job/${job.id}`).catch(() => null)
       if (existing?.id) {
         router.push(`/dashboard/messages/${existing.id}`)
         return
       }
       // Create a new conversation linked to this job
-      const conv = await api.post<any>('/messages/conversations', {
+      const conv = await api.post<Conversation>('/messages/conversations', {
         client_name: job.signer_name,
         client_email: job.client_email || undefined,
         job_id: job.id,
@@ -181,14 +250,20 @@ export default function JobDetailPage() {
   }, [job, router])
 
   if (loading) return (
-    <div className="flex items-center justify-center min-h-[400px]">
+    <div className="flex flex-col items-center justify-center min-h-[400px] gap-3">
       <div className="w-9 h-9 border-[3px] rounded-full animate-spin-slow" style={{ borderColor: 'var(--border)', borderTopColor: 'var(--primary)' }} />
+      <span className="text-[13px]" style={{ color: 'var(--text-tertiary)' }}>Loading job details…</span>
     </div>
   )
 
   if (!job) return (
     <div className="text-center py-20">
-      <div className="text-[15px] font-bold mb-2" style={{ color: 'var(--text)' }}>Job not found</div>
+      <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
+        style={{ background: 'var(--surface)' }}>
+        <Icon name="work_off" size={28} style={{ color: 'var(--text-tertiary)' }} />
+      </div>
+      <div className="text-[15px] font-bold mb-1" style={{ color: 'var(--text)' }}>Job not found</div>
+      <div className="text-[13px] mb-4" style={{ color: 'var(--text-secondary)' }}>This job may have been deleted or you don't have access.</div>
       <Button variant="outline" href="/dashboard/jobs"><Icon name="arrow_back" size={16} style={{ color: 'inherit' }} /> Back to jobs</Button>
     </div>
   )
@@ -207,9 +282,16 @@ export default function JobDetailPage() {
       </Link>
       <PageHeader title={`Job #${job.job_number || '—'}`} subtitle={job.signer_name}
         action={
-          <Button variant="danger" size="sm" onClick={() => setShowDelete(true)}>
-            <Icon name="delete" size={15} style={{ color: 'inherit' }} />
-          </Button>
+          <div className="flex gap-2">
+            {!editing && !isCancelled && (
+              <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
+                <Icon name="edit" size={15} style={{ color: 'inherit' }} /> Edit
+              </Button>
+            )}
+            <Button variant="danger" size="sm" onClick={() => setShowDelete(true)} title="Delete job">
+              <Icon name="delete" size={15} style={{ color: 'inherit' }} />
+            </Button>
+          </div>
         } />
 
       {/* Pipeline */}
@@ -246,23 +328,51 @@ export default function JobDetailPage() {
       )}
 
       {/* Details */}
-      <Card title="Job details">
-        <DetailRow label="Signer" value={job.signer_name} />
-        {job.client_name !== job.signer_name && <DetailRow label="Client" value={job.client_name} />}
-        {job.client_email && <DetailRow label="Email" value={job.client_email} />}
-        {job.client_phone && <DetailRow label="Phone" value={job.client_phone} />}
-        <DetailRow label="Address" value={job.signer_address} />
-        <DetailRow label="Document" value={job.document_type} />
-        <DetailRow label="Notarial acts" value={String(job.notarial_acts_count)} />
-        <DetailRow label="Date" value={formatDate(job.scheduled_date)} />
-        <DetailRow label="Time" value={formatTime(job.scheduled_time)} />
-        <DetailRow label="Source" value={job.source || 'manual'} />
-        {job.notes && <DetailRow label="Notes" value={job.notes} />}
-        <div className="mt-2 pt-2" style={{ borderTop: '1px solid var(--divider)' }}>
-          <DetailRow label="Signing fee" value={currency(job.fee)} />
-          {(job.travel_fee || 0) > 0 && <DetailRow label="Travel fee" value={currency(job.travel_fee)} />}
-          <DetailRow label="Total" value={currency(total)} color="var(--primary)" />
-        </div>
+      <Card title={editing ? 'Edit job details' : 'Job details'}>
+        {editing ? (
+          <div className="flex flex-col gap-3">
+            <EditField label="Signer name" value={editData.signer_name} onChange={v => setEditData(d => ({ ...d, signer_name: v }))} />
+            <EditField label="Client name" value={editData.client_name} onChange={v => setEditData(d => ({ ...d, client_name: v }))} />
+            <EditField label="Client email" value={editData.client_email} onChange={v => setEditData(d => ({ ...d, client_email: v }))} type="email" />
+            <EditField label="Client phone" value={editData.client_phone} onChange={v => setEditData(d => ({ ...d, client_phone: v }))} />
+            <EditField label="Address" value={editData.signer_address} onChange={v => setEditData(d => ({ ...d, signer_address: v }))} />
+            <EditField label="Document type" value={editData.document_type} onChange={v => setEditData(d => ({ ...d, document_type: v }))} />
+            <div className="grid grid-cols-2 gap-3">
+              <EditField label="Date" value={editData.scheduled_date} onChange={v => setEditData(d => ({ ...d, scheduled_date: v }))} type="date" />
+              <EditField label="Time" value={editData.scheduled_time} onChange={v => setEditData(d => ({ ...d, scheduled_time: v }))} type="time" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <EditField label="Signing fee" value={editData.fee} onChange={v => setEditData(d => ({ ...d, fee: v }))} type="number" />
+              <EditField label="Travel fee" value={editData.travel_fee} onChange={v => setEditData(d => ({ ...d, travel_fee: v }))} type="number" />
+            </div>
+            <EditField label="Notes" value={editData.notes} onChange={v => setEditData(d => ({ ...d, notes: v }))} multiline />
+            <div className="flex gap-2 mt-2">
+              <Button variant="gold" onClick={handleSaveEdit} loading={editSaving} fullWidth>
+                <Icon name="check" size={16} style={{ color: 'inherit' }} /> Save changes
+              </Button>
+              <Button variant="outline" onClick={() => setEditing(false)} fullWidth>Cancel</Button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <DetailRow label="Signer" value={job.signer_name} />
+            {job.client_name !== job.signer_name && <DetailRow label="Client" value={job.client_name} />}
+            {job.client_email && <DetailRow label="Email" value={job.client_email} />}
+            {job.client_phone && <DetailRow label="Phone" value={job.client_phone} />}
+            <DetailRow label="Address" value={job.signer_address} />
+            <DetailRow label="Document" value={job.document_type} />
+            <DetailRow label="Notarial acts" value={String(job.notarial_acts_count)} />
+            <DetailRow label="Date" value={formatDate(job.scheduled_date)} />
+            <DetailRow label="Time" value={formatTime(job.scheduled_time)} />
+            <DetailRow label="Source" value={job.source || 'manual'} />
+            {job.notes && <DetailRow label="Notes" value={job.notes} />}
+            <div className="mt-2 pt-2" style={{ borderTop: '1px solid var(--divider)' }}>
+              <DetailRow label="Signing fee" value={currency(job.fee)} />
+              {(job.travel_fee || 0) > 0 && <DetailRow label="Travel fee" value={currency(job.travel_fee)} />}
+              <DetailRow label="Total" value={currency(total)} color="var(--primary)" />
+            </div>
+          </>
+        )}
       </Card>
 
       {/* Document checklist */}
@@ -278,6 +388,7 @@ export default function JobDetailPage() {
             <div className="flex flex-col gap-1">
               {checklist.map(item => (
                 <button key={item} onClick={() => toggleCheck(item)}
+                  role="checkbox" aria-checked={!!checked[item]} aria-label={item}
                   className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-colors border-none cursor-pointer"
                   style={{ background: checked[item] ? 'var(--success-bg)' : 'transparent' }}>
                   <div className="w-5 h-5 rounded-md flex items-center justify-center shrink-0 transition-colors"
@@ -329,7 +440,7 @@ export default function JobDetailPage() {
           </Button>
         )}
         {job.signer_address && (
-          <Button variant="outline" onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(job.signer_address)}`, '_blank')} size="lg">
+          <Button variant="outline" onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(job.signer_address || '')}`, '_blank')} size="lg">
             <Icon name="directions" size={16} style={{ color: 'inherit' }} />
             Get Directions
           </Button>

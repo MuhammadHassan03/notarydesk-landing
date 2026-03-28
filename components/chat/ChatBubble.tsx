@@ -30,6 +30,15 @@ function isImageUrl(url: string): boolean {
   return /\.(jpg|jpeg|png|gif|webp|heic)(\?|$)/i.test(url)
 }
 
+function isSafeUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url)
+    return parsed.protocol === 'https:' || parsed.protocol === 'http:'
+  } catch {
+    return false
+  }
+}
+
 export function ChatBubble({ content, senderType, senderName, timestamp, isRead, attachmentUrl, attachmentName }: Props) {
   const isNotary = senderType === 'notary'
 
@@ -52,11 +61,11 @@ export function ChatBubble({ content, senderType, senderName, timestamp, isRead,
           }}>
           {content}
           {/* Attachment */}
-          {attachmentUrl && (
+          {attachmentUrl && isSafeUrl(attachmentUrl) && (
             <div className="mt-2">
               {isImageUrl(attachmentUrl) ? (
                 <a href={attachmentUrl} target="_blank" rel="noopener noreferrer">
-                  <img src={attachmentUrl} alt={attachmentName || 'Attachment'}
+                  <img src={attachmentUrl} alt={attachmentName || 'Attachment'} loading="lazy"
                     className="rounded-lg max-w-full max-h-[200px] object-cover cursor-pointer" />
                 </a>
               ) : (

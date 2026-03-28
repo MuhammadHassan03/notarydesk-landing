@@ -18,10 +18,10 @@ export interface ToastProps {
 
 // ── Component ─────────────────────────────────────────────────────────────
 
-const STYLES: Record<ToastType, string> = {
-  success: 'bg-emerald-900 text-white',
-  error:   'bg-red-900 text-white',
-  info:    'bg-navy text-white',
+const STYLES: Record<ToastType, { bg: string; color: string }> = {
+  success: { bg: 'var(--success, #16A34A)', color: '#fff' },
+  error:   { bg: 'var(--danger, #EF4444)', color: '#fff' },
+  info:    { bg: 'var(--primary, #1B3A5C)', color: '#fff' },
 }
 
 export default function Toast({
@@ -44,8 +44,8 @@ export default function Toast({
       className={cn(
         'fixed top-5 right-5 px-5 py-3.5 rounded-xl text-sm font-semibold z-[200] animate-slide-in',
         'flex items-center gap-2 max-w-[400px] shadow-lg',
-        STYLES[type],
       )}
+      style={{ background: STYLES[type].bg, color: STYLES[type].color }}
       role="alert"
     >
       <span className="text-base">

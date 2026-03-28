@@ -18,13 +18,14 @@ const PROBLEM_ICONS: Record<string, string> = {
   '💸': 'payments',
   '📱': 'event_busy',
   '😰': 'calculate',
+  '🔓': 'no_encryption',
 }
 
-const FEATURE_ICONS: Record<string, { icon: string; color: string; iconColor: string }> = {
-  'Digital Notary Journal': { icon: 'menu_book', color: '#EDE9FE', iconColor: '#5B21B6' },
-  'GPS Mileage Tracker': { icon: 'route', color: '#DBEAFE', iconColor: '#1D4ED8' },
-  'Professional Invoicing': { icon: 'receipt_long', color: '#FEF3C7', iconColor: '#92400E' },
-  'Appointment Manager': { icon: 'calendar_month', color: '#DCFCE7', iconColor: '#15803D' },
+const FEATURE_ICONS: Record<string, { icon: string; colorVar: string; iconColorVar: string }> = {
+  'Digital Notary Journal': { icon: 'menu_book', colorVar: 'var(--pastel-purple)', iconColorVar: 'var(--pastel-purple-text)' },
+  'GPS Mileage Tracker': { icon: 'route', colorVar: 'var(--pastel-blue)', iconColorVar: 'var(--pastel-blue-text)' },
+  'Professional Invoicing': { icon: 'receipt_long', colorVar: 'var(--pastel-yellow)', iconColorVar: 'var(--pastel-yellow-text)' },
+  'Appointment Manager': { icon: 'calendar_month', colorVar: 'var(--pastel-green)', iconColorVar: 'var(--pastel-green-text)' },
 }
 
 const STEP_ICONS: Record<string, string> = {
@@ -137,7 +138,7 @@ export function Features() {
 
         <div className="flex flex-col gap-6">
           {FEATURES.map((f, i) => {
-            const fi = FEATURE_ICONS[f.title] || { icon: 'star', color: f.color, iconColor: 'var(--primary)' }
+            const fi = FEATURE_ICONS[f.title] || { icon: 'star', colorVar: 'var(--surface)', iconColorVar: 'var(--primary)' }
             return (
               <div key={f.title}
                 className={`flex flex-col md:flex-row gap-8 rounded-2xl p-8 border transition-all hover:shadow-lg ${i % 2 ? 'md:flex-row-reverse' : ''}`}
@@ -145,8 +146,8 @@ export function Features() {
 
                 {/* Content */}
                 <div className="flex-1">
-                  <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5" style={{ background: fi.color }}>
-                    <Icon name={fi.icon} size={28} style={{ color: fi.iconColor }} />
+                  <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5" style={{ background: fi.colorVar }}>
+                    <Icon name={fi.icon} size={28} style={{ color: fi.iconColorVar }} />
                   </div>
                   <h3 className="text-xl font-bold mb-3" style={{ color: 'var(--text)' }}>{f.title}</h3>
                   <p className="text-sm leading-relaxed mb-5" style={{ color: 'var(--text-secondary)' }}>{f.desc}</p>
@@ -161,8 +162,8 @@ export function Features() {
                 </div>
 
                 {/* Stat box */}
-                <div className="md:w-52 rounded-2xl p-6 flex flex-col items-center justify-center text-center" style={{ background: fi.color }}>
-                  <span className="text-4xl font-extrabold" style={{ color: fi.iconColor }}>{f.stat.value}</span>
+                <div className="md:w-52 rounded-2xl p-6 flex flex-col items-center justify-center text-center" style={{ background: fi.colorVar }}>
+                  <span className="text-4xl font-extrabold" style={{ color: fi.iconColorVar }}>{f.stat.value}</span>
                   <span className="text-xs mt-2 font-medium leading-snug" style={{ color: 'var(--text-secondary)' }}>{f.stat.label}</span>
                 </div>
               </div>

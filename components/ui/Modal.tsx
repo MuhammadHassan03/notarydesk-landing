@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useCallback, type ReactNode } from 'react'
+import { useEffect, useCallback, useRef, type ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 import Button from './Button'
 
@@ -50,19 +50,41 @@ export default function Modal({
   size = 'md',
   children,
 }: ModalProps) {
-  const handleEsc = useCallback((e: KeyboardEvent) => {
-    if (e.key === 'Escape') onClose()
+  const modalRef = useRef<HTMLDivElement>(null)
+
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape') { onClose(); return }
+
+    // Focus trap: cycle focus within modal
+    if (e.key === 'Tab' && modalRef.current) {
+      const focusable = modalRef.current.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      )
+      if (focusable.length === 0) return
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault(); last.focus()
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault(); first.focus()
+      }
+    }
   }, [onClose])
 
   useEffect(() => {
     if (!open) return
-    document.addEventListener('keydown', handleEsc)
+    document.addEventListener('keydown', handleKeyDown)
     document.body.style.overflow = 'hidden'
+    // Auto-focus first focusable element
+    setTimeout(() => {
+      const first = modalRef.current?.querySelector<HTMLElement>('button, input, select, textarea')
+      first?.focus()
+    }, 50)
     return () => {
-      document.removeEventListener('keydown', handleEsc)
+      document.removeEventListener('keydown', handleKeyDown)
       document.body.style.overflow = ''
     }
-  }, [open, handleEsc])
+  }, [open, handleKeyDown])
 
   if (!open) return null
 
@@ -75,14 +97,16 @@ export default function Modal({
       aria-label={title}
     >
       <div
+        ref={modalRef}
         className={cn(
-          'bg-white rounded-2xl p-8 w-full max-h-[90vh] overflow-y-auto',
+          'rounded-2xl p-8 w-full max-h-[90vh] overflow-y-auto',
           SIZES[size],
         )}
+        style={{ background: 'var(--card)', border: '1px solid var(--border)' }}
         onClick={e => e.stopPropagation()}
       >
-        <h2 className="text-xl font-extrabold text-slate-900 mb-1.5">{title}</h2>
-        {description && <p className="text-sm text-slate-500 mb-6">{description}</p>}
+        <h2 className="text-xl font-extrabold mb-1.5" style={{ color: 'var(--text)' }}>{title}</h2>
+        {description && <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>{description}</p>}
         {children}
       </div>
     </div>

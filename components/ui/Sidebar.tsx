@@ -79,7 +79,7 @@ export default function Sidebar() {
               onMouseEnter={e => { if (!active) e.currentTarget.style.background = 'var(--sidebar-hover)' }}
               onMouseLeave={e => { if (!active) e.currentTarget.style.background = active ? 'var(--sidebar-active)' : 'transparent' }}
             >
-              <Icon name={item.icon as any} size={20} />
+              <Icon name={item.icon} size={20} />
               {!collapsed && <span className="truncate">{item.label}</span>}
               {active && collapsed && (
                 <span className="absolute left-0 w-[3px] h-5 rounded-r-full" style={{ background: 'var(--accent)' }} />

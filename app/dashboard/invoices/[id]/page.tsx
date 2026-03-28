@@ -90,8 +90,9 @@ export default function InvoiceDetailPage() {
   }, [id, remove, router])
 
   if (loading) return (
-    <div className="flex items-center justify-center min-h-[400px]">
+    <div className="flex flex-col items-center justify-center min-h-[400px] gap-3">
       <div className="w-9 h-9 border-[3px] rounded-full animate-spin-slow" style={{ borderColor: 'var(--border)', borderTopColor: 'var(--primary)' }} />
+      <span className="text-[13px]" style={{ color: 'var(--text-tertiary)' }}>Loading invoice…</span>
     </div>
   )
 
@@ -221,16 +222,16 @@ export default function InvoiceDetailPage() {
       <FormActions>
         {nextStatuses.map(ns => {
           const nsc = INVOICE_STATUS_CONFIG[ns]
-          const variant = ns === 'paid' ? 'gold' : ns === 'sent' ? 'primary' : 'outline'
+          const variant: 'gold' | 'primary' | 'outline' = ns === 'paid' ? 'gold' : ns === 'sent' ? 'primary' : 'outline'
           return (
-            <Button key={ns} variant={variant as any} onClick={() => handleStatusChange(ns)} loading={actionLoading} fullWidth size="lg">
+            <Button key={ns} variant={variant} onClick={() => handleStatusChange(ns)} loading={actionLoading} fullWidth size="lg">
               <Icon name={nsc.icon} size={16} style={{ color: 'inherit' }} />
               {ns === 'sent' ? 'Send invoice' : ns === 'paid' ? 'Mark as paid' : `Mark ${nsc.label.toLowerCase()}`}
             </Button>
           )
         })}
         <Button variant="outline" size="lg" onClick={() => {
-          const html = generateInvoiceHTML(invoice as any, (profile || {}) as any)
+          const html = generateInvoiceHTML(invoice, profile || {})
           printInvoice(html)
         }}>
           <Icon name="picture_as_pdf" size={16} style={{ color: 'inherit' }} /> Download PDF
@@ -242,10 +243,10 @@ export default function InvoiceDetailPage() {
   )
 }
 
-function Row({ icon, label, value }: { icon: string; label: string; value: string }) {
+function Row({ icon, label, value }: { icon?: string; label: string; value: string }) {
   return (
     <div className="flex items-center gap-3 py-3" style={{ borderBottom: '1px solid var(--divider)' }}>
-      <Icon name={icon as any} size={16} style={{ color: 'var(--text-tertiary)' }} />
+      {icon && <Icon name={icon} size={16} style={{ color: 'var(--text-tertiary)' }} />}
       <span className="text-[13px] flex-1" style={{ color: 'var(--text-secondary)' }}>{label}</span>
       <span className="text-[13px] font-semibold text-right" style={{ color: 'var(--text)' }}>{value}</span>
     </div>

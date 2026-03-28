@@ -88,9 +88,10 @@ export default function ClientDetailPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-3">
         <div className="w-9 h-9 border-[3px] rounded-full animate-spin-slow"
           style={{ borderColor: 'var(--border)', borderTopColor: 'var(--primary)' }} />
+        <span className="text-[13px]" style={{ color: 'var(--text-tertiary)' }}>Loading client…</span>
       </div>
     )
   }

@@ -31,8 +31,9 @@ function stripConsole() {
   if (!IS_PROD || typeof window === 'undefined') return
 
   const noop = () => {}
+  // Keep error and warn for production debugging — only strip verbose methods
   const methods: (keyof Console)[] = [
-    'log', 'debug', 'info', 'warn', 'error',
+    'log', 'debug', 'info',
     'table', 'trace', 'dir', 'dirxml',
     'group', 'groupCollapsed', 'groupEnd',
     'count', 'countReset', 'time', 'timeEnd', 'timeLog',

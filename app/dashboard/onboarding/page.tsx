@@ -100,7 +100,7 @@ export default function OnboardingPage() {
         phone: phone.trim() || null,
         state: state || null,
         commission_number: commission.trim() || null,
-      } as any)
+      })
       setStep(2)
     } catch (e: any) {
       setToast({ msg: e.message || 'Failed to save.', type: 'error' })
@@ -114,7 +114,7 @@ export default function OnboardingPage() {
         business_address: bizAddress.trim() || null,
         default_fee: defaultFee ? parseFloat(defaultFee) : null,
         years_experience: experience || null,
-      } as any)
+      })
       await refreshProfile()
       setStep(3)
     } catch (e: any) {

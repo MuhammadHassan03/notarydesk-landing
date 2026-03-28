@@ -37,7 +37,7 @@ export function MobileNav() {
               className="flex-1 flex flex-col items-center justify-center py-2 gap-0.5 no-underline transition-colors"
               style={{ color: active ? 'var(--accent)' : 'var(--sidebar-text)' }}
             >
-              <Icon name={item.icon as any} size={22} />
+              <Icon name={item.icon} size={22} />
               <span className="text-[10px] font-semibold leading-tight">{item.label}</span>
             </Link>
           )

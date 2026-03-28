@@ -145,12 +145,15 @@ export function GlobalSearch() {
     }).finally(() => setFetching(false))
   }, [open])
 
-  // Filter on every query change
+  // Filter on query change (debounced to avoid layout thrashing)
   useEffect(() => {
     if (!query.trim()) { setResults([]); setActiveIdx(0); return }
-    const r = filterAll(cacheRef.current, query)
-    setResults(r)
-    setActiveIdx(0)
+    const timer = setTimeout(() => {
+      const r = filterAll(cacheRef.current, query)
+      setResults(r)
+      setActiveIdx(0)
+    }, 150)
+    return () => clearTimeout(timer)
   }, [query])
 
   const navigate = useCallback((href: string) => {
@@ -216,7 +219,7 @@ export function GlobalSearch() {
                 >
                   <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
                     style={{ background: 'var(--surface)' }}>
-                    <Icon name={TYPE_ICONS[r.type] as any} size={16} style={{ color: 'var(--primary)' }} />
+                    <Icon name={TYPE_ICONS[r.type]} size={16} style={{ color: 'var(--primary)' }} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-[13px] font-semibold truncate" style={{ color: 'var(--text)' }}>{r.title}</div>

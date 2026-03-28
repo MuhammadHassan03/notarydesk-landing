@@ -131,7 +131,7 @@ export default function Pricing() {
         </div>
 
         {/* Value note */}
-        <div className="flex items-start gap-3 mt-12 p-5 rounded-2xl max-w-4xl mx-auto" style={{ background: 'var(--accent-pale, #FFF8E1)', border: '1px solid rgba(201,168,76,0.15)' }}>
+        <div className="flex items-start gap-3 mt-12 p-5 rounded-2xl max-w-4xl mx-auto" style={{ background: 'var(--accent-pale)', border: '1px solid rgba(201,168,76,0.15)' }}>
           <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(201,168,76,0.15)' }}>
             <Icon name="lightbulb" size={20} style={{ color: 'var(--accent)' }} />
           </div>
@@ -141,7 +141,7 @@ export default function Pricing() {
         </div>
 
         {/* Bottom note */}
-        <div className="flex items-center justify-center gap-4 mt-6">
+        <div className="flex flex-wrap items-center justify-center gap-4 mt-6">
           {[
             { icon: 'confirmation_number', text: '15 free signing jobs' },
             { icon: 'credit_card_off', text: 'No credit card required' },

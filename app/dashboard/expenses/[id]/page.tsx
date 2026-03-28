@@ -41,7 +41,7 @@ export default function ExpenseDetailPage() {
   const [notes, setNotes]             = useState('')
 
   // ── Load expense ────────────────────────────────────────────────────
-  useEffect(() => {
+  const loadExpense = useCallback(() => {
     if (!id) return
     setLoading(true)
     api.get<Expense>(`/expenses/${id}`)
@@ -59,6 +59,8 @@ export default function ExpenseDetailPage() {
       .catch(() => setExpense(null))
       .finally(() => setLoading(false))
   }, [id])
+
+  useEffect(() => { loadExpense() }, [loadExpense])
 
   // ── Save edits ──────────────────────────────────────────────────────
   const handleSave = useCallback(async () => {
@@ -102,8 +104,9 @@ export default function ExpenseDetailPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-3">
         <div className="w-9 h-9 border-[3px] rounded-full animate-spin-slow" style={{ borderColor: 'var(--border)', borderTopColor: 'var(--primary)' }} />
+        <span className="text-[13px]" style={{ color: 'var(--text-tertiary)' }}>Loading expense…</span>
       </div>
     )
   }
@@ -163,6 +166,40 @@ export default function ExpenseDetailPage() {
             {cat.taxLine && <DetailRow label="IRS Line" value={cat.taxLine} />}
             {expense.notes && <DetailRow label="Notes" value={expense.notes} />}
             <DetailRow label="Created" value={formatDate(expense.created_at?.split('T')[0])} />
+          </div>
+
+          {/* Receipt */}
+          <div className="mt-4 pt-4" style={{ borderTop: '1px solid var(--divider)' }}>
+            <div className="text-[12px] font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-tertiary)' }}>Receipt</div>
+            {expense.receipt_url ? (
+              <a href={expense.receipt_url} target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-[13px] font-medium no-underline transition-opacity hover:opacity-80"
+                style={{ background: 'var(--surface)', color: 'var(--primary)', border: '1px solid var(--border)' }}>
+                <Icon name="receipt_long" size={16} style={{ color: 'var(--primary)' }} />
+                View receipt
+                <Icon name="open_in_new" size={13} style={{ color: 'var(--text-tertiary)', marginLeft: 'auto' }} />
+              </a>
+            ) : (
+              <label className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-[13px] font-medium cursor-pointer transition-opacity hover:opacity-80"
+                style={{ background: 'var(--surface)', color: 'var(--text-secondary)', border: '1px dashed var(--border)' }}>
+                <Icon name="upload_file" size={16} style={{ color: 'var(--text-tertiary)' }} />
+                Upload receipt
+                <input type="file" className="hidden" accept="image/*,.pdf"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0]
+                    if (!file) return
+                    if (file.size > 10 * 1024 * 1024) { setToast({ msg: 'File must be under 10 MB.', type: 'error' }); return }
+                    const form = new FormData()
+                    form.append('file', file)
+                    try {
+                      const res = await api.post<{ url: string }>('/expenses/upload-receipt', form, { headers: { 'Content-Type': 'multipart/form-data' } })
+                      await api.patch(`/expenses/${expense.id}`, { receipt_url: res.url })
+                      setToast({ msg: 'Receipt uploaded!', type: 'success' })
+                      loadExpense()
+                    } catch (err: any) { setToast({ msg: err.message || 'Upload failed.', type: 'error' }) }
+                  }} />
+              </label>
+            )}
           </div>
         </div>
 
@@ -254,10 +291,10 @@ export default function ExpenseDetailPage() {
 
 // ── Detail row helper ─────────────────────────────────────────────────────
 
-function DetailRow({ icon, label, value }: { icon: string; label: string; value: string }) {
+function DetailRow({ icon, label, value }: { icon?: string; label: string; value: string }) {
   return (
     <div className="flex items-center gap-3 py-3" style={{ borderBottom: '1px solid var(--divider)' }}>
-      <Icon name={icon as any} size={16} style={{ color: 'var(--text-tertiary)' }} />
+      {icon && <Icon name={icon} size={16} style={{ color: 'var(--text-tertiary)' }} />}
       <span className="text-[13px] flex-1" style={{ color: 'var(--text-secondary)' }}>{label}</span>
       <span className="text-[13px] font-semibold text-right" style={{ color: 'var(--text)' }}>{value}</span>
     </div>

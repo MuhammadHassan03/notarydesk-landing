@@ -4,6 +4,7 @@ export interface Conversation {
   client_name: string
   client_email: string | null
   job_id: string | null
+  client_token: string | null
   last_message_at: string | null
   last_message_preview: string | null
   unread_count: number

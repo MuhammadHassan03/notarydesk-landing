@@ -19,7 +19,7 @@ export function DetailRow({ label, value, icon, color }: DetailRowProps) {
   return (
     <div className="flex items-center gap-3 py-2.5 last:border-b-0"
       style={{ borderBottom: '1px solid var(--divider)' }}>
-      {icon && <Icon name={icon as any} size={15} style={{ color: 'var(--text-tertiary)', flexShrink: 0 }} />}
+      {icon && <Icon name={icon} size={15} style={{ color: 'var(--text-tertiary)', flexShrink: 0 }} />}
       <span className="text-[13px] flex-1" style={{ color: 'var(--text-secondary)' }}>{label}</span>
       <span className="text-[13px] font-semibold text-right" style={{ color: color || 'var(--text)' }}>
         {value}

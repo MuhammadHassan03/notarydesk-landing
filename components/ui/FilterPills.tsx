@@ -62,13 +62,16 @@ export function FilterPills<T extends string>({
   className,
 }: FilterPillsProps<T>) {
   return (
-    <div className={cn('flex flex-wrap gap-2', className)}>
+    <div className={cn('flex flex-wrap gap-2', className)} role="tablist" aria-label="Filter">
       {options.map(o => {
         const active = value === o.key
         return (
           <button
             key={o.key}
             onClick={() => onChange(o.key)}
+            role="tab"
+            aria-selected={active}
+            aria-label={`${o.label}${o.count !== undefined ? ` (${o.count})` : ''}`}
             className="px-3.5 py-1.5 rounded-full text-[13px] font-medium transition-all"
             style={{
               background: active ? 'var(--primary)' : 'var(--surface)',
