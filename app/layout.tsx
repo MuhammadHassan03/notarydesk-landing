@@ -1,6 +1,10 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import { ThemeProvider } from '@/context/themecontext'
+
+export const viewport: Viewport = {
+  themeColor: '#1B3A5C',
+}
 
 export const metadata: Metadata = {
   title: 'NotaryDesk — Notary Business Management',
@@ -22,7 +26,6 @@ export const metadata: Metadata = {
     title: 'NotaryDesk — Notary Business Management',
     description: 'Track signings, mileage, invoices, expenses and stay compliant.',
   },
-  themeColor: '#1B3A5C',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
