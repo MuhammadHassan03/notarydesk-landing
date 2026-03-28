@@ -97,7 +97,7 @@ export default function ClientChatPage() {
           return [...prev, msg]
         })
       })
-      .subscribe((status) => {
+      .subscribe((status: string) => {
         setConnected(status === 'SUBSCRIBED')
       })
 
