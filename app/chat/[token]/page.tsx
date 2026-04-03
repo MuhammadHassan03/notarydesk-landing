@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import { API_URL } from '@/lib/api/client'
 import { supabase } from '@/lib/supabase'
+import { useTheme } from '@/context/themecontext'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 
 interface Message {
@@ -29,22 +30,25 @@ function timeLabel(iso: string) {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
 }
 
-const NAVY = '#1B3A5C'
-const GOLD = '#C9A84C'
-const GRAY = '#64748B'
+/* Material icon helper — keeps this page self-contained */
+const MI = ({ name, size = 18, style }: { name: string; size?: number; style?: React.CSSProperties }) => (
+  <span className="material-symbols-rounded" style={{ fontSize: size, lineHeight: 1, ...style }}>{name}</span>
+)
 
 export default function ClientChatPage() {
   const { token } = useParams<{ token: string }>()
-  const [conv, setConv]       = useState<Conversation | null>(null)
+  const { isDark, toggleTheme } = useTheme()
+  const [conv, setConv] = useState<Conversation | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
-  const [input, setInput]     = useState('')
+  const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
-  const [error, setError]     = useState('')
+  const [error, setError] = useState('')
   const [notaryTyping, setNotaryTyping] = useState(false)
   const [connected, setConnected] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
   const typingChannelRef = useRef<RealtimeChannel | null>(null)
   const msgChannelRef = useRef<RealtimeChannel | null>(null)
   const notaryTypingTimer = useRef<ReturnType<typeof setTimeout>>()
@@ -61,47 +65,31 @@ export default function ClientChatPage() {
       const data = json.data ?? json
       setConv(data.conversation)
       setMessages(prev => {
-        // Merge to avoid flicker — only update if different
         const incoming: Message[] = data.messages ?? []
-        if (incoming.length === prev.length && incoming[incoming.length - 1]?.id === prev[prev.length - 1]?.id) {
-          return prev
-        }
+        if (incoming.length === prev.length && incoming[incoming.length - 1]?.id === prev[prev.length - 1]?.id) return prev
         return incoming
       })
-    } catch { /* network error — keep showing last known state */ }
+    } catch { /* network error */ }
   }, [token])
 
-  // Initial load
-  useEffect(() => {
-    fetchMessages().finally(() => setLoading(false))
-  }, [fetchMessages])
+  useEffect(() => { fetchMessages().finally(() => setLoading(false)) }, [fetchMessages])
 
-  // Subscribe to real-time messages + typing events via Supabase Realtime
+  // Subscribe to real-time messages + typing
   useEffect(() => {
     if (!conv) return
-
-    // Use broadcast (same channel key as the notary side: "msgs:<id>")
-    // postgres_changes would require a Supabase JWT, but this page is unauthenticated.
     const msgChannel = supabase
-      .channel(`msgs:${conv.id}`)
+      .channel(`msgs:${conv.id}`, { config: { broadcast: { self: false, ack: true } } })
       .on('broadcast', { event: 'new_message' }, (payload: any) => {
         const msg = payload.payload as Message
         setMessages(prev => {
           if (prev.some(m => m.id === msg.id)) return prev
           const tempIdx = prev.findIndex(m => m.id.startsWith('temp-') && m.content === msg.content)
-          if (tempIdx >= 0) {
-            const next = [...prev]
-            next[tempIdx] = msg
-            return next
-          }
+          if (tempIdx >= 0) { const next = [...prev]; next[tempIdx] = msg; return next }
           return [...prev, msg]
         })
       })
-      .subscribe((status: string) => {
-        setConnected(status === 'SUBSCRIBED')
-      })
+      .subscribe((status: string) => { setConnected(status === 'SUBSCRIBED') })
 
-    // Typing channel — subscribe to notary typing events + send client typing
     const typingChannel = supabase
       .channel(`typing:${conv.id}`)
       .on('broadcast', { event: 'typing' }, (payload: any) => {
@@ -111,16 +99,13 @@ export default function ClientChatPage() {
           if (data.typing) {
             clearTimeout(notaryTypingTimer.current)
             notaryTypingTimer.current = setTimeout(() => setNotaryTyping(false), 4000)
-          } else {
-            clearTimeout(notaryTypingTimer.current)
-          }
+          } else { clearTimeout(notaryTypingTimer.current) }
         }
       })
       .subscribe()
 
     typingChannelRef.current = typingChannel
     msgChannelRef.current = msgChannel
-
     return () => {
       supabase.removeChannel(msgChannel)
       supabase.removeChannel(typingChannel)
@@ -131,146 +116,127 @@ export default function ClientChatPage() {
     }
   }, [conv?.id])
 
-  // Scroll to bottom when messages change
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
 
+  // ── Typing emit helper ────────────────────────────────────────────────
+  const emitTyping = useCallback((typing: boolean) => {
+    typingChannelRef.current?.send({ type: 'broadcast', event: 'typing', payload: { user_id: 'client', name: conv?.client_name ?? 'Client', typing } })
+  }, [conv?.client_name])
+
+  // ── Send ──────────────────────────────────────────────────────────────
   async function handleSend(e: React.FormEvent) {
     e.preventDefault()
     const text = input.trim()
     if (!text || sending || !conv) return
     setSending(true)
     setError('')
-    // Optimistic UI
+    // Stop typing
+    clearTimeout(clientTypingTimer.current)
+    if (isClientTyping.current) { isClientTyping.current = false; emitTyping(false) }
+    // Optimistic
     const tempId = `temp-${Date.now()}`
-    const optimistic: Message = {
-      id: tempId,
-      sender_type: 'client',
-      sender_name: conv.client_name,
-      content: text,
-      created_at: new Date().toISOString(),
-      is_read: false,
-    }
-    setMessages(prev => [...prev, optimistic])
+    setMessages(prev => [...prev, { id: tempId, sender_type: 'client', sender_name: conv.client_name, content: text, created_at: new Date().toISOString(), is_read: false }])
     setInput('')
+    if (textareaRef.current) { textareaRef.current.style.height = 'auto' }
     try {
       const res = await fetch(`${API_URL}/messages/client/${token}/messages`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content: text, sender_type: 'client', sender_name: conv.client_name }),
       })
       if (!res.ok) throw new Error('Failed to send')
       const json = await res.json()
       const saved: Message = json.data ?? json
-      // Backend already broadcasts via Supabase Realtime HTTP API — no client-side emit needed.
-      // Replace optimistic message with real one
+      if (msgChannelRef.current) {
+        const ack = await msgChannelRef.current.send({ type: 'broadcast', event: 'new_message', payload: saved })
+        if (ack !== 'ok') console.warn('[Chat] broadcast result:', ack)
+      }
       setMessages(prev => prev.map(m => m.id === tempId ? saved : m))
     } catch {
       setError('Failed to send message. Please try again.')
       setMessages(prev => prev.filter(m => m.id !== tempId))
       setInput(text)
-    } finally {
-      setSending(false)
-    }
+    } finally { setSending(false) }
   }
 
-  // ── Loading ────────────────────────────────────────────────────────────────
-
+  // ── Loading state ─────────────────────────────────────────────────────
   if (loading) return (
-    <div style={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f1f5f9' }}>
-      <div style={{ width: 36, height: 36, borderRadius: '50%', border: `3px solid #e2e8f0`, borderTopColor: NAVY, animation: 'spin 0.8s linear infinite' }} />
-      <style>{`@keyframes spin { to { transform: rotate(360deg) } } @keyframes typingBounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-5px)} }`}</style>
+    <div className="min-h-[100dvh] flex items-center justify-center" style={{ background: 'var(--bg-page)' }}>
+      <div className="w-9 h-9 rounded-full border-[3px] animate-spin"
+        style={{ borderColor: 'var(--border)', borderTopColor: 'var(--primary)' }} />
     </div>
   )
 
   if (notFound) return (
-    <div style={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, padding: '0 24px', background: '#f1f5f9' }}>
-      <div style={{ width: 64, height: 64, borderRadius: 20, background: NAVY, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28 }}>🔒</div>
-      <h1 style={{ color: NAVY, fontSize: 22, fontWeight: 800, margin: 0 }}>Conversation not found</h1>
-      <p style={{ color: GRAY, fontSize: 14, textAlign: 'center', margin: 0 }}>This chat link may have expired or doesn't exist.</p>
+    <div className="min-h-[100dvh] flex flex-col items-center justify-center gap-4 px-6" style={{ background: 'var(--bg-page)' }}>
+      <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ background: 'var(--primary)' }}>
+        <MI name="lock" size={28} style={{ color: 'white' }} />
+      </div>
+      <h1 className="text-[22px] font-extrabold" style={{ color: 'var(--text)' }}>Conversation not found</h1>
+      <p className="text-sm text-center" style={{ color: 'var(--text-secondary)' }}>This chat link may have expired or doesn&apos;t exist.</p>
     </div>
   )
 
-  const notaryDisplayName = conv ? 'Your Notary' : 'Notary'
-
-  // ── Main chat UI ──────────────────────────────────────────────────────────
-
+  // ── Main UI ───────────────────────────────────────────────────────────
   return (
-    <div style={{
-      minHeight: '100dvh', display: 'flex', flexDirection: 'column',
-      background: '#f1f5f9', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-    }}>
-      {/* Header */}
-      <div style={{
-        background: NAVY, padding: '16px 20px',
-        display: 'flex', alignItems: 'center', gap: 14,
-        position: 'sticky', top: 0, zIndex: 10,
-      }}>
-        <div style={{
-          width: 44, height: 44, borderRadius: 14,
-          background: `rgba(201,168,76,0.2)`, border: `1px solid rgba(201,168,76,0.35)`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 18, color: GOLD, fontWeight: 800, flexShrink: 0,
-        }}>
+    <div className="min-h-[100dvh] flex flex-col" style={{ background: 'var(--bg-page)', fontFamily: "'Manrope', system-ui, sans-serif" }}>
+
+      {/* ── Header ──────────────────────────────────────────────────── */}
+      <div className="sticky top-0 z-10 flex items-center gap-3.5 px-5 py-4"
+        style={{ background: 'var(--primary)', boxShadow: '0 2px 12px rgba(0,0,0,0.15)' }}>
+        {/* Logo */}
+        <div className="w-11 h-11 rounded-xl flex items-center justify-center text-[16px] font-extrabold shrink-0"
+          style={{ background: 'rgba(201,168,76,0.2)', border: '1px solid rgba(201,168,76,0.35)', color: 'var(--accent)' }}>
           ND
         </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ color: '#fff', fontWeight: 700, fontSize: 15, lineHeight: 1.3 }}>
-            {notaryDisplayName}
-          </div>
-          {conv && (
-            <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, marginTop: 1 }}>
-              Chat with your notary · {conv.client_name}
-            </div>
-          )}
+        {/* Title */}
+        <div className="flex-1 min-w-0">
+          <div className="text-[15px] font-bold text-white leading-tight">Your Notary</div>
+          {conv && <div className="text-[12px] text-white/50 mt-0.5 truncate">Chat with your notary · {conv.client_name}</div>}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <div style={{
-            width: 8, height: 8, borderRadius: '50%',
-            background: connected ? '#4ADE80' : 'rgba(255,255,255,0.35)',
-            transition: 'background 0.3s',
-          }} />
-          <span style={{ color: 'rgba(255,255,255,0.60)', fontSize: 12 }}>
-            {connected ? 'Live' : 'Connecting…'}
-          </span>
+        {/* Status + theme toggle */}
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{ background: 'rgba(255,255,255,0.1)' }}>
+            <div className="w-2 h-2 rounded-full transition-colors" style={{ background: connected ? '#4ADE80' : 'rgba(255,255,255,0.35)' }} />
+            <span className="text-[11px] font-medium text-white/60">{connected ? 'Live' : 'Connecting'}</span>
+          </div>
+          <button onClick={toggleTheme} className="w-9 h-9 rounded-xl flex items-center justify-center border-none cursor-pointer transition-colors"
+            style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.7)' }}
+            aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}>
+            <MI name={isDark ? 'light_mode' : 'dark_mode'} size={18} />
+          </button>
         </div>
       </div>
 
-      {/* Messages area */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+      {/* ── Messages ────────────────────────────────────────────────── */}
+      <div className="flex-1 overflow-y-auto px-4 py-5 flex flex-col gap-3">
+
         {/* Welcome banner */}
-        <div style={{
-          background: '#fff', borderRadius: 14, padding: '14px 16px',
-          border: '1px solid #e2e8f0', textAlign: 'center', marginBottom: 8,
-        }}>
-          <div style={{ fontSize: 22, marginBottom: 6 }}>👋</div>
-          <p style={{ color: NAVY, fontWeight: 700, fontSize: 14, margin: '0 0 4px' }}>
-            Your signing request was received!
-          </p>
-          <p style={{ color: GRAY, fontSize: 13, margin: 0, lineHeight: 1.5 }}>
-            Use this chat to communicate directly with your notary. They'll confirm details here.
+        <div className="rounded-2xl p-4 text-center mb-2" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
+          <div className="w-12 h-12 rounded-xl mx-auto mb-3 flex items-center justify-center" style={{ background: 'var(--primary-light)' }}>
+            <MI name="chat" size={24} style={{ color: 'var(--primary)' }} />
+          </div>
+          <p className="text-[14px] font-bold mb-1" style={{ color: 'var(--text)' }}>Your signing request was received!</p>
+          <p className="text-[13px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+            Use this chat to communicate directly with your notary. They&apos;ll confirm details here.
           </p>
         </div>
 
+        {/* Message list */}
         {messages.map(msg => {
           const isClient = msg.sender_type === 'client'
           return (
-            <div key={msg.id} style={{ display: 'flex', flexDirection: 'column', alignItems: isClient ? 'flex-end' : 'flex-start' }}>
-              <div style={{
-                maxWidth: '78%',
-                background: isClient ? NAVY : '#fff',
-                color: isClient ? '#fff' : '#0F172A',
-                borderRadius: isClient ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
-                padding: '10px 14px',
-                fontSize: 14,
-                lineHeight: 1.5,
-                border: isClient ? 'none' : '1px solid #e2e8f0',
-                boxShadow: '0 1px 2px rgba(0,0,0,0.06)',
-              }}>
+            <div key={msg.id} className={`flex flex-col ${isClient ? 'items-end' : 'items-start'}`}>
+              <div className="max-w-[78%] px-4 py-2.5 text-[14px] leading-relaxed"
+                style={{
+                  background: isClient ? 'var(--primary)' : 'var(--card)',
+                  color: isClient ? '#fff' : 'var(--text)',
+                  borderRadius: isClient ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
+                  border: isClient ? 'none' : '1px solid var(--border)',
+                  boxShadow: 'var(--shadow-sm)',
+                }}>
                 {msg.content}
               </div>
-              <div style={{ color: GRAY, fontSize: 11, marginTop: 3, paddingLeft: isClient ? 0 : 4, paddingRight: isClient ? 4 : 0 }}>
+              <div className={`flex items-center gap-1 mt-1 text-[11px] ${isClient ? 'pr-1' : 'pl-1'}`} style={{ color: 'var(--text-tertiary)' }}>
                 {isClient ? 'You' : msg.sender_name} · {timeLabel(msg.created_at)}
               </div>
             </div>
@@ -278,29 +244,23 @@ export default function ClientChatPage() {
         })}
 
         {messages.length === 0 && !notaryTyping && (
-          <div style={{ textAlign: 'center', color: GRAY, fontSize: 13, padding: '20px 0' }}>
+          <div className="text-center py-6 text-[13px]" style={{ color: 'var(--text-tertiary)' }}>
             No messages yet. Say hello to your notary!
           </div>
         )}
 
-        {/* Notary typing indicator */}
+        {/* Typing indicator */}
         {notaryTyping && (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-            <div style={{ color: GRAY, fontSize: 11, marginBottom: 3, paddingLeft: 4 }}>
-              Your Notary
-            </div>
-            <div style={{
-              background: '#fff', border: '1px solid #e2e8f0', borderRadius: '18px 18px 18px 4px',
-              padding: '10px 16px', display: 'flex', gap: 4, alignItems: 'center',
-              boxShadow: '0 1px 2px rgba(0,0,0,0.06)',
-            }}>
+          <div className="flex flex-col items-start">
+            <div className="text-[11px] mb-1 pl-1 font-medium" style={{ color: 'var(--text-tertiary)' }}>Your Notary</div>
+            <div className="px-4 py-3 flex items-center gap-1.5"
+              style={{
+                background: 'var(--card)', border: '1px solid var(--border)',
+                borderRadius: '18px 18px 18px 4px', boxShadow: 'var(--shadow-sm)',
+              }}>
               {[0, 150, 300].map(delay => (
-                <span key={delay} style={{
-                  width: 7, height: 7, borderRadius: '50%', background: GRAY,
-                  display: 'inline-block',
-                  animation: 'typingBounce 1s infinite',
-                  animationDelay: `${delay}ms`,
-                }} />
+                <span key={delay} className="w-[7px] h-[7px] rounded-full inline-block animate-bounce"
+                  style={{ background: 'var(--text-tertiary)', animationDelay: `${delay}ms` }} />
               ))}
             </div>
           </div>
@@ -309,79 +269,57 @@ export default function ClientChatPage() {
         <div ref={bottomRef} />
       </div>
 
-      {/* Error banner */}
+      {/* ── Error ───────────────────────────────────────────────────── */}
       {error && (
-        <div style={{ background: '#FEF2F2', color: '#DC2626', fontSize: 13, padding: '10px 16px', textAlign: 'center' }}>
+        <div className="text-[13px] text-center px-4 py-2.5" style={{ background: 'var(--danger-bg)', color: 'var(--danger)' }}>
           {error}
         </div>
       )}
 
-      {/* Input */}
-      <form onSubmit={handleSend} style={{
-        background: '#fff', borderTop: '1px solid #e2e8f0',
-        padding: '12px 16px', display: 'flex', gap: 10, alignItems: 'flex-end',
-        position: 'sticky', bottom: 0,
-      }}>
-        <textarea
-          value={input}
-          onChange={e => {
-            setInput(e.target.value)
-            setError('')
-            // Auto-resize
-            e.target.style.height = 'auto'
-            e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`
-            // Emit typing events
-            if (e.target.value.length > 0) {
-              if (!isClientTyping.current) {
-                isClientTyping.current = true
-                typingChannelRef.current?.send({ type: 'broadcast', event: 'typing', payload: { user_id: 'client', name: conv?.client_name ?? 'Client', typing: true } })
+      {/* ── Input ───────────────────────────────────────────────────── */}
+      <form onSubmit={handleSend} className="sticky bottom-0 flex items-end gap-2.5 px-4 py-3"
+        style={{ background: 'var(--card)', borderTop: '1px solid var(--border)' }}>
+        <div className="flex-1 flex items-end gap-2 px-3.5 py-2.5 rounded-2xl"
+          style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+          <textarea
+            ref={textareaRef}
+            value={input}
+            onChange={e => {
+              setInput(e.target.value)
+              setError('')
+              e.target.style.height = 'auto'
+              e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`
+              if (e.target.value.length > 0) {
+                if (!isClientTyping.current) { isClientTyping.current = true; emitTyping(true) }
+                clearTimeout(clientTypingTimer.current)
+                clientTypingTimer.current = setTimeout(() => { isClientTyping.current = false; emitTyping(false) }, 2000)
+              } else {
+                clearTimeout(clientTypingTimer.current)
+                if (isClientTyping.current) { isClientTyping.current = false; emitTyping(false) }
               }
-              clearTimeout(clientTypingTimer.current)
-              clientTypingTimer.current = setTimeout(() => {
-                isClientTyping.current = false
-                typingChannelRef.current?.send({ type: 'broadcast', event: 'typing', payload: { user_id: 'client', name: conv?.client_name ?? 'Client', typing: false } })
-              }, 2000)
-            } else {
-              clearTimeout(clientTypingTimer.current)
-              if (isClientTyping.current) {
-                isClientTyping.current = false
-                typingChannelRef.current?.send({ type: 'broadcast', event: 'typing', payload: { user_id: 'client', name: conv?.client_name ?? 'Client', typing: false } })
-              }
-            }
-          }}
-          onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(e as any) } }}
-          placeholder="Type a message…"
-          rows={1}
-          style={{
-            flex: 1, resize: 'none', border: '1.5px solid #e2e8f0', borderRadius: 12,
-            padding: '10px 14px', fontSize: 14, outline: 'none', lineHeight: 1.5,
-            background: '#f8fafc', color: '#0F172A', fontFamily: 'inherit',
-            height: 'auto', maxHeight: 120, overflowY: 'auto',
-          }}
-        />
-        <button
-          type="submit"
-          disabled={!input.trim() || sending}
-          style={{
-            width: 44, height: 44, borderRadius: 12, border: 'none', cursor: 'pointer',
-            background: (!input.trim() || sending) ? '#e2e8f0' : NAVY,
-            color: (!input.trim() || sending) ? '#94a3b8' : GOLD,
-            fontSize: 18, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            flexShrink: 0, transition: 'all 0.15s',
-          }}
-        >
-          {sending ? '…' : '↑'}
+            }}
+            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(e as any) } }}
+            placeholder="Type a message..."
+            rows={1}
+            className="flex-1 resize-none border-none outline-none text-[14px] leading-relaxed bg-transparent min-h-[24px] max-h-[120px]"
+            style={{ color: 'var(--text)', overflowY: 'auto', fontFamily: 'inherit' }}
+          />
+        </div>
+        <button type="submit" disabled={!input.trim() || sending}
+          className="w-11 h-11 rounded-xl flex items-center justify-center border-none cursor-pointer transition-all shrink-0 disabled:opacity-30"
+          style={{ background: 'var(--primary)', color: '#fff' }}>
+          {sending
+            ? <div className="w-4 h-4 border-2 rounded-full animate-spin" style={{ borderColor: 'rgba(255,255,255,0.3)', borderTopColor: '#fff' }} />
+            : <MI name="send" size={20} style={{ color: 'var(--accent)' }} />
+          }
         </button>
       </form>
 
-      {/* Footer */}
-      <div style={{ background: '#f8fafc', borderTop: '1px solid #e2e8f0', padding: '10px 16px', textAlign: 'center' }}>
-        <span style={{ color: '#94a3b8', fontSize: 11 }}>
-          Secured by{' '}
-          <a href="/" style={{ color: NAVY, fontWeight: 700, textDecoration: 'none' }}>NotaryDesk</a>
-        </span>
+      {/* ── Footer ──────────────────────────────────────────────────── */}
+      <div className="text-center py-2.5 px-4 text-[11px]" style={{ background: 'var(--surface)', borderTop: '1px solid var(--border)', color: 'var(--text-tertiary)' }}>
+        Secured by{' '}
+        <a href="/" className="font-bold no-underline" style={{ color: 'var(--primary)' }}>NotaryDesk</a>
       </div>
-      <style>{`@keyframes typingBounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-5px)} }`}</style>
     </div>
   )
 }

@@ -43,21 +43,22 @@ export function ChatBubble({ content, senderType, senderName, timestamp, isRead,
   const isNotary = senderType === 'notary'
 
   return (
-    <div className={`flex ${isNotary ? 'justify-end' : 'justify-start'} mb-3`}>
-      <div className="max-w-[70%]">
+    <div className={`flex ${isNotary ? 'justify-end' : 'justify-start'} mb-3 group`}>
+      <div className="max-w-[75%] transition-opacity group-hover:opacity-95">
         {/* Sender name */}
         <div className={`text-[10px] font-semibold mb-1 ${isNotary ? 'text-right' : 'text-left'}`}
           style={{ color: 'var(--text-tertiary)' }}>
           {senderName}
         </div>
         {/* Bubble */}
-        <div className="px-4 py-2.5 rounded-2xl text-[13px] leading-relaxed"
+        <div className="px-4 py-2.5 rounded-2xl text-[14px] leading-relaxed"
           style={{
             background: isNotary ? 'var(--primary)' : 'var(--surface)',
             color: isNotary ? '#fff' : 'var(--text)',
             borderBottomRightRadius: isNotary ? '4px' : '16px',
             borderBottomLeftRadius: isNotary ? '16px' : '4px',
             border: isNotary ? 'none' : '1px solid var(--border)',
+            boxShadow: 'var(--shadow-sm)',
           }}>
           {content}
           {/* Attachment */}

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useCallback, useState } from 'react'
 import { useConversation, useSendMessage } from '@/hooks/use-messages'
-import { subscribeToTyping, sendTypingEvent } from '@/lib/realtime'
+import { subscribeToTyping, sendTypingEvent, broadcastMessage } from '@/lib/realtime'
 import { useAuth, useProfile } from '@/context/auth'
 import { ChatBubble } from './ChatBubble'
 import { ChatInput } from './ChatInput'
@@ -99,7 +99,9 @@ export function ChatPanel({ conversationId }: Props) {
 
     try {
       const saved = await apiSend(conversationId, content)
-      // Backend already broadcasts via Supabase Realtime HTTP API — no client-side emit needed.
+      // Client-side broadcast as fallback — ensures the other side gets it
+      // even if the backend HTTP broadcast to Supabase fails.
+      await broadcastMessage(conversationId, saved)
       // Replace optimistic with real message (dedup if broadcast already added it)
       setMessages(prev => {
         const withoutTemp = prev.filter(m => m.id !== tid)
@@ -133,21 +135,24 @@ export function ChatPanel({ conversationId }: Props) {
     <div className="flex flex-col h-full min-h-0">
       {/* Header */}
       {conversation && (
-        <div className="flex items-center gap-3 px-5 py-4 shrink-0"
+        <div className="flex items-center gap-3 px-5 py-3.5 shrink-0"
           style={{ borderBottom: '1px solid var(--divider)', background: 'var(--card)' }}>
-          <div className="w-10 h-10 rounded-full flex items-center justify-center text-[14px] font-bold shrink-0"
-            style={{ background: 'var(--primary)', color: '#fff' }}>
-            {conversation.client_name.charAt(0).toUpperCase()}
+          <div className="relative shrink-0">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center text-[14px] font-bold"
+              style={{ background: 'var(--primary)', color: '#fff' }}>
+              {conversation.client_name.charAt(0).toUpperCase()}
+            </div>
+            {/* Online dot */}
+            <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2"
+              style={{ background: clientTyping ? 'var(--success)' : 'var(--text-tertiary)', borderColor: 'var(--card)', opacity: clientTyping ? 1 : 0.4 }} />
           </div>
           <div className="flex-1 min-w-0">
             <div className="text-[14px] font-bold truncate" style={{ color: 'var(--text)' }}>
               {conversation.client_name}
             </div>
-            {conversation.client_email && (
-              <div className="text-[11px] truncate" style={{ color: 'var(--text-tertiary)' }}>
-                {conversation.client_email}
-              </div>
-            )}
+            <div className="text-[11px] truncate" style={{ color: clientTyping ? 'var(--success)' : 'var(--text-tertiary)' }}>
+              {clientTyping ? 'typing...' : conversation.client_email || 'Client'}
+            </div>
           </div>
           {/* Share chat link */}
           {conversation.client_token && (
@@ -174,17 +179,17 @@ export function ChatPanel({ conversationId }: Props) {
         className="flex-1 overflow-y-auto px-5 py-4 min-h-0"
         style={{ background: 'var(--bg-page)' }}>
         {grouped.length === 0 && !clientTyping ? (
-          <div className="flex flex-col items-center justify-center h-full gap-3 py-12">
-            <div className="w-16 h-16 rounded-2xl flex items-center justify-center"
+          <div className="flex flex-col items-center justify-center h-full gap-4 py-16">
+            <div className="w-20 h-20 rounded-3xl flex items-center justify-center"
               style={{ background: 'var(--primary-light)' }}>
-              <Icon name="chat_bubble_outline" size={28} style={{ color: 'var(--primary)' }} />
+              <Icon name="forum" size={36} style={{ color: 'var(--primary)' }} />
             </div>
-            <div className="text-center">
-              <div className="text-[14px] font-bold mb-1" style={{ color: 'var(--text)' }}>
-                No messages yet
+            <div className="text-center max-w-[260px]">
+              <div className="text-[16px] font-bold mb-1.5" style={{ color: 'var(--text)' }}>
+                Start the conversation
               </div>
-              <div className="text-[12px]" style={{ color: 'var(--text-tertiary)' }}>
-                Send a message to {conversation?.client_name || 'your client'} to start the conversation
+              <div className="text-[13px] leading-relaxed" style={{ color: 'var(--text-tertiary)' }}>
+                Send a message to {conversation?.client_name || 'your client'} and they&apos;ll see it instantly
               </div>
             </div>
           </div>

@@ -24,7 +24,7 @@ export default function LoginPage() {
     setLoading(true)
     try {
       const res = await api.post<any>('/auth/login', { email, password })
-
+      console.log('res', res)
       if (res.access_token) {
         signIn(res.access_token, res.refresh_token)
         router.replace('/dashboard')

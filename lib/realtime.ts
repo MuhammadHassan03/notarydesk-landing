@@ -44,13 +44,13 @@ export function subscribeToMessages(
   const callbacks = new Set<(msg: any) => void>([onMessage])
 
   const channel = supabase
-    .channel(key)
+    .channel(key, { config: { broadcast: { self: false, ack: true } } })
     // Backend broadcasts via Supabase Realtime HTTP API (service role key) after every
     // INSERT — bypasses RLS which would block the unauthenticated anon client.
-    .on('broadcast', { event: 'new_message' }, (payload) => {
+    .on('broadcast', { event: 'new_message' }, (payload: any) => {
       callbacks.forEach(cb => cb(payload.payload))
     })
-    .subscribe((status) => {
+    .subscribe((status: string) => {
       if (status === 'CHANNEL_ERROR') {
         console.warn(`[Realtime] Channel error for ${key}`)
       }
@@ -66,16 +66,19 @@ export function subscribeToMessages(
 
 /** Broadcast a new message to all subscribers of this conversation.
  *  Call this after the REST save returns the persisted message object. */
-export function broadcastMessage(conversationId: string, message: any) {
+export async function broadcastMessage(conversationId: string, message: any) {
   const key = `msgs:${conversationId}`
   const entry = channels.get(key)
   if (entry) {
-    entry.channel.send({ type: 'broadcast', event: 'new_message', payload: message })
+    const result = await entry.channel.send({ type: 'broadcast', event: 'new_message', payload: message })
+    if (result !== 'ok') {
+      console.warn(`[Realtime] broadcast on ${key} returned: ${result}`)
+    }
     return
   }
   // No active subscriber yet — open an ephemeral channel just to broadcast
-  const channel = supabase.channel(key)
-  channel.subscribe((status) => {
+  const channel = supabase.channel(key, { config: { broadcast: { self: false, ack: true } } })
+  channel.subscribe((status: string) => {
     if (status === 'SUBSCRIBED') {
       channel.send({ type: 'broadcast', event: 'new_message', payload: message })
     }
@@ -105,7 +108,7 @@ export function subscribeToTyping(
 
   const channel = supabase
     .channel(key)
-    .on('broadcast', { event: 'typing' }, (payload) => {
+    .on('broadcast', { event: 'typing' }, (payload: any) => {
       callbacks.forEach(cb => cb(payload.payload as any))
     })
     .subscribe()
@@ -130,7 +133,7 @@ export function sendTypingEvent(conversationId: string, userId: string, name: st
   }
   // No subscriber yet — open an ephemeral channel for this single broadcast
   const channel = supabase.channel(key)
-  channel.subscribe((status) => {
+  channel.subscribe((status: string) => {
     if (status === 'SUBSCRIBED') {
       channel.send({ type: 'broadcast', event: 'typing', payload: { user_id: userId, name, typing } })
     }

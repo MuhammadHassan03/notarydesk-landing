@@ -37,17 +37,21 @@ export default function DashboardPage() {
   const [exporting, setExporting] = useState(false)
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'info' | 'error' } | null>(null)
 
+  // Refresh profile on mount so onboarding checklist reflects latest state
+  useEffect(() => { refreshProfile() }, [refreshProfile])
+
   // Re-fetch when tab becomes visible (user returns from another tab/window)
   useEffect(() => {
     const onVisible = () => {
       if (document.visibilityState === 'visible') {
         refreshStats()
         refreshJobs()
+        refreshProfile()
       }
     }
     document.addEventListener('visibilitychange', onVisible)
     return () => document.removeEventListener('visibilitychange', onVisible)
-  }, [refreshStats, refreshJobs])
+  }, [refreshStats, refreshJobs, refreshProfile])
 
   // Show success message after Lemon Squeezy redirect
   useEffect(() => {
