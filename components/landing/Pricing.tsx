@@ -92,13 +92,13 @@ export default function Pricing() {
               {yearly && plan.price.monthly > 0 && (
                 <p className="text-xs mb-2 flex items-center gap-1" style={{ color: 'var(--text-tertiary)' }}>
                   <Icon name="info" size={12} style={{ opacity: 0.5 }} />
-                  Billed ${Math.round(plan.price.yearly * 12)} annually
+                  Billed ${plan.price.yearlyTotal ?? Math.round(plan.price.yearly * 12)} annually
                 </p>
               )}
               <p className="text-xs mb-6 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{plan.desc}</p>
 
               {/* CTA */}
-              <Link href="/dashboard/register"
+              <Link href="#download"
                 className={`flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-sm no-underline mb-6 transition-all hover:shadow-md hover:-translate-y-px ${plan.highlight ? 'text-white' : ''}`}
                 style={plan.highlight
                   ? { background: 'var(--primary)' }

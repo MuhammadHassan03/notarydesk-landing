@@ -91,7 +91,7 @@ export default function Nav() {
           >
             <Icon name={isDark ? 'light_mode' : 'dark_mode'} size={18} />
           </button>
-          <Link href="/dashboard/login"
+          <Link href="#download"
             className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-[13px] font-semibold no-underline transition-all"
             style={{ color: 'var(--primary)' }}
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--nav-hover)' }}
@@ -99,7 +99,7 @@ export default function Nav() {
             <Icon name="login" size={16} />
             Sign In
           </Link>
-          <Link href="/dashboard/register"
+          <Link href="#download"
             className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-[13px] font-bold text-white no-underline transition-all shadow-sm hover:shadow-md hover:-translate-y-px"
             style={{ background: 'var(--primary)' }}>
             <Icon name="rocket_launch" size={15} />
@@ -162,13 +162,13 @@ export default function Nav() {
           <div className="h-px mb-5" style={{ background: 'var(--divider)' }} />
 
           <div className="flex flex-col gap-3">
-            <Link href="/dashboard/login" onClick={close}
+            <Link href="#download" onClick={close}
               className="flex items-center justify-center gap-2 py-3.5 rounded-xl text-[15px] font-semibold no-underline transition-all"
               style={{ color: 'var(--primary)', border: '1.5px solid var(--border)' }}>
               <Icon name="login" size={18} />
               Sign In to Dashboard
             </Link>
-            <Link href="/dashboard/register" onClick={close}
+            <Link href="#download" onClick={close}
               className="flex items-center justify-center gap-2 py-3.5 rounded-xl text-[15px] font-bold text-white no-underline transition-all"
               style={{ background: 'var(--primary)' }}>
               <Icon name="rocket_launch" size={18} />

@@ -1,116 +1,116 @@
 export const SOCIAL_PROOF_TYPES = [
   { icon: '📝', label: 'Loan Signing Agents' },
   { icon: '🏠', label: 'Real Estate Notaries' },
-  { icon: '💻', label: 'RON Notaries' },
   { icon: '🏥', label: 'Hospital Notaries' },
   { icon: '⚖️', label: 'Estate Planning Notaries' },
   { icon: '🚗', label: 'General Mobile Notaries' },
+  { icon: '���', label: 'Full-Time Notary Businesses' },
 ]
 
 export const PROBLEMS = [
-  { emoji: '📋', before: 'Paper Notary Journal', pain: 'Handwritten notebooks that can be lost, damaged, or ruled illegible in court.', after: 'Digital journal — encrypted, auto-timestamped, and exportable. Locked after 24 hours to meet legal standards.' },
-  { emoji: '🚗', before: 'Manual Mileage Tracking', pain: 'Driving 100+ miles/day without a proper log leaves thousands in IRS deductions on the table.', after: 'One tap starts GPS tracking. IRS deductions calculated automatically and export-ready at tax time.' },
-  { emoji: '💸', before: 'Unprofessional Invoicing', pain: 'Chasing payments via casual apps looks unprofessional. Easy to forget follow-ups.', after: 'Professional invoices sent via email or SMS in seconds. Clients receive a branded link to pay instantly.' },
-  { emoji: '📱', before: 'Scattered Scheduling', pain: 'Bookings from different platforms, emails, and texts. Easy to double-book.', after: 'Unified appointment board. One tap converts a booking into a journal entry and starts mileage.' },
-  { emoji: '😰', before: 'Tax Season Chaos', pain: 'A year of crumpled receipts and partial logs leads to a panic-filled week of bookkeeping.', after: 'Year-round organized records. Export your IRS mileage log and income summary as one clean PDF.' },
+  { emoji: '📋', before: 'Paper Notary Journal', pain: 'Handwritten notebooks that can be lost, damaged, or hard to search when you need a record.', after: 'Digital journal — encrypted, auto-timestamped, and exportable as a PDF for compliance.' },
+  { emoji: '🚗', before: 'Manual Mileage Tracking', pain: 'Driving 100+ miles/day without a proper log leaves thousands in IRS deductions on the table.', after: 'GPS tracks every trip in the background. IRS deductions calculated automatically. Export-ready PDF.' },
+  { emoji: '💸', before: 'Chasing Payments', pain: 'Completing jobs but waiting weeks to get paid. No system to follow up or track who owes you.', after: 'See all unpaid jobs in one place. Send payment reminders with one tap. Mark paid instantly.' },
+  { emoji: '🐌', before: 'Slow Job Creation', pain: 'Filling out forms with 15 fields for every new signing. Wastes time you could spend earning.', after: 'Just say "John Smith POA $150 tomorrow 3pm" and AI creates the job in seconds. One tap to confirm.' },
+  { emoji: '😰', before: 'Tax Season Chaos', pain: 'A year of crumpled receipts and partial logs leads to panic. Missing deductions costs real money.', after: 'Year-round organized records. Export mileage, journal, and tax summary as clean PDFs in one tap.' },
   { emoji: '🔓', before: 'No Data Security', pain: 'Client info stored in unsecured phone notes, texts, and paper files anyone could access.', after: 'Bank-grade encryption protects every record. Your data is isolated, private, and accessible only to you.' },
 ]
 
 export const FEATURES = [
   {
-    icon: '📓', color: '#EDE9FE', title: 'Digital Notary Journal',
-    desc: 'The essential legal requirement. Log signer details, document types, and ID verifications instantly. Entries locked after 24 hours for compliance.',
-    bullets: ['Pre-filled templates for Deeds, POAs, Loan Packages', 'Verify Driver\'s Licenses, Passports, State IDs', 'Tamper-evident logs meeting digital journal requirements', 'Export state-compliant PDF journals in one tap'],
-    stat: { value: '100%', label: 'Compliant with state digital journal laws' },
+    icon: '🤖', color: '#FEF3C7', title: 'AI Quick Add',
+    desc: 'Create jobs in seconds with natural language. No forms, no thinking — just describe the job and AI handles the rest.',
+    bullets: ['Say "John Smith POA $150 tomorrow 3pm Dallas"', 'AI extracts signer, fee, date, time, location', 'Preview card shows parsed fields instantly', 'One tap to confirm and create the job'],
+    stat: { value: '<10s', label: 'Average job creation time' },
+  },
+  {
+    icon: '📊', color: '#EDE9FE', title: 'Smart Dashboard',
+    desc: 'Opens to one clear action — start your next job, collect a payment, or create a new signing. No guessing what to do next.',
+    bullets: ['Smart action card adapts to your day', 'Monthly income + YTD earnings at a glance', 'Income intelligence shows pricing insights', 'Today\'s jobs with inline Start/Complete/Paid actions'],
+    stat: { value: '#1', label: 'Thing you see when you open the app' },
   },
   {
     icon: '🗺️', color: '#DBEAFE', title: 'GPS Mileage Tracker',
-    desc: 'Built for the high-mileage notary. One tap starts high-accuracy tracking that automatically calculates IRS deductions.',
-    bullets: ['Live tracking with signal quality indicators', 'Smart filters for highway and neighborhood driving', 'Manual log support for forgotten trips', 'IRS-compliant logs ready for tax filing'],
-    stat: { value: '$20K+', label: 'Annual tax deductions for active notaries' },
+    desc: 'Background GPS tracking that survives even when Android kills background apps. Every mile = IRS tax deduction.',
+    bullets: ['Real-time speed, distance, and signal display', 'Background tracking with Android foreground service', 'Manual trip entry for forgotten drives', 'Export IRS-ready mileage PDF from the app'],
+    stat: { value: '$20K+', label: 'Potential annual deductions for active notaries' },
   },
   {
-    icon: '🧾', color: '#FEF3C7', title: 'Professional Invoicing',
-    desc: 'Get paid faster with branded invoices created in seconds. Pull data directly from journal entries.',
-    bullets: ['Deliver via Email or SMS instantly', 'Zelle, Venmo, Cash, Check, Credit Card', 'Real-time status: Sent, Paid, Overdue', 'Centralized archive of all past earnings'],
-    stat: { value: '30 sec', label: 'Average time to create and send' },
-  },
-  {
-    icon: '📅', color: '#DCFCE7', title: 'Appointment Manager',
-    desc: 'Consolidate jobs from every platform into one dashboard. Manage schedule, set reminders, convert to journal entries.',
-    bullets: ['Unified calendar for your full signing schedule', 'Automatic client reminders to reduce no-shows', 'Seamless: Appointment → Journal → Invoice', 'Track signing status across all agencies'],
-    stat: { value: '0', label: 'Missed appointments or double-bookings' },
+    icon: '💰', color: '#FEF3C7', title: 'Payment Collection',
+    desc: 'Stop chasing payments. See every unpaid job, send reminders in bulk, and mark paid in 2 taps — right from your phone.',
+    bullets: ['Outstanding balance dashboard with urgency indicators', 'Bulk "Remind All" sends emails to every unpaid client', '2-tap mark paid: tap Paid → select method → done', 'Auto-invoice created when you complete a job'],
+    stat: { value: '2 taps', label: 'To mark any job as paid' },
   },
 ]
 
 export const STEPS = [
-  { num: '01', title: 'Set up in minutes', desc: 'Create your account, enter commission details. Your branding auto-appears on every invoice and report.', tip: 'Intuitive setup — no technical training required.' },
-  { num: '02', title: 'Tap once — trip starts', desc: 'Before heading out, tap "Start Trip." GPS tracks your route in real-time. Mileage and tax deduction logged instantly.', tip: 'Every mile tracked = direct reduction of taxable income.' },
-  { num: '03', title: 'Log signings in 60 seconds', desc: 'After signing, open your journal. Log document type and signer ID. Timestamped, encrypted, locked for compliance.', tip: 'Data encrypted and stored following industry standards.' },
-  { num: '04', title: 'Send invoices on the spot', desc: 'Generate a professional invoice pre-filled from your journal entry. Send via email or SMS before leaving the driveway.', tip: 'Accept payments via Zelle, Venmo, Cash, or Credit Card.' },
-  { num: '05', title: 'Export for tax time in one tap', desc: 'When it\'s time to file, export your full mileage and income reports as a clean PDF ready for your accountant.', tip: 'Organized records save hours and maximize returns.' },
+  { num: '01', title: 'Download & set up', desc: 'Create your account, enter your name and commission details. Takes under 2 minutes.', tip: 'No credit card required. Free plan includes 15 jobs.' },
+  { num: '02', title: 'Add jobs with AI', desc: 'Type or speak "John Smith POA $150 tomorrow 3pm" — AI creates the job instantly. Review and confirm.', tip: 'AI extracts signer, fee, date, location, and document type automatically.' },
+  { num: '03', title: 'Start job + track miles', desc: 'Tap "Start Job" on your dashboard. GPS tracks your drive automatically. Mileage and IRS deduction logged in real time.', tip: 'Background tracking works even when you switch apps or lock your phone.' },
+  { num: '04', title: 'Complete & get paid', desc: 'Mark the job complete — invoice auto-created. Send payment reminders with one tap. Mark paid when you collect.', tip: 'All payment methods supported: Check, Zelle, Venmo, Cash, Credit Card.' },
+  { num: '05', title: 'Export at tax time', desc: 'Download your mileage log, notary journal, and tax summary as clean PDFs. Ready for your accountant.', tip: 'All exports available in Settings → Exports. Pro plan required.' },
 ]
 
 export const COMPETITORS = [
-  { name: 'Legacy Software', what: 'Basic digital journals', why: 'Lacks mobile support and modern features. No major updates in years.', status: 'limited' as const },
-  { name: 'General Tools', what: 'Accounting or note apps', why: 'Not built for notaries. No legal compliance, no journal, too complex on the road.', status: 'wrong' as const },
-  { name: 'Spreadsheets', what: 'Manual data entry', why: 'Time-consuming and error-prone. No automation or professional exports.', status: 'manual' as const },
-  { name: 'Paper Journals', what: 'Handwritten notebooks', why: 'High risk of loss or damage. Difficult to search, massive storage burden.', status: 'risky' as const },
+  { name: 'Legacy Software', what: 'Basic digital journals', why: 'No AI, no mileage tracking, no payment collection. Stuck in 2015.', status: 'limited' as const },
+  { name: 'General Tools', what: 'Accounting or note apps', why: 'Not built for notaries. No job pipeline, no journal, no IRS mileage.', status: 'wrong' as const },
+  { name: 'Spreadsheets', what: 'Manual data entry', why: 'Time-consuming and error-prone. No automation, no AI, no mobile GPS.', status: 'manual' as const },
+  { name: 'Paper Journals', what: 'Handwritten notebooks', why: 'Risk of loss. Can\'t search, can\'t export, can\'t track payments.', status: 'risky' as const },
 ]
 
 export const COMPARISON_FEATURES = [
-  'Mobile-first experience', 'Digital notary journal', 'GPS mileage tracker',
-  'IRS-compliant reporting', 'Professional invoicing', 'Instant client delivery',
-  'Unified appointment board', 'One-tap data exports', 'Built for mobile notaries', 'Secure & modern',
+  'AI job creation', 'Smart action dashboard', 'GPS mileage tracker',
+  'IRS-compliant PDF exports', 'Professional invoicing', 'One-tap payment reminders',
+  'Income intelligence', 'Client risk insights', 'Background GPS tracking', 'Secure & encrypted',
 ]
 
 export const COMPARISON_MATRIX: Record<string, boolean[]> = {
   NotaryDesk:  [true,true,true,true,true,true,true,true,true,true],
-  Legacy:      [false,true,false,false,false,false,false,false,true,false],
+  Legacy:      [false,false,false,false,false,false,false,false,false,false],
   General:     [false,false,false,false,true,false,false,false,false,true],
-  Spreadsheet: [false,false,false,false,false,false,false,false,false,true],
+  Spreadsheet: [false,false,false,false,false,false,false,false,false,false],
 }
 
 export const ROADMAP = {
   now: [
-    { icon: '📓', title: 'Digital Notary Journal', desc: 'State-compliant logging with secure entries and PDF exports.' },
-    { icon: '🗺️', title: 'GPS Mileage Tracker', desc: 'Automatic tracking and IRS mileage deduction calculation.' },
-    { icon: '🧾', title: 'Professional Invoices', desc: 'Generate and send invoices via Email or SMS in seconds.' },
-    { icon: '📅', title: 'Appointment Manager', desc: 'Unified calendar to manage all your signings in one place.' },
+    { icon: '🤖', title: 'AI Quick Add', desc: 'Create jobs in seconds with natural language. Just say "John Smith POA $150 tomorrow 3pm."' },
+    { icon: '📓', title: 'Digital Notary Journal', desc: 'Log signer details, document types, and ID verifications. Export as PDF.' },
+    { icon: '🗺️', title: 'GPS Mileage Tracker', desc: 'Background tracking with IRS deduction calculation and PDF export.' },
+    { icon: '🧾', title: 'Professional Invoicing', desc: 'Email invoices with one-tap payment reminders.' },
+    { icon: '📊', title: 'Income Intelligence', desc: 'See which clients pay fastest and where to raise your fees.' },
     { icon: '🔐', title: 'Secure Data Privacy', desc: 'Bank-grade encryption — your records are 100% private.' },
   ],
   soon: [
     { icon: '💳', title: 'Integrated Payments', desc: 'Clients pay invoices via card or digital wallet instantly.' },
-    { icon: '👥', title: 'Smart Signer Directory', desc: 'Save client profiles to auto-fill for returning signers.' },
-    { icon: '📊', title: 'Tax Reports', desc: 'Annual income and expense summaries for your accountant.' },
+    { icon: '🎥', title: 'RON Support', desc: 'Remote Online Notarization sessions and digital seals.' },
+    { icon: '🏛️', title: 'State-Specific Compliance', desc: 'Dynamic fields tailored to your state\'s notary laws.' },
   ],
   future: [
     { icon: '🤖', title: 'AI ID Scanning', desc: 'Auto-fill journal fields by scanning driver\'s licenses.' },
     { icon: '📡', title: 'Advanced Offline Mode', desc: 'Work in rural areas with automatic cloud syncing.' },
-    { icon: '🏛️', title: 'State-Specific Logic', desc: 'Dynamic fields tailored to your state\'s notary laws.' },
-    { icon: '🎥', title: 'RON Support', desc: 'Remote Online Notarization sessions and digital seals.' },
+    { icon: '🏢', title: 'Agency Plan', desc: 'Centralized billing and reporting for notary businesses.' },
   ],
 }
 
 export const PLANS = [
   {
     name: 'Free', price: { monthly: 0, yearly: 0 },
-    desc: '15 signing jobs — full access, no credit card',
-    features: ['15 signing jobs (all features)', 'Job pipeline tracker', 'Notary journal with compliance', 'GPS mileage + IRS deduction', 'Basic invoicing', 'Expense tracker', 'Tax savings dashboard', 'Web + mobile access'],
-    missing: ['Unlimited signing jobs', 'Invoice email delivery', 'PDF exports'],
-    cta: 'Start Free', highlight: false,
+    desc: 'Start for free — no credit card required',
+    features: ['15 signing jobs', 'Digital notary journal (10 entries)', 'GPS mileage tracking (20 trips)', 'Basic invoicing (10 invoices)', 'Expense tracker', 'Tax savings dashboard', 'AI Quick Add (3/day)'],
+    missing: ['Unlimited everything', 'PDF exports', 'Income intelligence', 'Payment reminders'],
+    cta: 'Download Free', highlight: false,
   },
   {
-    name: 'Pro', price: { monthly: 9.99, yearly: 8.25 },
+    name: 'Pro', price: { monthly: 19, yearly: 16, yearlyTotal: 189 },
     desc: 'Everything a full-time notary needs',
-    features: ['Unlimited signing jobs', 'Full job pipeline with tracking', '50-state compliance engine', 'GPS mileage + IRS export', 'Invoice generator + email', 'PDF exports (journal, mileage, tax)', 'Tax savings calculator + report', 'Client directory (auto-saves)', 'Expense tracker with receipts', 'Appointment manager', 'Web dashboard + mobile app'],
-    missing: ['SMS invoice delivery', 'Custom invoice branding'],
+    features: ['Unlimited signing jobs', 'Unlimited journal entries', 'Unlimited AI Quick Add', 'GPS mileage + IRS PDF export', 'Invoice email + payment reminders', 'PDF exports (journal, mileage, tax)', 'Income intelligence + pricing insights', 'Client insights + risk badges', 'Expense tracker with receipts', 'Auto-invoice on job completion', 'Priority email support'],
+    missing: ['Route optimization', 'Public booking page', 'Client messaging'],
     cta: 'Start Free — Upgrade Anytime', highlight: true, badge: 'Most Popular',
   },
   {
-    name: 'Business', price: { monthly: 19.99, yearly: 15.75 },
+    name: 'Plus', price: { monthly: 29, yearly: 24, yearlyTotal: 279 },
     desc: 'For high-volume notary businesses',
-    features: ['Everything in Pro', 'SMS invoice delivery', 'Custom invoice branding', 'Annual tax summary PDF', 'Email template builder', 'Priority support (24hr)', 'AI ID Scanner (coming soon)'],
+    features: ['Everything in Pro', 'Smart route optimization', 'Public booking page', 'Client messaging', '24-hour priority support'],
     missing: [],
     cta: 'Start Free — Upgrade Anytime', highlight: false,
   },
@@ -118,15 +118,15 @@ export const PLANS = [
 
 export const TESTIMONIALS = [
   { quote: "I used to spend an hour every Sunday doing mileage in a spreadsheet. Now NotaryDesk tracks it while I drive. Found hundreds in deductions I was missing.", name: 'Sandra M.', role: 'Loan Signing Agent · Florida', initials: 'SM', color: '#DBEAFE', textColor: '#1E40AF' },
-  { quote: "The journal is exactly what I needed. My state requires specific fields and NotaryDesk has them all locked after 24 hours. Finally a compliant digital option.", name: 'Robert T.', role: 'Notary Public · California', initials: 'RT', color: '#EDE9FE', textColor: '#5B21B6' },
-  { quote: "My clients used to get a Word doc invoice. Now I send a professional PDF from the app in 30 seconds. I look 10x more professional and get paid faster.", name: 'Michelle K.', role: 'Mobile Notary · Texas', initials: 'MK', color: '#DCFCE7', textColor: '#15803D' },
+  { quote: "The AI job creation is a game changer. I type the details while on the phone with the title company and the job is created before I hang up.", name: 'Robert T.', role: 'Notary Public · California', initials: 'RT', color: '#EDE9FE', textColor: '#5B21B6' },
+  { quote: "I had $600 in unpaid invoices I forgot about. NotaryDesk showed them all and I collected everything in one afternoon with the reminder feature.", name: 'Michelle K.', role: 'Mobile Notary · Texas', initials: 'MK', color: '#DCFCE7', textColor: '#15803D' },
 ]
 
 export const FAQS = [
-  { q: 'Is the journal legally compliant in my state?', a: 'NotaryDesk includes essential fields like date, signer name, document type, and fee. Entries lock after 24 hours to meet tamper-evidence requirements. We constantly update our compliance engine for state-by-state mandates.' },
-  { q: 'How does mileage tracking work — is it IRS-compliant?', a: 'Yes. The IRS requires a contemporaneous log including date, locations, and business purpose. NotaryDesk records these automatically via GPS. Exports are organized and ready for tax season.' },
-  { q: 'When will the iPhone app be available?', a: 'We are in the final stages of iOS testing. Sign up for the waitlist and we\'ll notify you the moment it hits the App Store.' },
-  { q: 'Does it work without internet?', a: 'Current version performs best with a data connection. We\'re developing a local-first sync mode for dead zones like hospitals or rural areas.' },
-  { q: 'What happens to my data? Is it private?', a: 'Your data is encrypted and isolated — only you have access. We use bank-grade security protocols to ensure your journal remains confidential.' },
-  { q: 'Can I use this for my notary agency?', a: 'Currently optimized for individual notaries. We\'re developing an Agency Plan with centralized billing and reporting. Contact us to beta test.' },
+  { q: 'How does AI Quick Add work?', a: 'Type or speak a natural language description like "John Smith POA $150 tomorrow 3pm Dallas." The AI extracts all fields — signer name, fee, date, time, address, document type — and shows you a preview card. One tap to confirm and the job is created. No forms needed.' },
+  { q: 'Is the mileage tracking IRS-compliant?', a: 'Yes. The IRS requires a contemporaneous log including date, locations, and business purpose. NotaryDesk records these automatically via GPS — even in the background when your phone is locked. Export as a PDF for your accountant.' },
+  { q: 'How does the payment collection work?', a: 'Every unpaid job is tracked automatically. You can see your total outstanding balance, tap "Remind All" to email every unpaid client, or mark individual jobs as paid in 2 taps. Supports Check, Zelle, Venmo, Cash, and Credit Card.' },
+  { q: 'Is NotaryDesk available on iPhone?', a: 'NotaryDesk is currently available on Android. iOS is coming soon — join our waitlist to be first to know.' },
+  { q: 'What happens to my data? Is it private?', a: 'Your data is encrypted and isolated — only you have access. We use bank-grade security protocols. Your journal, client info, and financial records are 100% private.' },
+  { q: 'What do I get for free vs Pro?', a: 'Free includes 15 signing jobs, 10 journal entries, 20 mileage trips, basic invoicing, and 3 AI Quick Add uses per day. Pro ($19/mo) unlocks unlimited everything plus PDF exports, income intelligence, payment reminders, and client insights.' },
 ]

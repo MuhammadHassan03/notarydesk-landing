@@ -145,7 +145,7 @@ export function FinalCTA() {
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10">
-          <Link href="/dashboard/register"
+          <Link href="#download"
             className="flex items-center gap-2 px-8 py-4 rounded-2xl font-bold text-[15px] no-underline transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5"
             style={{ background: 'var(--accent)', color: 'var(--primary)' }}>
             <MI name="rocket_launch" size={18} />
